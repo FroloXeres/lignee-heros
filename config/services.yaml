@@ -1,0 +1,15 @@
+# config/services.yaml
+services:
+    LdH\Service\MapService:
+        public: true
+
+    LdH\Service\StateService:
+        public: true
+
+    # States
+    LdH\State\AbstractState:
+        public: true
+
+    LdH\State\CityChoiceState:
+        public: true
+        tags: ['ldh.state']
