@@ -1,0 +1,10 @@
+{
+  "name": "ligneeheros",
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^4.7.4"
+  },
+  "scripts": {
+    "dev": "tsc --watch --preserveWatchOutput"
+  }
+}
