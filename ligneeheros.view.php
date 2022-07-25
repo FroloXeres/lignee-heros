@@ -28,7 +28,7 @@ require_once( APP_BASE_PATH."view/common/game.view.php" );
 
 use LdH\Repository\MapRepository;
 use LdH\Service\MapService;
-use LdH\Entity\Deck;
+use LdH\Entity\Cards\Deck;
 
 class view_ligneeheros_ligneeheros extends game_view
 {

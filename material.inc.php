@@ -19,81 +19,24 @@
  *
  */
 
-use LdH\Entity\AbstractCard;
-use LdH\Entity\Deck;
-use LdH\Entity\Terrain;
-use LdH\Entity\Resource;
-use LdH\Entity\Lineage;
+use LdH\Entity\Cards\AbstractCard;
+use LdH\Entity\Cards\Lineage;
+use LdH\Entity\Cards\Invention;
+use LdH\Entity\Cards\Explore;
+use LdH\Entity\Cards\EndTurn;
+use LdH\Entity\Cards\Deck;
+use LdH\Entity\Map\Terrain;
+use LdH\Entity\Map\City;
+use LdH\Entity\Map\Resource;
+use LdH\Entity\Map\Variant;
 use LdH\Entity\Meeple;
 use LdH\Entity\Bonus;
-use LdH\Entity\Variant;
 
-/*--------------------------------------
- * Map part : Terrain, Resources, Variants
- * ------------------------------------- */
-$wood            = new Resource(clienttranslate('Wood'), 'wood', clienttranslate("Any plant offering enouth wood for construction or wooden objects manufacturing"));
-$stone           = new Resource(clienttranslate('Stone'), 'stone', clienttranslate("As a complement to wood, stone offers a robust building material, but requires solid tools"));
-$metal           = new Resource(clienttranslate('Metal'), 'metal', clienttranslate("Tin, copper, iron or any other alloy to make stronger weapons and tools"));
-$paper           = new Resource(clienttranslate('Paper'), 'paper', clienttranslate("Here, it is any support allowing to preserve as writings, all forms of knowledge"));
-$clay            = new Resource(clienttranslate('Clay'), 'clay', clienttranslate("This malleable material offers, once dried or cooked, incredible possibilities"));
-$animal          = new Resource(clienttranslate('Animal'), 'animal', clienttranslate("Offering food (farmed or not), wool, leather and so many other products"));
-$gem             = new Resource(clienttranslate('Gem'), 'gem', clienttranslate("These mineral formations, more or less rare, have pleasant colours and shapes"));
-$this->resources = [
-    $stone->getCode()  => $stone,
-    $wood->getCode()   => $wood,
-    $metal->getCode()  => $metal,
-    $clay->getCode()   => $clay,
-    $paper->getCode()  => $paper,
-    $animal->getCode() => $animal,
-    $gem->getCode()    => $gem
-];
-
-$mountain    = new Terrain(clienttranslate('Mountain'), Terrain::MOUNTAIN, false, [$stone, $metal, $gem]);
-$plain       = new Terrain(clienttranslate('Plain'), Terrain::PLAIN, true, [$clay, $paper, $animal]);
-$desert      = new Terrain(clienttranslate('Desert'), Terrain::DESERT);
-$swamp       = new Terrain(clienttranslate('Swamp'), Terrain::SWAMP, true, [$wood, $paper]);
-$hill        = new Terrain(clienttranslate('Hill'), Terrain::HILL, true, [$stone, $metal]);
-$forest      = new Terrain(clienttranslate('Forest'), Terrain::FOREST, true, [$wood, $animal]);
-$townHumanis = new Terrain(clienttranslate('Espérys'), Terrain::TOWN_HUMANIS, true, [$clay, $animal]);
-$townElven   = new Terrain(clienttranslate("Gala\'ar"), Terrain::TOWN_ELVEN, true, [$paper, $wood, $animal]);
-$townNani    = new Terrain(clienttranslate('Nundurahl'), Terrain::TOWN_NANI, true, [$stone, $metal, $gem]);
-$townOrk     = new Terrain(clienttranslate('Arakh Dhul'), Terrain::TOWN_ORK, true, [$wood, $metal]);
-
-$this->terrains = [
-    $mountain->getCode()    => $mountain,
-    $plain->getCode()       => $plain,
-    $desert->getCode()      => $desert,
-    $swamp->getCode()       => $swamp,
-    $hill->getCode()        => $hill,
-    $forest->getCode()      => $forest,
-    $townHumanis->getCode() => $townHumanis,
-    $townElven->getCode()   => $townElven,
-    $townNani->getCode()    => $townNani,
-    $townOrk->getCode()     => $townOrk
-];
-
-$this->variants = [
-    (new Variant(Variant::WATER))
-        ->addBonus(new Bonus(1, Bonus::FOOD))
-        ->setTerrains([]),
-    (new Variant(Variant::LAIR))
-        ->addBonus(new Bonus(1, Bonus::FOOD))
-        ->addBonus((new Bonus(1, Bonus::BIRTH))->setType(Meeple::WARRIOR))
-        ->setTerrains([]),
-    (new Variant(Variant::RUINS))
-        ->addBonus(new Bonus(1, Bonus::SCIENCE))
-        ->addBonus((new Bonus(1, Bonus::DRAW_CARTE))->setType(AbstractCard::TYPE_MAGIC))
-        ->setTerrains([]),
-    (new Variant(Variant::TOWER))
-        ->addBonus(new Bonus(1, Bonus::SCIENCE))
-        ->addBonus((new Bonus(1, Bonus::BIRTH))->setType(Meeple::MAGE))
-        ->addBonus((new Bonus(1, Bonus::DRAW_CARTE))->setType(AbstractCard::TYPE_MAGIC))
-        ->setTerrains([])
-];
 
 /*--------------------------------------
  *              Meeple part
  * ------------------------------------- */
+
 $worker = (new Meeple(Meeple::WORKER))
     ->setName(clienttranslate('Worker'))
     ->setDescription(clienttranslate("Whether farmers, fishermen or any type of craftsmen, they have to harvest enough food for everyone and to develop the infrastructure of Esperys"));
@@ -140,6 +83,54 @@ $this->meeples = [
     $orkWarrior->getCode()   => $orkWarrior,
     $orkWorker->getCode()    => $orkWorker
 ];
+
+
+/*--------------------------------------
+ * Map part : Terrain, Resources, Variants
+ * ------------------------------------- */
+$wood            = new Resource(clienttranslate('Wood'), 'wood', clienttranslate("Any plant offering enouth wood for construction or wooden objects manufacturing"));
+$stone           = new Resource(clienttranslate('Stone'), 'stone', clienttranslate("As a complement to wood, stone offers a robust building material, but requires solid tools"));
+$metal           = new Resource(clienttranslate('Metal'), 'metal', clienttranslate("Tin, copper, iron or any other alloy to make stronger weapons and tools"));
+$paper           = new Resource(clienttranslate('Paper'), 'paper', clienttranslate("Here, it is any support allowing to preserve as writings, all forms of knowledge"));
+$clay            = new Resource(clienttranslate('Clay'), 'clay', clienttranslate("This malleable material offers, once dried or cooked, incredible possibilities"));
+$animal          = new Resource(clienttranslate('Animal'), 'animal', clienttranslate("Offering food (farmed or not), wool, leather and so many other products"));
+$gem             = new Resource(clienttranslate('Gem'), 'gem', clienttranslate("These mineral formations, more or less rare, have pleasant colours and shapes"));
+$this->resources = [
+    $stone->getCode()  => $stone,
+    $wood->getCode()   => $wood,
+    $metal->getCode()  => $metal,
+    $clay->getCode()   => $clay,
+    $paper->getCode()  => $paper,
+    $animal->getCode() => $animal,
+    $gem->getCode()    => $gem
+];
+
+$mountain    = new Terrain(clienttranslate('Mountain'), Terrain::MOUNTAIN, false, [$stone, $metal, $gem]);
+$plain       = new Terrain(clienttranslate('Plain'), Terrain::PLAIN, true, [$clay, $paper, $animal]);
+$desert      = new Terrain(clienttranslate('Desert'), Terrain::DESERT);
+$swamp       = new Terrain(clienttranslate('Swamp'), Terrain::SWAMP, true, [$wood, $paper]);
+$hill        = new Terrain(clienttranslate('Hill'), Terrain::HILL, true, [$stone, $metal]);
+$forest      = new Terrain(clienttranslate('Forest'), Terrain::FOREST, true, [$wood, $animal]);
+
+$this->variants = [
+    (new Variant(Variant::WATER))
+        ->addBonus(new Bonus(1, Bonus::FOOD))
+        ->setTerrains([]),
+    (new Variant(Variant::LAIR))
+        ->addBonus(new Bonus(1, Bonus::FOOD))
+        ->addBonus((new Bonus(1, Bonus::BIRTH))->setType(Meeple::WARRIOR))
+        ->setTerrains([]),
+    (new Variant(Variant::RUINS))
+        ->addBonus(new Bonus(1, Bonus::SCIENCE))
+        ->addBonus((new Bonus(1, Bonus::DRAW_CARTE))->setType(AbstractCard::TYPE_MAGIC))
+        ->setTerrains([]),
+    (new Variant(Variant::TOWER))
+        ->addBonus(new Bonus(1, Bonus::SCIENCE))
+        ->addBonus((new Bonus(1, Bonus::BIRTH))->setType(Meeple::MAGE))
+        ->addBonus((new Bonus(1, Bonus::DRAW_CARTE))->setType(AbstractCard::TYPE_MAGIC))
+        ->setTerrains([])
+];
+
 
 /*--------------------------------------
  *          Cards part
@@ -237,7 +228,13 @@ $this->cards[$objective->getType()] = $objective;
 
 //      Invention
 // -------------------
+$smithing = (new Invention(Invention::SMITHING))
+    ->setName(clienttranslate("Smithing"))
+    ->setDescription(clienttranslate(""));
+$invention
+    ->addCard($smithing)
 
+;
 $this->cards[$invention->getType()] = $invention;
 
 //      Spell
@@ -247,10 +244,63 @@ $this->cards[$magic->getType()] = $magic;
 
 //      Explore
 // -------------------
-
+$explore
+    ->addCard((new Explore(Explore::TYPE_DISEASE, Explore::DISEASE_NO_WIZARD))
+        ->setName("Mentalite aïgué")
+        ->setDescription(clienttranslate("Nearby wizards (1 tile distance) become workers."))
+    )
+    ->addCard((new Explore(Explore::TYPE_DISEASE, Explore::DISEASE_ACT_DONE))
+        ->setName("Vide-boyau")
+        ->setDescription(clienttranslate("Flip units on this tile to unavailable. They can't do more action this turn."))
+    )
+;
 $this->cards[$explore->getType()] = $explore;
 
 //      EndOfTurn
 // -------------------
-
+$endOfTurn
+    ->addCard((new EndTurn(EndTurn::END_FLOOD))
+        ->setName(clienttranslate("Flood"))
+        ->setDescription(clienttranslate(""))
+    )
+;
 $this->cards[$endOfTurn->getType()] = $endOfTurn;
+
+
+/*--------------------------------------
+ *          Fill terrains parts
+ * ------------------------------------- */
+
+$townHumanis = new City(clienttranslate('Espérys'), Terrain::TOWN_HUMANIS, true, [$clay, $animal]);
+$townHumanis
+    ->addUnit($worker)->addUnit($mage)
+    ->addInvention($smithing)->addInvention($smithing)
+;
+$townElven   = new City(clienttranslate("Gala\'ar"), Terrain::TOWN_ELVEN, true, [$paper, $wood, $animal]);
+$townElven
+    ->addUnit($mage)->addUnit($savant)
+    ->addInvention($smithing)->addInvention($smithing)
+;
+$townNani    = new City(clienttranslate('Nundurahl'), Terrain::TOWN_NANI, true, [$stone, $metal, $gem]);
+$townNani
+    ->addUnit($worker)->addUnit($warrior)
+    ->addInvention($smithing)->addInvention($smithing)
+;
+$townOrk     = new City(clienttranslate('Arakh Dhul'), Terrain::TOWN_ORK, true, [$wood, $metal]);
+$townOrk
+    ->addUnit($warrior)->addUnit($warrior)
+    ->addInvention($smithing)->addInvention($smithing)
+;
+
+$this->terrains = [
+    $mountain->getCode()    => $mountain,
+    $plain->getCode()       => $plain,
+    $desert->getCode()      => $desert,
+    $swamp->getCode()       => $swamp,
+    $hill->getCode()        => $hill,
+    $forest->getCode()      => $forest,
+    $townHumanis->getCode() => $townHumanis,
+    $townElven->getCode()   => $townElven,
+    $townNani->getCode()    => $townNani,
+    $townOrk->getCode()     => $townOrk
+];

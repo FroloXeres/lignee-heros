@@ -2,7 +2,7 @@
 
 namespace LdH\Repository;
 
-use LdH\Entity\Tile;
+use LdH\Entity\Map\Tile;
 
 class MapRepository
 {

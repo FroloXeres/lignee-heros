@@ -76,6 +76,7 @@
     background: url("img/cards.png") 0 0;
     background-size: auto 100%;
 }
+.mode_3d .deck:before, .mode_3d .deck:after {display: none;}
 .deck.large:before, .deck.large:after {
     background: url("img/big_cards.png") 0 0;
     background-size: auto 100%;
@@ -90,33 +91,31 @@
     aspect-ratio: 192 / 295;
 }
 
-.deck.lineage:after, .deck.lineage:before {background-position-x: 0;}
-.deck.end_turn:after, .deck.end_turn:before {background-position-x: 57.1%;}
-.deck.explore:after, .deck.explore:before {background-position-x: 43%;}
-.deck.magic:after, .deck.magic:before {background-position-x: 14.3%;}
-.deck.invention:after, .deck.invention:before {background-position-x: 0;}
-.deck.objective:after, .deck.objective:before {background-position-x: 28.6%;}
-
-.deck.disabled {display: none;}
-.deck.inactive {cursor: not-allowed;}
-.deck.lineage {
+.card.disabled {display: none;}
+.card.inactive {cursor: not-allowed;}
+.card.lineage {
     display: none;
 }
-.deck.objective {
+.card.objective {
     display: none;
 }
-.deck.invention {margin-right: 2em;}
-.deck.magic {}
-.deck.explore {}
-.deck.end_turn {float: right;}
+.card.invention {margin-right: 2em;}
+.card.magic {}
+.card.explore {}
+.card.end_turn {float: right;}
 
-.deck.flip {background-position-x: 0;}
-
+.deck-list .card {
+    width: 15%;
+}
+.deck-list .card.large {
+    width: 20%;
+}
 .card_list {
-    display: none;
+    /*display: none;*/
 }
-.deck .deck_list:hover, .deck .deck_list:active {
+.card_list li {
     display: inline-block;
+    width: 15%;
 }
 .counter {
     content: attr(data-count);
@@ -132,6 +131,190 @@
     text-shadow: -1px 0 #000, 0 1px #000, 1px 0 #000, 0 -1px #000;
 }
 
+.card {
+    display: inline-block;
+    border: 1px solid #111;
+    aspect-ratio: 7/11;
+    border-top-left-radius: 6% 3.8%;
+    border-top-right-radius: 6% 3.8%;
+    border-bottom-left-radius: 6% 3.8%;
+    border-bottom-right-radius: 6% 3.8%;
+    font-size: .8em;
+}
+.card.verso {
+    background-color: #000;
+}
+.card.recto {
+    background-color: #fff;
+}
+.card .content {
+    background: url(img/card-sprites.png) 0 0 no-repeat;
+    width: calc(100% - 6%);
+    height: calc(100% - 3%);
+    background-size: 522% 137%;
+    box-sizing: border-box;
+    margin: 3%;
+    padding-top: 5%;
+}
+.card.verso .content {
+    background-position: 100% 0%;
+}
+.card.recto .content {
+    background-position: 76.25% 0%;
+    background-size: 531% 137%;
+    padding-top: 0;
+}
+.card.verso .content .inner {
+    position: relative;
+    width: 90%;
+    height: 95%;
+    box-sizing: border-box;
+    margin: auto;
+    background-color: #f0e094;
+    border: 1px solid #c29253;
+    border-radius: 50%;
+    box-shadow: #c29253 0 0 2em;
+}
+.card.verso .content .inner > div {
+    display: none;
+}
+.card.recto .content .inner {
+    position: relative;
+    box-sizing: border-box;
+    height: 100%;
+    padding: 1%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+.card.recto .content .inner::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 11%;
+    height: 7%;
+    background: url("img/card-sprites.png") 86.5% 79.5% no-repeat;
+    background-size: 3980% 1683.3%;
+}
+.card .text {
+    border: 1px solid #c29253;
+    background-color: #f0e094;
+    padding: 1% 2.5%;
+    text-align: left;
+}
+.card .text:not(:last-child) {
+    margin-bottom: 1%;
+}
+.card .title {
+    height: 7%;
+    margin-left: 11%;
+    font-weight: bold;
+}
+.card .cost-gain {
+    height: 15%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+.card .cost-gain > div {
+    height: 50%;
+    padding-left: 11%;
+    position: relative;
+}
+.card .cost-gain > div::before {
+    content: "";
+    background: url("img/icons.png") no-repeat;
+    background-size: 990% 400%;
+    position: absolute;
+    width: 8%;
+    height: 70%;
+    top: 15%;
+    left: 0;
+}
+.card .cost-gain .cost::before {
+    background-position: 100.8% 0;
+}
+.card .cost-gain .gain::before {
+    background-position: 56% 33.33%;
+}
+.card .graph {
+    height: 32.25%;
+    background: url("img/graphs.jpg") 0 0 no-repeat;
+    background-size: 700% 100%;
+}
+.card.stock .graph {background-position: 16.67% 0%;}
+.card.defense .graph {background-position: 83.33% 0%;}
+.card.smith .graph {background-position: 33.33% 0%;}
+.card.hut .graph {background-position: 66.67% 0%;}
+.card.center .graph {background-position: 100% 0%;}
+.card.stone_cut .graph {background-position: 0% 0%;}
+.card.pottery .graph {background-position: 50% 0%;}
+
+.card .info {
+    height: 28%;
+    font-style: italic;
+    font-size: .9em;
+}
+.card .status {
+    padding-left: 12%;
+    height: 7%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    margin-top: auto;
+}
+.card .status::before {
+    position: absolute;
+    content: "";
+    background: url(img/card-sprites.png) 82.3% 76.25% no-repeat;
+    background-size: 4975% 2404.76%;
+    left: 1%;
+    bottom: 0;
+    width: 11%;
+    height: 7%;
+}
+.card.verso .inner::before {
+    position: absolute;
+    content: "";
+    background: url(img/card-sprites.png) 0 0 no-repeat;
+    background-size: 700% 280%;
+    width: 90%;
+    aspect-ratio: 1;
+    top: 20%;
+    left: 5%;
+}
+.card.verso.invention .inner::before {
+    background-size: 660% 280%;
+    background-position: 26.55% 88%;
+}
+.card.verso.end_turn .inner::before {
+    background-position: 2% 88%;
+    background-size: 660% 280%;
+    top: 24%;
+    left: 6%;
+}
+.card.verso.explore .inner::before {
+    background-size: 630% 270%;
+    background-position: 26.35% 10%;
+    top: 23%;
+}
+.card.verso.magic .inner::before {
+    background-position: 51.3% 92%;
+    top: 26%;
+}
+.card.verso.lineage .inner::before {
+    background-size: 590% 230%;
+    background-position: 0.8% 5%;
+    aspect-ratio: 0.9;
+    top: 22%;
+}
+.card.verso.objective .inner::before {
+    background-position: 51% 14%;
+    background-size: 660% 260%;
+    top: 26%;
+}
 
 #city-zone {
 
@@ -143,7 +326,7 @@
     width: 32px;
     height: 32px;
     background: url("img/icons.png") 0 0 no-repeat;
-    background-size: auto 100%;
+    background-size: 990% 400%;
 }
 .icon.large {
     width: 64px;
@@ -154,15 +337,51 @@
     height: 16px;
 }
 .icon.cube.warrior {background-position: 0 0;}
-.icon.cube.worker {background-position: 10% 0;}
-.icon.cube.mage {background-position: 20% 0;}
-.icon.cube.savant {background-position: 30% 0;}
-.icon.cube.all {background-position: 40% 0;}
-.icon.cube.monster {background-position: 50% 0;}
-.icon.cube.city {background-position: 60% 0;}
-.icon.cube.explore {background-position: 70% 0;}
-.icon.cube.objective {background-position: 80% 0;}
-.icon.cube.spell {background-position: 90% 0;}
+.icon.cube.worker {background-position: 11.2% 0;}
+.icon.cube.mage {background-position: 22.4% 0;}
+.icon.cube.savant {background-position: 33.6% 0;}
+.icon.cube.all {background-position: 44.8% 0;}
+.icon.cube.monster {background-position: 56% 0;}
+
+.icon.cube.warrior.moved {background-position: 0 33.33%;}
+.icon.cube.worker.moved {background-position: 11.2% 33.33%;}
+.icon.cube.mage.moved {background-position: 22.4% 33.33%;}
+.icon.cube.savant.moved {background-position: 33.6% 33.33%;}
+
+.icon.cube.warrior.acted {background-position: 0 66.67%;}
+.icon.cube.worker.acted {background-position: 11.2% 66.67%;}
+.icon.cube.mage.acted {background-position: 22.4% 66.67%;}
+.icon.cube.savant.acted {background-position: 33.6% 66.67%;}
+
+.icon.cube.explore {background-position: 44.8% 66.67%;}
+.icon.cube.objective {background-position: 56% 66.67%;}
+.icon.cube.spell {background-position: 67.2% 66.67%;}
+.icon.cube.invention {background-position: 78.4% 66.67%;}
+.icon.cube.end_turn {background-position: 89.6% 66.67%;}
+
+.icon.cube.battle {background-position: 44.8% 33.33%;}
+.icon.cube.treasure {background-position: 56% 33.33%;}
+.icon.cube.disease {background-position: 67.2% 33.33%;}
+.icon.cube.nature {background-position: 78.4% 33.33%;}
+
+.icon.cube.city {background-position: 67.2% 0;}
+.icon.cube.lineage {background-position: 100.8% 66.67%;}
+.icon.cube.lead {background-position: 78.4% 0;}
+.icon.cube.generate {background-position: 89.6% 0;}
+.icon.cube.turn {background-position: 100.8% 0;}
+
+.icon.cube.food {background-position: 89.6% 33.33%;}
+.icon.cube.science {background-position: 100.8% 33.33%;}
+.icon.cube.wood {background-position: 0% 100%;}
+.icon.cube.gem {background-position: 22.4% 100%;}
+.icon.cube.paper {background-position: 33.6% 100%;}
+.icon.cube.metal {background-position: 44.8% 100%;}
+.icon.cube.stone {background-position: 56% 100%;}
+.icon.cube.animal {background-position: 11.2% 100%;}
+.icon.cube.clay {background-position: 67.2% 100%;}
+
+.icon.cube.life {background-position: 89.6% 100%;}
+.icon.cube.power {background-position: 100.8% 100%;}
 
 /********* MAP **********/
 #map-zone {

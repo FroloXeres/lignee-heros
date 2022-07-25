@@ -1,7 +1,7 @@
 <?php
 
 
-namespace LdH\Entity;
+namespace LdH\Entity\Map;
 
 
 class Resource implements \JsonSerializable

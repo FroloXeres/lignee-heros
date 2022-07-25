@@ -10,6 +10,14 @@ services:
     LdH\State\AbstractState:
         public: true
 
-    LdH\State\CityChoiceState:
+    LdH\State\GameInitState:
+        public: true
+        tags: ['ldh.state']
+
+    LdH\State\ChooseLineageState:
+        public: true
+        tags: [ 'ldh.state' ]
+
+    LdH\State\DrawObjectiveState:
         public: true
         tags: ['ldh.state']

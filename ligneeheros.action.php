@@ -2,7 +2,7 @@
 /**
  *------
  * BGA framework: © Gregory Isabelli <gisabelli@boardgamearena.com> & Emmanuel Colin <ecolin@boardgamearena.com>
- * ligneeheros implementation : © <Your name here> <Your email address here>
+ * ligneeheros implementation : © FroloX nico.cleve@gmail.com
  *
  * This code has been produced on the BGA studio platform for use on https://boardgamearena.com.
  * See http://en.doc.boardgamearena.com/Studio for more information.
@@ -23,7 +23,22 @@
   
   
   class action_ligneeheros extends APP_GameAction
-  { 
+  {
+      /**
+       * @var callable[]
+       */
+      protected array $actionMethods = [];
+
+      /**
+       * Action init
+       */
+      public function __construct()
+      {
+          parent::__construct();
+
+          $this->actionMethods = $this->game->getStateService()->getActionMethods($this);
+      }
+
     // Constructor: please do not modify
    	public function __default()
   	{
@@ -39,16 +54,32 @@
       }
   	} 
   	
-  	// TODO: defines your action entry points there
+    /**
+    * @param string $name
+    * @param array  $arguments
+    *
+    * @return void
+    */
+    function __call(string $name, array $arguments) {
+        if (array_key_exists($name, $this->actionMethods)) {
+            self::setAjaxMode();
 
+            // Find a way to list args
+            $arguments = [
+                // self::getArg( "myArgument1", AT_posint, true ),
+                // self::getArg( "myArgument2", AT_posint, true )
+            ];
+            call_user_func_array($this->actionMethods[$name], $arguments);
+
+            self::ajaxResponse();
+        }
+    }
 
     /*
-    
-    Example:
-  	
+    // Example:
     public function myAction()
     {
-        self::setAjaxMode();     
+        self::setAjaxMode();
 
         // Retrieve arguments
         // Note: these arguments correspond to what has been sent through the javascript "ajaxcall" method
@@ -60,9 +91,5 @@
 
         self::ajaxResponse( );
     }
-    
     */
-
-  }
-  
-
+}

@@ -2,12 +2,12 @@
  /**
   *------
   * BGA framework: © Gregory Isabelli <gisabelli@boardgamearena.com> & Emmanuel Colin <ecolin@boardgamearena.com>
-  * ligneeheros implementation : © <Your name here> <Your email address here>
-  * 
+  * ligneeheros implementation : © FroloX nico.cleve@gmail.com
+  *
   * This code has been produced on the BGA studio platform for use on http://boardgamearena.com.
   * See http://en.boardgamearena.com/#!doc/Studio for more information.
   * -----
-  * 
+  *
   * ligneeheros.game.php
   *
   * This is the main file for your game logic.
@@ -27,12 +27,17 @@ use LdH\Service\StateCompilerPass;
 use LdH\Repository\MapRepository;
 use LdH\Service\MapService;
 use LdH\Service\StateService;
-use LdH\Entity\Deck;
-use LdH\Entity\AbstractCard;
+use LdH\Entity\Cards\Deck;
+use LdH\Entity\Cards\AbstractCard;
 
 class ligneeheros extends Table
 {
-    protected ?StateService $stateService;
+    public array $decks = [];
+
+    /**
+     * @var StateService|null
+     */
+    public ?StateService $stateService = null;
 
     /**
      * @var callable[]
@@ -43,11 +48,6 @@ class ligneeheros extends Table
      * @var callable[]
      */
     protected array $stateActionMethods = [];
-
-    /**
-     * @var callable[]
-     */
-    protected array $actionMethods = [];
 
 	function __construct( )
 	{
@@ -60,12 +60,16 @@ class ligneeheros extends Table
         parent::__construct();
 
         self::initGameStateLabels( array(
-            "turnLeft" => 10,
-            //    "my_second_global_variable" => 11,
-            //      ...
-            //    "my_first_game_variant" => 100,
-            //    "my_second_game_variant" => 101,
-            //      ...
+            StateService::GLB_TURN_LFT    => 10,
+            StateService::GLB_PEOPLE_CNT  => 11,
+            StateService::GLB_FOOD_PRD    => 12,
+            StateService::GLB_FOOD_STK    => 13,
+            StateService::GLB_SCIENCE_PRD => 14,
+            StateService::GLB_SCIENCE_STK => 15,
+            StateService::GLB_LIFE        => 16,
+            StateService::GLB_WAR_PWR     => 17,
+            StateService::GLB_WAR_DFS     => 18,
+            StateService::GLB_CTY_DFS     => 19
         ) );
 
         // Use of Symfony DIC
@@ -101,7 +105,6 @@ class ligneeheros extends Table
      */
     protected function initDecks()
     {
-        $this->decks = [];
         foreach ($this->cards as $deck) {
             /** @var Deck $deck */
             $this->decks[$deck->getType()] = self::getNew( "module.common.deck" );
@@ -120,32 +123,31 @@ class ligneeheros extends Table
         $this->stateService = $this->getService(StateService::class);
 
         // Fill available methods
-        $this->stateArgMethods    = $this->stateService->getStateArgMethods($this);
-        $this->stateActionMethods = $this->stateService->getStateActionMethods($this);
-        $this->actionMethods      = $this->stateService->getActionMethods($this);
+        $this->stateArgMethods    = $this->getStateService()->getStateArgMethods($this);
+        $this->stateActionMethods = $this->getStateService()->getStateActionMethods($this);
     }
 
     protected function getGameName( )
     {
 		// Used for translations and stuff. Please do not modify.
         return "ligneeheros";
-    }	
+    }
 
     /*
         setupNewGame:
-        
+
         This method is called only once, when a new game is launched.
         In this method, you must setup the game according to the game rules, so that
         the game is ready to be played.
     */
     protected function setupNewGame( $players, $options = array() )
-    {    
+    {
         // Set the colors of the players with HTML color code
         // The default below is red/green/blue/orange/brown
         // The number of colors defined here must correspond to the maximum number of players allowed for the gams
         $gameinfos = self::getGameinfos();
         $default_colors = $gameinfos['player_colors'];
- 
+
         // Create players
         // Note: if you added some extra field on "player" table in the database (dbmodel.sql), you can initialize it there.
         $sql = "INSERT INTO player (player_id, player_color, player_canal, player_name, player_avatar) VALUES ";
@@ -159,18 +161,37 @@ class ligneeheros extends Table
         self::DbQuery( $sql );
         self::reattributeColorsBasedOnPreferences( $players, $gameinfos['player_colors'] );
         self::reloadPlayersBasicInfos();
-        
+
         /************ Start the game initialization *****/
 
         $this->initTables();
 
         // Init global values with their initial values
-        self::setGameStateInitialValue( 'turnLeft', 50 );
-        
+        self::setGameStateInitialValue(StateService::GLB_TURN_LFT, 50);
+        self::setGameStateInitialValue(StateService::GLB_PEOPLE_CNT, 10);
+        self::setGameStateInitialValue(StateService::GLB_FOOD_PRD, 0);
+        self::setGameStateInitialValue(StateService::GLB_FOOD_STK, 0);
+        self::setGameStateInitialValue(StateService::GLB_SCIENCE_PRD, 0);
+        self::setGameStateInitialValue(StateService::GLB_SCIENCE_STK, 0);
+        self::setGameStateInitialValue(StateService::GLB_LIFE, 1);
+        self::setGameStateInitialValue(StateService::GLB_WAR_PWR, 1);
+        self::setGameStateInitialValue(StateService::GLB_WAR_DFS, 0);
+        self::setGameStateInitialValue(StateService::GLB_CTY_DFS, 1);
+
         // Init game statistics
         // (note: statistics used in this file must be defined in your stats.inc.php file)
-        //self::initStat( 'table', 'table_teststat1', 0 );    // Init a table statistics
-        //self::initStat( 'player', 'player_teststat1', 0 );  // Init a player statistics (for all players)
+//        self::initStat( 'table', 'table_won', 0 );
+//        self::initStat( 'table', 'table_lost', 0 );
+//        self::initStat( 'table', 'table_lost_turn', 50 );
+//        self::initStat( 'player', 'player_lineage_elven_mage', 0 );
+//        self::initStat( 'player', 'player_lineage_elven_savant', 0 );
+//        self::initStat( 'player', 'player_lineage_humani_mage', 0 );
+//        self::initStat( 'player', 'player_lineage_humani_worker', 0 );
+//        self::initStat( 'player', 'player_lineage_nani_warrior', 0 );
+//        self::initStat( 'player', 'player_lineage_nani_savant', 0 );
+//        self::initStat( 'player', 'player_lineage_ork_worker', 0 );
+//        self::initStat( 'player', 'player_lineage_ork_warrior', 0 );
+//        self::initStat( 'player', 'player_finish_obj', 0 );
 
         // Activate first player (which is in general a good idea :) )
         $this->activeNextPlayer();
@@ -188,22 +209,27 @@ class ligneeheros extends Table
         }
 
         // Init cards
-        foreach ($this->decks as $type => $deck) {
-            /** @var Deck $ldhDeck */
-            $ldhDeck = $this->cards[$type];
+        if (!empty($this->decks)) {
+            foreach ($this->decks as $type => $deck) {
+                /** @var Deck $ldhDeck */
+                $ldhDeck = $this->cards[$type];
 
-            $deck->createCards($ldhDeck->toArray(), AbstractCard::LOCATION_DEFAULT);
-            if (!$ldhDeck->isPublic()) {
-                $deck->shuffle(AbstractCard::LOCATION_DEFAULT);
+                $deck->createCards($ldhDeck->toArray(), AbstractCard::LOCATION_DEFAULT);
+                if (!$ldhDeck->isPublic()) {
+                    $deck->shuffle(AbstractCard::LOCATION_DEFAULT);
+                }
             }
         }
+
+        // Init units
+
     }
 
     /*
-        getAllDatas: 
-        
+        getAllDatas:
+
         Gather all informations about current game situation (visible by the current player).
-        
+
         The method is called each time the game interface is displayed to a player, ie:
         _ when the game starts
         _ when a player refreshes the game page (F5)
@@ -211,9 +237,9 @@ class ligneeheros extends Table
     protected function getAllDatas()
     {
         $result = array();
-    
+
         $current_player_id = self::getCurrentPlayerId();    // !! We must only return informations visible by this player !!
-    
+
         // Get information about players
         // Note: you can retrieve some extra field you added for "player" table in "dbmodel.sql" if you need it.
         $sql = "SELECT player_id id, player_score score FROM player ";
@@ -237,12 +263,12 @@ class ligneeheros extends Table
 
     /*
         getGameProgression:
-        
+
         Compute and return the current game progression.
         The number returned must be an integer beween 0 (=the game just started) and
         100 (= the game is finished or almost finished).
-    
-        This method is called each time we are in a game state with the "updateGameProgression" property set to true 
+
+        This method is called each time we are in a game state with the "updateGameProgression" property set to true
         (see states.inc.php)
     */
     function getGameProgression()
@@ -255,7 +281,7 @@ class ligneeheros extends Table
 
 //////////////////////////////////////////////////////////////////////////////
 //////////// Utility functions
-////////////    
+////////////
 
     /*
         In this space, you can put any utility methods useful for your game logic
@@ -265,7 +291,7 @@ class ligneeheros extends Table
 
 //////////////////////////////////////////////////////////////////////////////
 //////////// Player actions
-//////////// 
+////////////
 
     /*
         Each time a player is doing some game action, one of the methods below is called.
@@ -273,19 +299,19 @@ class ligneeheros extends Table
     */
 
     /*
-    
+
     Example:
 
     function playCard( $card_id )
     {
         // Check that this is the player's turn and that it is a "possible action" at this game state (see states.inc.php)
-        self::checkAction( 'playCard' ); 
-        
+        self::checkAction( 'playCard' );
+
         $player_id = self::getActivePlayerId();
-        
-        // Add your game logic to play a card there 
+
+        // Add your game logic to play a card there
         ...
-        
+
         // Notify all players about the card played
         self::notifyAllPlayers( "cardPlayed", clienttranslate( '${player_name} plays ${card_name}' ), array(
             'player_id' => $player_id,
@@ -293,12 +319,12 @@ class ligneeheros extends Table
             'card_name' => $card_name,
             'card_id' => $card_id
         ) );
-          
+
     }
-    
+
     */
 
-    
+
 //////////////////////////////////////////////////////////////////////////////
 //////////// Game state arguments
 ////////////
@@ -310,20 +336,20 @@ class ligneeheros extends Table
     */
 
     /*
-    
+
     Example for game state "MyGameState":
-    
+
     function argMyGameState()
     {
         // Get some values from the current game situation in database...
-    
+
         // return values:
         return array(
             'variable1' => $value1,
             'variable2' => $value2,
             ...
         );
-    }    
+    }
     */
 
 //////////////////////////////////////////////////////////////////////////////
@@ -349,23 +375,19 @@ class ligneeheros extends Table
         if (array_key_exists($name, $this->stateActionMethods)) {
             call_user_func_array($this->stateActionMethods[$name], $arguments);
         }
-
-        if (array_key_exists($name, $this->actionMethods)) {
-            call_user_func_array($this->actionMethods[$name], $arguments);
-        }
     }
 
     /*
-    
+
     Example for game state "MyGameState":
 
     function stMyGameState()
     {
         // Do some stuff ...
-        
+
         // (very often) go to another gamestate
         $this->gamestate->nextState( 'some_gamestate_transition' );
-    }    
+    }
     */
 
 //////////////////////////////////////////////////////////////////////////////
@@ -374,21 +396,21 @@ class ligneeheros extends Table
 
     /*
         zombieTurn:
-        
+
         This method is called each time it is the turn of a player who has quit the game (= "zombie" player).
         You can do whatever you want in order to make sure the turn of this player ends appropriately
         (ex: pass).
-        
+
         Important: your zombie code will be called when the player leaves the game. This action is triggered
         from the main site and propagated to the gameserver from a server, not from a browser.
         As a consequence, there is no current player associated to this action. In your zombieTurn function,
-        you must _never_ use getCurrentPlayerId() or getCurrentPlayerName(), otherwise it will fail with a "Not logged" error message. 
+        you must _never_ use getCurrentPlayerId() or getCurrentPlayerName(), otherwise it will fail with a "Not logged" error message.
     */
 
     function zombieTurn( $state, $active_player )
     {
     	$statename = $state['name'];
-    	
+
         if ($state['type'] === "activeplayer") {
             switch ($statename) {
                 default:
@@ -402,34 +424,34 @@ class ligneeheros extends Table
         if ($state['type'] === "multipleactiveplayer") {
             // Make sure player is in a non blocking status for role turn
             $this->gamestate->setPlayerNonMultiactive( $active_player, '' );
-            
+
             return;
         }
 
         throw new feException( "Zombie mode not supported at this game state: ".$statename );
     }
-    
+
 ///////////////////////////////////////////////////////////////////////////////////:
 ////////// DB upgrade
 //////////
 
     /*
         upgradeTableDb:
-        
+
         You don't have to care about this until your game has been published on BGA.
         Once your game is on BGA, this method is called everytime the system detects a game running with your old
         Database scheme.
         In this case, if you change your Database scheme, you just have to apply the needed changes in order to
         update the game database and allow the game to continue to run with your new version.
-    
+
     */
-    
+
     function upgradeTableDb( $from_version )
     {
         // $from_version is the current version of this game database, in numerical form.
         // For example, if the game was running with a release of your game named "140430-1345",
         // $from_version is equal to 1404301345
-        
+
         // Example:
 //        if( $from_version <= 1404301345 )
 //        {
@@ -451,9 +473,9 @@ class ligneeheros extends Table
     }
 
     /**
-     * @return StateService
+     * @return StateService|null
      */
-    public function getStateService(): StateService
+    public function getStateService():? StateService
     {
         return $this->stateService;
     }

@@ -1,6 +1,6 @@
 <?php
 
-namespace LdH\Entity;
+namespace LdH\Entity\Cards;
 
 abstract class AbstractCard
 {
@@ -14,6 +14,7 @@ abstract class AbstractCard
     public const LOCATION_DEFAULT = 'deck';
     public const LOCATION_HAND    = 'hand';
     public const LOCATION_DISCARD = 'discard';
+    public const LOCATION_REMOVED = 'removed';
 
     protected int    $id;
     protected string $type;
@@ -115,9 +116,9 @@ abstract class AbstractCard
     /**
      * @param string $name
      *
-     * @return Lineage
+     * @return AbstractCard
      */
-    public function setName(string $name): Lineage
+    public function setName(string $name): AbstractCard
     {
         $this->name = $name;
 
@@ -135,9 +136,9 @@ abstract class AbstractCard
     /**
      * @param string $description
      *
-     * @return Lineage
+     * @return AbstractCard
      */
-    public function setDescription(string $description): Lineage
+    public function setDescription(string $description): AbstractCard
     {
         $this->description = $description;
 

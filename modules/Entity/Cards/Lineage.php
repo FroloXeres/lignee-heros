@@ -1,6 +1,9 @@
 <?php
 
-namespace LdH\Entity;
+namespace LdH\Entity\Cards;
+
+use LdH\Entity\Meeple;
+use LdH\Entity\Bonus;
 
 class Lineage extends AbstractCard
 {

@@ -53,7 +53,7 @@ abstract class AbstractState implements StateInterface
      *
      * @var string[]
      */
-    protected array  $possibleActions;
+    protected array  $possibleActions = [];
 
     /**
      * Game logic method name to send elements to Client Side for this state only
@@ -88,11 +88,11 @@ abstract class AbstractState implements StateInterface
     public function getDescription(): string {return $this->description;}
 
     /**
-     * @param \Table $game
+     * @param \APP_GameAction $game
      *
      * @return callable[]|null
      */
-    abstract public function getActionMethods(\Table $game):? array;
+    abstract public function getActionMethods(\APP_GameAction $gameAction):? array;
 
     /**
      * @param \Table $game
@@ -112,6 +112,8 @@ abstract class AbstractState implements StateInterface
      * Generate associative array used by BGA to build Game State Machine
      *
      * @return array
+     *
+     * @throws \Exception
      */
     public function toArray(): array
     {
@@ -126,9 +128,15 @@ abstract class AbstractState implements StateInterface
 
         if (in_array($this->getType(), [self::TYPE_ACTIVE, self::TYPE_MULTI_ACTIVE])) {
             $stateAsArray['descriptionmyturn'] = $this->descriptionMyTurn;
+
+            if (empty($this->possibleActions)) {
+                throw new \Exception(sprintf('possibleActions as to be set for state %s of type %s', $this->name, $this->type));
+            }
         }
 
-        // To continue
+        if (!empty($this->possibleActions)) {
+            $stateAsArray['possibleActions'] = $this->possibleActions;
+        }
 
         return $stateAsArray;
     }

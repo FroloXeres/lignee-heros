@@ -27,19 +27,38 @@
 
 
 <div id="deck-zone">
+    <!-- BEGIN CARD -->
+
+    <!-- END CARD -->
     <ul class="card_list">
         <!-- BEGIN CARDS -->
-        <li data-id="{ID}" data-sub-id="{SUB_ID}" class="card {DECK}">
-            <label>{NAME}</label>
-            <p>{DESCRIPTION}</p>
+        <li><div class="card recto {DECK} {ID} {SUB_ID}">
+                <div class="content">
+                    <div class="inner">
+                        <div class="text title">{NAME}</div>
+                        <div class="text cost-gain">
+                            <div class="cost"></div>
+                            <div class="gain"></div>
+                        </div>
+                        <div class="text graph"></div>
+                        <div class="text info">{DESCRIPTION}</div>
+                        <div class="status">{ARTIST}</div>
+                    </div>
+                </div>
+            </div>
         </li>
         <!-- END CARDS -->
     </ul>
-    <!-- BEGIN DECKS -->
-    <div class="deck {LARGE} {CAN_DRAW} {TYPE}" title="{NAME}">
-        <div class="counter">{COUNT}</div>
+    <div class="deck-list">
+        <!-- BEGIN DECKS -->
+        <div class="card verso thickness {LARGE} {CAN_DRAW} {TYPE}" title="{NAME}">
+            <div class="content">
+                <div class="inner"></div>
+            </div>
+            <div class="counter">{COUNT}</div>
+        </div>
+        <!-- END DECKS -->
     </div>
-    <!-- END DECKS -->
 </div>
 <div id="map-zone">
     <ul class="map-hex-grid">
@@ -53,42 +72,7 @@
     </ul>
 </div>
 <div id="city-zone">
-    <div>
-        <div class="icon cube small warrior"></div>
-        <div class="icon cube small mage"></div>
-        <div class="icon cube small worker"></div>
-        <div class="icon cube small savant"></div>
-        <div class="icon cube small all"></div>
-        <div class="icon cube small monster"></div>
-        <div class="icon cube small city"></div>
-        <div class="icon cube small explore"></div>
-        <div class="icon cube small objective"></div>
-        <div class="icon cube small spell"></div>
-    </div>
-    <div>
-        <div class="icon cube warrior"></div>
-        <div class="icon cube mage"></div>
-        <div class="icon cube worker"></div>
-        <div class="icon cube savant"></div>
-        <div class="icon cube all"></div>
-        <div class="icon cube monster"></div>
-        <div class="icon cube city"></div>
-        <div class="icon cube explore"></div>
-        <div class="icon cube objective"></div>
-        <div class="icon cube spell"></div>
-    </div>
-    <div>
-        <div class="icon cube large warrior"></div>
-        <div class="icon cube large mage"></div>
-        <div class="icon cube large worker"></div>
-        <div class="icon cube large savant"></div>
-        <div class="icon cube large all"></div>
-        <div class="icon cube large monster"></div>
-        <div class="icon cube large city"></div>
-        <div class="icon cube large explore"></div>
-        <div class="icon cube large objective"></div>
-        <div class="icon cube large spell"></div>
-    </div>
+    <!-- <div class="icon cube warrior"></div> -->
     City
 </div>
 

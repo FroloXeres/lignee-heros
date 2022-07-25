@@ -17,6 +17,7 @@
 require_once 'vendor/autoload.php';
 
 use LdH\State\StateInterface;
+use LdH\State\GameInitState;
 
 /*
    Game state machine is a tool used to facilitate game developpement by doing common stuff that can be set up
@@ -60,7 +61,7 @@ $machinestates = [
         "description" => "",
         "type"        => "manager",
         "action"      => "stGameSetup",
-        "transitions" => ["" => 2]
+        "transitions" => ["" => GameInitState::ID]
     ],
 
     // Final state.
@@ -75,4 +76,9 @@ $machinestates = [
 ];
 
 // Add game state logic
-$this->o_game->getStateService()->updateStateMachine($machinestates);
+if ($this->o_game->getStateService()) {
+    $this->o_game->getStateService()->updateStateMachine($machinestates);
+} else {
+    // Start to end
+    $machinestates[1]['transitions'][''] = StateInterface::STATE_END_ID;
+}

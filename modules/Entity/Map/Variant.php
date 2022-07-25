@@ -1,6 +1,8 @@
 <?php
 
-namespace LdH\Entity;
+namespace LdH\Entity\Map;
+
+use LdH\Entity\Bonus;
 
 class Variant
 {

@@ -76,11 +76,17 @@ function (dojo, declare) {
         {
             console.log( 'Entering state: '+stateName );
             
-            switch( stateName )
-            {
-            
+            switch( stateName ) {
+            case 'GameInit' :
+                alert('GameInit');
+                break;
+            case 'ChooseLineage' :
+                alert('ChooseLineage');
+                break;
+            case 'DrawObjective' :
+                alert('DrawObjective');
+                break;
             /* Example:
-            
             case 'myGameState':
             
                 // Show some HTML block at this game state
@@ -88,10 +94,6 @@ function (dojo, declare) {
                 
                 break;
            */
-           
-           
-            case 'dummmy':
-                break;
             }
         },
 

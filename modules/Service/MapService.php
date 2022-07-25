@@ -2,8 +2,8 @@
 
 namespace LdH\Service;
 
-use LdH\Entity\Terrain;
-use LdH\Entity\Tile;
+use LdH\Entity\Map\Terrain;
+use LdH\Entity\Map\Tile;
 
 class MapService
 {

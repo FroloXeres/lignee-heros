@@ -2,6 +2,8 @@
 
 namespace LdH\Entity;
 
+use LdH\Entity\Cards\Lineage;
+
 class Meeple
 {
     public const MAGE    = 'mage';

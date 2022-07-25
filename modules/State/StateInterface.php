@@ -43,11 +43,11 @@ interface StateInterface
     public function getType(): string;
 
     /**
-     * @param \Table $game
+     * @param \APP_GameAction $game
      *
      * @return callable[]|null
      */
-    public function getActionMethods(\Table $game):? array;
+    public function getActionMethods(\APP_GameAction $gameAction):? array;
 
     /**
      * @param \Table $game

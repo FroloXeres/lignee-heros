@@ -1,6 +1,6 @@
 <?php
 
-namespace LdH\Entity;
+namespace LdH\Entity\Map;
 
 /**
  * Class Terrain
