@@ -4,12 +4,13 @@ namespace LdH\Entity\Cards;
 
 class Deck implements \Iterator
 {
-    public const TYPE_END_TURN  = 'end_turn';
-    public const TYPE_EXPLORE   = 'explore';
-    public const TYPE_MAGIC     = 'magic';
-    public const TYPE_INVENTION = 'invention';
-    public const TYPE_OBJECTIVE = 'objective';
-    public const TYPE_LINEAGE   = 'lineage';
+    public const TYPE_EXPLORE_DISEASE = 'explore_disease';
+    public const TYPE_EXPLORE_FIGHT   = 'explore_fight';
+    public const TYPE_EXPLORE_OTHER   = 'explore_other';
+    public const TYPE_MAGIC           = 'magic';
+    public const TYPE_INVENTION       = 'invention';
+    public const TYPE_OBJECTIVE       = 'objective';
+    public const TYPE_LINEAGE         = 'lineage';
 
     protected string $type     = '';
     protected bool   $isLarge  = false;
@@ -60,12 +61,15 @@ class Deck implements \Iterator
 
     /**
      * @param AbstractCard $card
+     * @param int          $count
      *
      * @return Deck
      */
-    public function addCard(AbstractCard $card): Deck
+    public function addCard(AbstractCard $card, int $count = 1): Deck
     {
-        $this->cards[] = $card;
+        for ($i = 0; $i < $count; $i++) {
+            $this->cards[] = $card;
+        }
 
         return $this;
     }

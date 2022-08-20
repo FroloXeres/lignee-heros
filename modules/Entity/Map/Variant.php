@@ -6,9 +6,18 @@ use LdH\Entity\Bonus;
 
 class Variant
 {
-    public const WATER  = 'water';
-    public const LAIR   = 'lair';
+    public const DESERT  = 'desert';
+    public const LAKE    = 'lake';
+    public const RIVER   = 'river';
+    public const GROVE   = 'grove';
+    public const WOODY   = 'woody';
+    public const PLATEAU = 'plateau';
+    public const RAISED  = 'raised';
+    public const DENSE   = 'dense';
+    public const REG     = 'reg';
+
     public const RUINS  = 'ruins';
+    public const LAIR   = 'lair';
     public const TOWER  = 'tower';
     public const PORTAL = 'portal';
 

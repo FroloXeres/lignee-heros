@@ -6,6 +6,15 @@ namespace LdH\Entity\Map;
 
 class Resource implements \JsonSerializable
 {
+    public const ANIMAL = 'animal';
+    public const GEM    = 'gem';
+    public const STONE  = 'stone';
+    public const WOOD   = 'wood';
+    public const PAPER  = 'paper';
+    public const CLAY   = 'clay';
+    public const MEDIC  = 'medic';
+    public const METAL  = 'metal';
+
     protected string $code        = '';
     protected string $name        = '';
     protected string $description = '';

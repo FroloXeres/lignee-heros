@@ -3,13 +3,14 @@
 namespace LdH\State;
 
 use LdH\Entity\Cards\AbstractCard;
-use LdH\Entity\Cards\Explore;
+use LdH\Entity\Cards\Disease;
 use LdH\Entity\Map\Terrain;
 use LdH\Entity\Notify\Notify;
 
 class GameInitState extends AbstractState
 {
-    public const ID = 2;
+    public    const ID = 2;
+    protected const METHOD_INIT_GAME = 'gameInit';
 
     public static function getId(): int
     {
@@ -28,7 +29,11 @@ class GameInitState extends AbstractState
 
     public function getActionMethods(\APP_GameAction $gameAction): ?array
     {
-        return [];
+        return [
+            self::METHOD_INIT_GAME => function(\APP_GameAction $gameAction) {
+
+            }
+        ];
     }
 
     public function getStateArgMethod(\Table $game): ?callable
@@ -44,34 +49,11 @@ class GameInitState extends AbstractState
         return function () use ($game) {
             $notifyList = [];
 
-            // Remove 14 Explore cards
-            $exploreDeck     = $game->decks[AbstractCard::TYPE_EXPLORE];
-            $exploreDeckSize = $exploreDeck->countCardInLocation(AbstractCard::LOCATION_DEFAULT);
-            if ($exploreDeckSize > Explore::DECK_SIZE) {
-                $exploreDeck->pickCardsForLocation(
-                    $exploreDeckSize - Explore::DECK_SIZE,
-                    AbstractCard::LOCATION_DEFAULT,
-                    AbstractCard::LOCATION_REMOVED
-                );
-            }
-
-            // Remove 10 EndTurn cards
-            $endTurnDeck     = $game->decks[AbstractCard::TYPE_END_TURN];
-            $endTurnDeckSize = $endTurnDeck->countCardInLocation(AbstractCard::LOCATION_DEFAULT);
-            if ($endTurnDeckSize > Explore::DECK_SIZE) {
-                $endTurnDeck->pickCardsForLocation(
-                    $endTurnDeckSize - Explore::DECK_SIZE,
-                    AbstractCard::LOCATION_DEFAULT,
-                    AbstractCard::LOCATION_REMOVED
-                );
-            }
-
             // Choose random city (notify)
             $city = GameInitState::getRandomCity($game);
 
             // Change middle tile (city)
-
-
+            $game->{self::METHOD_INIT_GAME}($game);
 
             $notifyList[] = new Notify(Notify::TYPE_CITY_CHOICE, clienttranslate(sprintf('City will be %s.', $city->getName())), [
                 'code' => $city->getCode(),
@@ -92,7 +74,7 @@ class GameInitState extends AbstractState
                 self::notifyAllPlayers($notify->getType(), $notify->getLog(), $notify->getArguments());
             }
 
-            $game->gamestate->nextState("");
+            $game->gamestate->nextState();
         };
     }
 

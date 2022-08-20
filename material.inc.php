@@ -22,13 +22,15 @@
 use LdH\Entity\Cards\AbstractCard;
 use LdH\Entity\Cards\Lineage;
 use LdH\Entity\Cards\Invention;
-use LdH\Entity\Cards\Explore;
-use LdH\Entity\Cards\EndTurn;
+use LdH\Entity\Cards\Objective;
+use LdH\Entity\Cards\Disease;
+use LdH\Entity\Cards\Spell;
+use LdH\Entity\Cards\Other;
+use LdH\Entity\Cards\Fight;
 use LdH\Entity\Cards\Deck;
 use LdH\Entity\Map\Terrain;
 use LdH\Entity\Map\City;
 use LdH\Entity\Map\Resource;
-use LdH\Entity\Map\Variant;
 use LdH\Entity\Meeple;
 use LdH\Entity\Bonus;
 
@@ -49,6 +51,9 @@ $savant = (new Meeple(Meeple::SAVANT))
 $mage = (new Meeple(Meeple::MAGE))
     ->setName(clienttranslate('Wizard'))
     ->setDescription(clienttranslate("Estiny is a world filled with magic and mysteries. Thus, as long as we devote ourselves fully to it, it is possible to shape the primordial flows to cast powerful spells. Magic is capricious, but once tamed, wizards can cast spells that can help you in many ways."));
+$all = (new Meeple(Meeple::ALL))
+    ->setName(clienttranslate('Any meeple'))
+    ->setDescription(clienttranslate('Any meeple (Worker, Warrior, Savant or Mage)'));
 $monster = (new Meeple(Meeple::MONSTER))
     ->setName(clienttranslate('Creature'))
     ->setDescription(clienttranslate(""));
@@ -88,13 +93,14 @@ $this->meeples = [
 /*--------------------------------------
  * Map part : Terrain, Resources, Variants
  * ------------------------------------- */
-$wood            = new Resource(clienttranslate('Wood'), 'wood', clienttranslate("Any plant offering enouth wood for construction or wooden objects manufacturing"));
-$stone           = new Resource(clienttranslate('Stone'), 'stone', clienttranslate("As a complement to wood, stone offers a robust building material, but requires solid tools"));
-$metal           = new Resource(clienttranslate('Metal'), 'metal', clienttranslate("Tin, copper, iron or any other alloy to make stronger weapons and tools"));
-$paper           = new Resource(clienttranslate('Paper'), 'paper', clienttranslate("Here, it is any support allowing to preserve as writings, all forms of knowledge"));
-$clay            = new Resource(clienttranslate('Clay'), 'clay', clienttranslate("This malleable material offers, once dried or cooked, incredible possibilities"));
-$animal          = new Resource(clienttranslate('Animal'), 'animal', clienttranslate("Offering food (farmed or not), wool, leather and so many other products"));
-$gem             = new Resource(clienttranslate('Gem'), 'gem', clienttranslate("These mineral formations, more or less rare, have pleasant colours and shapes"));
+$wood            = new Resource(clienttranslate('Wood'), Resource::WOOD, clienttranslate("Any plant offering enouth wood for construction or wooden objects manufacturing"));
+$stone           = new Resource(clienttranslate('Stone'), Resource::STONE, clienttranslate("As a complement to wood, stone offers a robust building material, but requires solid tools"));
+$metal           = new Resource(clienttranslate('Metal'), Resource::METAL, clienttranslate("Tin, copper, iron or any other alloy to make stronger weapons and tools"));
+$paper           = new Resource(clienttranslate('Paper'), Resource::PAPER, clienttranslate("Here, it is any support allowing to preserve as writings, all forms of knowledge"));
+$clay            = new Resource(clienttranslate('Clay'), Resource::CLAY, clienttranslate("This malleable material offers, once dried or cooked, incredible possibilities"));
+$animal          = new Resource(clienttranslate('Animal'), Resource::ANIMAL, clienttranslate("Offering food (farmed or not), wool, leather and so many other products"));
+$gem             = new Resource(clienttranslate('Gem'), Resource::GEM, clienttranslate("These mineral formations, more or less rare, have pleasant colours and shapes"));
+$medic           = new Resource(clienttranslate('Medicinal'), Resource::MEDIC, clienttranslate("Nature offers its benefits to those who know how to observe and learn."));
 $this->resources = [
     $stone->getCode()  => $stone,
     $wood->getCode()   => $wood,
@@ -102,35 +108,62 @@ $this->resources = [
     $clay->getCode()   => $clay,
     $paper->getCode()  => $paper,
     $animal->getCode() => $animal,
-    $gem->getCode()    => $gem
+    $gem->getCode()    => $gem,
+    $medic->getCode()  => $medic
 ];
 
-$mountain    = new Terrain(clienttranslate('Mountain'), Terrain::MOUNTAIN, false, [$stone, $metal, $gem]);
-$plain       = new Terrain(clienttranslate('Plain'), Terrain::PLAIN, true, [$clay, $paper, $animal]);
-$desert      = new Terrain(clienttranslate('Desert'), Terrain::DESERT);
-$swamp       = new Terrain(clienttranslate('Swamp'), Terrain::SWAMP, true, [$wood, $paper]);
-$hill        = new Terrain(clienttranslate('Hill'), Terrain::HILL, true, [$stone, $metal]);
-$forest      = new Terrain(clienttranslate('Forest'), Terrain::FOREST, true, [$wood, $animal]);
+$mountain       = new Terrain(clienttranslate('Mountain'), Terrain::MOUNTAIN, 0, false, [$stone, $metal, $gem]);
+$mountainLair   = new Terrain(clienttranslate('Mountain lair'), Terrain::MOUNTAIN_LAIR, 0, false, [$stone, $metal, $gem]);
+$mountainLake   = new Terrain(clienttranslate('Mountain lake'), Terrain::MOUNTAIN_LAKE, 1, false, [$stone, $metal, $animal]);
+$mountainWood   = new Terrain(clienttranslate('Wooded mountain'), Terrain::MOUNTAIN_WOOD, 0, false, [$wood, $stone, $metal]);
+$mountainTower  = new Terrain(clienttranslate('Mountain - wizard tower'), Terrain::MOUNTAIN_TOWER, 0, true, [$stone, $metal, $gem]);
+$mountainTower->addBonus(new Bonus(10, Bonus::FOOD_FOUND));
+$mountainRiver  = new Terrain(clienttranslate('Mountain river'), Terrain::MOUNTAIN_RIVER, 1, false, [$stone, $metal, $gem]);
 
-$this->variants = [
-    (new Variant(Variant::WATER))
-        ->addBonus(new Bonus(1, Bonus::FOOD))
-        ->setTerrains([]),
-    (new Variant(Variant::LAIR))
-        ->addBonus(new Bonus(1, Bonus::FOOD))
-        ->addBonus((new Bonus(1, Bonus::BIRTH))->setType(Meeple::WARRIOR))
-        ->setTerrains([]),
-    (new Variant(Variant::RUINS))
-        ->addBonus(new Bonus(1, Bonus::SCIENCE))
-        ->addBonus((new Bonus(1, Bonus::DRAW_CARTE))->setType(AbstractCard::TYPE_MAGIC))
-        ->setTerrains([]),
-    (new Variant(Variant::TOWER))
-        ->addBonus(new Bonus(1, Bonus::SCIENCE))
-        ->addBonus((new Bonus(1, Bonus::BIRTH))->setType(Meeple::MAGE))
-        ->addBonus((new Bonus(1, Bonus::DRAW_CARTE))->setType(AbstractCard::TYPE_MAGIC))
-        ->setTerrains([])
-];
+$plain          = new Terrain(clienttranslate('Plain'), Terrain::PLAIN, 2, false, [$clay, $animal]);
+$plainLake      = new Terrain(clienttranslate('Plain lake'), Terrain::PLAIN_LAKE, 3, false, [$paper, $clay, $animal]);
+$plainLake->addBonus(new Bonus(1, Bonus::FOOD));
+$plainWood      = new Terrain(clienttranslate('Wooded plain'), Terrain::PLAIN_WOOD, 1, false, [$wood, $animal]);
+$plainDesert    = new Terrain(clienttranslate('Deserted plain'), Terrain::PLAIN_DESERT, 0, false, [$clay]);
+$plainRiverRuin = new Terrain(clienttranslate('Plain ruins'), Terrain::PLAIN_RIVER_RUIN, 3, false, [$paper, $clay, $animal]);
+$plainRiverRuin
+    ->addBonus(new Bonus(10, Bonus::SCIENCE_FOUND))
+    ->addBonus(new Bonus(1, Bonus::SCIENCE))
+    ->addBonus(new Bonus(1, Bonus::FOOD))
+;
 
+$desert         = new Terrain(clienttranslate('Desert'), Terrain::DESERT);
+$desertStone    = new Terrain(clienttranslate('Stone desert'), Terrain::DESERT_STONE, 0, false, [$stone, $gem]);
+
+$swamp          = new Terrain(clienttranslate('Swamp'), Terrain::SWAMP, 0, false, [$paper, $medic]);
+$swampLair      = new Terrain(clienttranslate('Swamp lair'), Terrain::SWAMP_LAIR, 0, false, [$paper, $medic]);
+$swampTower     = new Terrain(clienttranslate('Swamp - wizard tower'), Terrain::SWAMP_TOWER, 0, true, [$paper, $medic]);
+$swampTower->addBonus(new Bonus(10, Bonus::FOOD_FOUND));
+
+$hill           = new Terrain(clienttranslate('Hills'), Terrain::HILL, 2, false, [$stone, $metal]);
+$hillPlateau    = new Terrain(clienttranslate('Plateau'), Terrain::HILL_PLATEAU, 1, false, [$stone]);
+$hillWoodRiver  = new Terrain(clienttranslate('Wooded hills'), Terrain::HILL_WOOD_RIVER, 2, false, [$wood, $metal, $animal]);
+$hillWoodRiver->addBonus(new Bonus(1, Bonus::FOOD));
+$hillRuin       = new Terrain(clienttranslate('Hills ruins'), Terrain::HILL_RUIN, 2, false, [$stone, $metal]);
+$hillRuin
+    ->addBonus(new Bonus(10, Bonus::SCIENCE_FOUND))
+    ->addBonus(new Bonus(1, Bonus::SCIENCE))
+;
+$hillLake       = new Terrain(clienttranslate('Hills lake'), Terrain::HILL_LAKE, 3, false, [$stone, $metal, $animal]);
+$hillLake->addBonus(new Bonus(1, Bonus::FOOD));
+$hillWoodLair   = new Terrain(clienttranslate('Hill lair'), Terrain::HILL_WOOD_LAIR, 1, false, [$wood, $gem]);
+$hillWoodLair->addBonus(new Bonus(10, Bonus::FOOD_FOUND));
+
+$forest         = new Terrain(clienttranslate('Forest'), Terrain::FOREST, 0, false, [$wood, $animal]);
+$forestTower    = new Terrain(clienttranslate('Forest - wizard tower'), Terrain::FOREST_TOWER, 0, true, [$wood, $animal]);
+$forestTower->addBonus(new Bonus(10, Bonus::FOOD_FOUND));
+$forestLair     = new Terrain(clienttranslate('Forest lair'), Terrain::FOREST_LAIR, 0, false, [$wood, $animal]);
+$forestDense    = new Terrain(clienttranslate('Dense forest'), Terrain::FOREST_DENSE, 0, false, [$wood, $wood, $medic]);
+$forestRuin     = new Terrain(clienttranslate('Forest ruins'), Terrain::FOREST_RUIN, 0, false, [$wood, $animal]);
+$forestRuin
+    ->addBonus(new Bonus(10, Bonus::SCIENCE_FOUND))
+    ->addBonus(new Bonus(1, Bonus::SCIENCE))
+;
 
 /*--------------------------------------
  *          Cards part
@@ -140,24 +173,27 @@ $lineage = (new Deck(Deck::TYPE_LINEAGE))
     ->setName(clienttranslate('Lineage cards'))
     ->setIsLarge(true)
     ->setIsPublic(true);
+$objective = (new Deck(Deck::TYPE_OBJECTIVE))
+    ->setName(clienttranslate('Objective cards'))
+    ->setIsPublic(true);
 $magic = (new Deck(Deck::TYPE_MAGIC))
     ->setName(clienttranslate('Sepll cards'));
-$endOfTurn = (new Deck(Deck::TYPE_END_TURN))
-    ->setName(clienttranslate('End of turn cards'));
-$explore = (new Deck(Deck::TYPE_EXPLORE))
-    ->setName(clienttranslate('Explore cards'));
 $invention = (new Deck(Deck::TYPE_INVENTION))
-    ->setName(clienttranslate('Invention cards'))
-    ->setIsPublic(true);
-$objective = (new Deck(Deck::TYPE_OBJECTIVE))
-    ->setName(clienttranslate('Objective cards'));
+    ->setName(clienttranslate('Invention cards'));
+$exploreFight = (new Deck(Deck::TYPE_EXPLORE_FIGHT))
+    ->setName(clienttranslate('Explore : Fight cards'));
+$exploreOther = (new Deck(Deck::TYPE_EXPLORE_OTHER))
+    ->setName(clienttranslate('Explore : Other cards'));
+$exploreDisease = (new Deck(Deck::TYPE_EXPLORE_DISEASE))
+    ->setName(clienttranslate('Explore : Disease cards'));
 $this->cards = [
-    $lineage->getType()   => $lineage,
-    $objective->getType() => $objective,
-    $invention->getType() => $invention,
-    $magic->getType()     => $magic,
-    $explore->getType()   => $explore,
-    $endOfTurn->getType() => $endOfTurn
+    $lineage->getType()        => $lineage,
+    $objective->getType()      => $objective,
+    $invention->getType()      => $invention,
+    $magic->getType()          => $magic,
+    $exploreFight->getType()   => $exploreFight,
+    $exploreOther->getType()   => $exploreOther,
+    $exploreDisease->getType() => $exploreDisease
 ];
 
 //  Lineage
@@ -223,84 +259,998 @@ $this->cards[$lineage->getType()] = $lineage;
 
 //      Objective
 // -------------------
-
+$objective
+    ->addCard((new Objective(Objective::ABUNDANCE))
+        ->setName("Abundance")
+        ->setDescription(clienttranslate("Produce 30 food or more in one turn"))
+        ->setNeed(Objective::NEED_HARVEST)
+        ->setNeedCount(30)
+        ->setSubNeed(Objective::NEED_SUB_FOOD)
+    )
+    ->addCard((new Objective(Objective::DA_VINCI))
+        ->setName("Da Vinci")
+        ->setDescription(clienttranslate("Discover 10 inventions"))
+        ->setNeed(Objective::NEED_INVENTION)
+        ->setNeedCount(10)
+    )
+    ->addCard((new Objective(Objective::ARCHMAGE))
+        ->setName("Archmage")
+        ->setDescription(clienttranslate("Master 10 spells"))
+        ->setNeed(Objective::NEED_SPELL)
+        ->setNeedCount(10)
+    )
+    ->addCard((new Objective(Objective::CAUTIOUS_EXPLORER))
+        ->setName("Cautious explorer")
+        ->setDescription(clienttranslate("Explore all tiles I"))
+        ->setNeed(Objective::NEED_EXPLORE)
+        ->setNeedCount(6)
+        ->setSubNeed(Objective::NEED_SUB_FAR_I)
+    )
+    ->addCard((new Objective(Objective::TO_WORLD_ENDING))
+        ->setName("Till the end of the world")
+        ->setDescription(clienttranslate("Explore 3 tiles III"))
+        ->setNeed(Objective::NEED_EXPLORE)
+        ->setNeedCount(3)
+        ->setSubNeed(Objective::NEED_SUB_FAR_III)
+    )
+    ->addCard((new Objective(Objective::ARTEFACT_LOVER))
+        ->setName("Artefact lover")
+        ->setDescription(clienttranslate("Discover a wizard tower"))
+        ->setNeed(Objective::NEED_EXPLORE)
+        ->setSubNeed(Objective::NEED_SUB_TOWER)
+    )
+    ->addCard((new Objective(Objective::IN_WOLF_MOUTH))
+        ->setName("In the wolf mouth")
+        ->setDescription(clienttranslate("Discover a monster lair"))
+        ->setNeed(Objective::NEED_EXPLORE)
+        ->setSubNeed(Objective::NEED_SUB_LAIR)
+    )
+    ->addCard((new Objective(Objective::ARCHAEOLOGIST))
+        ->setName("Archaeologist")
+        ->setDescription(clienttranslate("Discover antic city ruins"))
+        ->setNeed(Objective::NEED_EXPLORE)
+        ->setSubNeed(Objective::NEED_SUB_RUINS)
+    )
+    ->addCard((new Objective(Objective::WE_NEED_ALL))
+        ->setName("We want all of it")
+        ->setDescription(clienttranslate("Produce 1 of each resource in one turn"))
+        ->setNeed(Objective::NEED_HARVEST)
+        ->setNeedCount(1)
+        ->setSubNeed(Objective::NEED_SUB_RESOURCE_ALL)
+    )
+    ->addCard((new Objective(Objective::IN_CASE_OF))
+        ->setName("In case")
+        ->setDescription(clienttranslate("Produce 5 or more of one resource type"))
+        ->setNeed(Objective::NEED_HARVEST)
+        ->setNeedCount(5)
+        ->setSubNeed(Objective::NEED_SUB_RESOURCE_ONE)
+    )
+    ->addCard((new Objective(Objective::SURVIVOR))
+        ->setName("Survivor")
+        ->setDescription(clienttranslate("Survive until 20th turn"))
+        ->setNeed(Objective::NEED_SURVIVE)
+        ->setNeedCount(20)
+    )
+    ->addCard((new Objective(Objective::NOT_EVEN_HURT))
+        ->setName("Not even hurt")
+        ->setDescription(clienttranslate("Win a fight without any wounded units"))
+        ->setNeed(Objective::NEED_WIN_FIGHT)
+        ->setSubNeed(Objective::NEED_SUB_NO_WOUND)
+    )
+    ->addCard((new Objective(Objective::WARMONGER))
+        ->setName("Warmonger")
+        ->setDescription(clienttranslate("Discover 4 military inventions"))
+        ->setNeed(Objective::NEED_INVENTION)
+        ->setNeedCount(4)
+        ->setSubNeed(Objective::NEED_SUB_FIGHT)
+    )
+    ->addCard((new Objective(Objective::RESEARCHER))
+        ->setName("Researcher")
+        ->setDescription(clienttranslate("Discover 3 science inventions"))
+        ->setNeed(Objective::NEED_INVENTION)
+        ->setNeedCount(3)
+        ->setSubNeed(Objective::NEED_SUB_SCIENCE)
+    )
+    ->addCard((new Objective(Objective::MAGISTER))
+        ->setName("Magister")
+        ->setDescription(clienttranslate("Master 3 fight spells"))
+        ->setNeed(Objective::NEED_SPELL)
+        ->setNeedCount(3)
+        ->setSubNeed(Objective::NEED_SUB_FIGHT)
+    )
+    ->addCard((new Objective(Objective::ESTINY_CHILD))
+        ->setName("Estiny child")
+        ->setDescription(clienttranslate("Master 3 nature spells"))
+        ->setNeed(Objective::NEED_SPELL)
+        ->setNeedCount(3)
+        ->setSubNeed(Objective::NEED_SUB_NATURE)
+    )
+;
 $this->cards[$objective->getType()] = $objective;
 
 //      Invention
 // -------------------
-$smithing = (new Invention(Invention::SMITHING))
-    ->setName(clienttranslate("Smithing"))
-    ->setDescription(clienttranslate(""));
+$cityCenter = (new Invention(Invention::TYPE_START, Invention::CENTER))
+    ->setName(clienttranslate("City center"))
+    ->setDescription(clienttranslate("End of turn: Convert one unit into warrior or worker."))
+    ->addUnit($all)
+    ->setOr(true)
+    ->addGive(new Bonus(1, Bonus::CONVERT, $warrior->getCode()))
+    ->addGive(new Bonus(1, Bonus::CONVERT, $worker->getCode()));
+$huts = (new Invention(Invention::TYPE_START, Invention::HUT))
+    ->setName(clienttranslate("Huts"))
+    ->setDescription(clienttranslate("Growth +1. End of turn: Launch Growth die."))
+    ->setUnits([$all, $all])
+    ->addGive(new Bonus(1, Bonus::GROWTH))
+    ->addGive(new Bonus(1, Bonus::BIRTH, $worker->getCode()));
+$stock = (new Invention(Invention::TYPE_START, Invention::STOCK))
+    ->setName(clienttranslate("Hangar"))
+    ->setDescription(clienttranslate("Resource stock, waiting for any use."));
+$mound = (new Invention(Invention::TYPE_START, Invention::MOUND))
+    ->setName(clienttranslate("Mound"))
+    ->setDescription(clienttranslate("City defense +1."))
+    ->addGive(new Bonus(1, Bonus::DEFENSE_CITY));
+$stoneCutting = (new Invention(Invention::TYPE_DEVELOPMENT, Invention::STONE_CUTTING))
+    ->setName(clienttranslate("Stone cutting"))
+    ->setDescription(clienttranslate("End of turn: +3 Stone."))
+    ->setScience(5)
+    ->addResource($stone)
+    ->addUnit($worker)
+    ->addGive(new Bonus(3, Bonus::RESOURCE, $stone->getCode()));
+$hunting = (new Invention(Invention::TYPE_DEVELOPMENT, Invention::HUNTING))
+    ->setName(clienttranslate("Hunting"))
+    ->setDescription(clienttranslate("Food +5."))
+    ->setScience(3)
+    ->addResource($animal)
+    ->setUnits([$worker, $warrior])->setOr(true)
+    ->addGive(new Bonus(5, Bonus::FOOD_FOUND));
+$fishing = (new Invention(Invention::TYPE_DEVELOPMENT, Invention::FISHING))
+    ->setName(clienttranslate("Fishing"))
+    ->setDescription(clienttranslate("Food +5."))
+    ->setScience(3)
+    ->addResource($animal)
+    ->setUnits([$worker, $warrior])->setOr(true)
+    ->addGive(new Bonus(5, Bonus::FOOD_FOUND));
+$school = (new Invention(Invention::TYPE_SCIENCE, Invention::SCHOOL))
+    ->setName(clienttranslate("School"))
+    ->setDescription(clienttranslate("New units can be of any type."))
+    ->setScience(5)
+    ->setResources([$animal, $clay])
+    ->addUnit($savant)
+;
+$stoneCircle = (new Invention(Invention::TYPE_MAGIC, Invention::STONE_CIRCLE))
+    ->setName(clienttranslate("Stone circle"))
+    ->setDescription(clienttranslate("End of turn: Convert one unit into mage."))
+    ->setScience(2)
+    ->addResource($gem)
+    ->setUnits([$mage, $all])
+    ->addGive(new Bonus(1, Bonus::CONVERT, $mage->getCode()));
+$tools = (new Invention(Invention::TYPE_DEVELOPMENT, Invention::TOOLS))
+    ->setName(clienttranslate("Tools"))
+    ->setDescription(clienttranslate("Worker: Food +1 / Worker: Food +2."))
+    ->setScience(3)
+    ->setResources([$stone, $metal])->setOr(true)
+    ->addUnit($worker)
+    ->addGive(new Bonus(1, Bonus::FOOD))
+    ->addGive(new Bonus(2, Bonus::FOOD));
+$longBow = (new Invention(Invention::TYPE_FIGHT, Invention::LONG_BOW))
+    ->setName(clienttranslate("Long bow"))
+    ->setDescription(clienttranslate("Each nearby warrior add Power +1 to the fight."))
+    ->setScience(10)
+    ->addResource($wood)
+    ->addGive(new Bonus(1, Bonus::DISTANT_POWER));
+$pottery = (new Invention(Invention::TYPE_DEVELOPMENT, Invention::POTTERY))
+    ->setName(clienttranslate("Pottery"))
+    ->setDescription(clienttranslate("Food stock is increased by 5."))
+    ->setScience(3)
+    ->addResource($clay)
+    ->addUnit($worker)
+    ->addGive(new Bonus(5, Bonus::STOCK));
+$granary = (new Invention(Invention::TYPE_DEVELOPMENT, Invention::GRANARY))
+    ->setName(clienttranslate("Granary"))
+    ->setDescription(clienttranslate("Food stock is increased by 10."))
+    ->setScience(10)
+    ->addGive(new Bonus(10, Bonus::STOCK));
+$metallurgy = (new Invention(Invention::TYPE_FIGHT, Invention::METALLURGY))
+    ->setName(clienttranslate("Metallurgy"))
+    ->setDescription(clienttranslate("End of turn: +3 metal."))
+    ->setScience(5)
+    ->addResource($metal)
+    ->addUnit($worker)
+    ->addGive(new Bonus(3, Bonus::RESOURCE, $metal->getCode()));
+$fence = (new Invention(Invention::TYPE_FIGHT, Invention::FENCE))
+    ->setName(clienttranslate("Fence"))
+    ->setDescription(clienttranslate("City defense +1."))
+    ->setScience(5)
+    ->addResource($wood)
+    ->addUnit($warrior)
+    ->addGive(new Bonus(1, Bonus::DEFENSE_CITY));
+$irrigation = (new Invention(Invention::TYPE_DEVELOPMENT, Invention::IRRIGATION))
+    ->setName(clienttranslate("Irrigation"))
+    ->setDescription(clienttranslate("Worker: Food +1."))
+    ->setScience(5)
+    ->addUnit($worker)
+    ->addGive(new Bonus(1, Bonus::FOOD));
+$domestication = (new Invention(Invention::TYPE_DEVELOPMENT, Invention::DOMESTICATION))
+    ->setName(clienttranslate("Domestication"))
+    ->setDescription(clienttranslate("Unit move is increased by 1."))
+    ->setScience(10)
+    ->setResources([$animal, $animal])
+    ->addGive(new Bonus(1, Bonus::MOVE));
+$wheel = (new Invention(Invention::TYPE_FIGHT, Invention::WHEEL))
+    ->setName(clienttranslate("Wheel"))
+    ->setDescription(clienttranslate("Unit move is increased by 1."))
+    ->setScience(10)
+    ->setResources([$wood, $metal])
+    ->addUnit($worker)
+    ->addGive(new Bonus(1, Bonus::MOVE));
+$oven = (new Invention(Invention::TYPE_DEVELOPMENT, Invention::OVEN))
+    ->setName(clienttranslate("Oven"))
+    ->setDescription(clienttranslate("Food +5."))
+    ->setScience(5)
+    ->addResource($wood)
+    ->addUnit($worker)
+    ->addGive(new Bonus(5, Bonus::FOOD_FOUND));
+$writing = (new Invention(Invention::TYPE_SCIENCE, Invention::WRITING))
+    ->setName(clienttranslate("Writing"))
+    ->setDescription(clienttranslate("Savant: Science +1."))
+    ->setScience(10)
+    ->addResource($paper)->addResource($clay)->setOr(true)
+    ->addUnit($savant)
+    ->addGive(new Bonus(1, Bonus::SCIENCE));
+$soap = (new Invention(Invention::TYPE_GROWTH, Invention::SOAP))
+    ->setName(clienttranslate("Soap"))
+    ->setDescription(clienttranslate("Growth +1. Protect from disease level 1."))
+    ->setScience(10)
+    ->addGive(new Bonus(1, Bonus::GROWTH))
+    ->addGive(new Bonus(1, Bonus::DISEASE));
+$bellows = (new Invention(Invention::TYPE_FIGHT, Invention::BELLOWS))
+    ->setName(clienttranslate("Bellows"))
+    ->setDescription(clienttranslate("Warrior: Power +1, Defense +1."))
+    ->setScience(15)
+    ->setResources([$wood, $metal])
+    ->setUnits([$worker, $worker])
+    ->addGive(new Bonus(1, Bonus::DEFENSE_WARRIOR))
+    ->addGive(new Bonus(1, Bonus::POWER));
+$glass = (new Invention(Invention::TYPE_SCIENCE, Invention::GLASS))
+    ->setName(clienttranslate("Glass"))
+    ->setDescription(clienttranslate("Savant: Science +1. Food stock is increased by 5."))
+    ->setScience(15)
+    ->addResource($stone)
+    ->addUnit($savant)
+    ->addGive(new Bonus(1, Bonus::SCIENCE))
+    ->addGive(new Bonus(5, Bonus::STOCK));
+$toilets = (new Invention(Invention::TYPE_GROWTH, Invention::TOILETS))
+    ->setName(clienttranslate("Toilets"))
+    ->setDescription(clienttranslate("Growth: +1."))
+    ->setScience(15)
+    ->addGive(new Bonus(1, Bonus::GROWTH));
+$bricks = (new Invention(Invention::TYPE_DEVELOPMENT, Invention::BRICKS))
+    ->setName(clienttranslate("Terracotta bricks"))
+    ->setDescription(clienttranslate("End of turn: +2 Stone."))
+    ->setScience(15)
+    ->addResource($clay)
+    ->addGive(new Bonus(2, Bonus::RESOURCE, $stone->getCode()));
+$grindstone = (new Invention(Invention::TYPE_DEVELOPMENT, Invention::GRINDSTONE))
+    ->setName(clienttranslate("Grindstone"))
+    ->setDescription(clienttranslate("Food +5."))
+    ->setScience(5)
+    ->addResource($stone)
+    ->addUnit($worker)
+    ->addGive(new Bonus(5, Bonus::FOOD_FOUND));
+$steel = (new Invention(Invention::TYPE_FIGHT, Invention::STEEL))
+    ->setName(clienttranslate("Steel"))
+    ->setDescription(clienttranslate("Warrior: Power +1."))
+    ->setScience(20)
+    ->setResources([$wood, $stone, $metal])
+    ->addUnit($worker)
+    ->addGive(new Bonus(1, Bonus::POWER));
+$shield = (new Invention(Invention::TYPE_FIGHT, Invention::SHIELD))
+    ->setName(clienttranslate("Shield"))
+    ->setDescription(clienttranslate("Warrior: Defense +1."))
+    ->setScience(5)
+    ->setResources([$wood, $metal])
+    ->addGive(new Bonus(1, Bonus::DEFENSE_WARRIOR));
+$inoculation = (new Invention(Invention::TYPE_GROWTH, Invention::INOCULATION))
+    ->setName(clienttranslate("Inoculation"))
+    ->setDescription(clienttranslate("Growth +1. Protect from disease level 3."))
+    ->setScience(15)
+    ->addResource($medic)
+    ->setUnits([$savant, $savant])
+    ->addGive(new Bonus(1, Bonus::GROWTH))
+    ->addGive(new Bonus(3, Bonus::DISEASE));
+$pulley = (new Invention(Invention::TYPE_DEVELOPMENT, Invention::PULLEY))
+    ->setName(clienttranslate("Pulley"))
+    ->setDescription(clienttranslate("End of turn: +1 Wood, +1 Metal, +1 Stone."))
+    ->setScience(10)
+    ->addResource($wood)
+    ->addUnit($worker)
+    ->addGive(new Bonus(1, Bonus::RESOURCE, $wood->getCode()))
+    ->addGive(new Bonus(1, Bonus::RESOURCE, $metal->getCode()))
+    ->addGive(new Bonus(1, Bonus::RESOURCE, $stone->getCode()));
+$crossbow = (new Invention(Invention::TYPE_FIGHT, Invention::CROSSBOW))
+    ->setName(clienttranslate("Crossbow"))
+    ->setDescription(clienttranslate("Each nearby warrior add Power +2 to the fight."))
+    ->setScience(25)
+    ->addResource($wood)
+    ->addUnit($savant)
+    ->addGive(new Bonus(2, Bonus::DISTANT_POWER));
+$blastFurnace = (new Invention(Invention::TYPE_FIGHT, Invention::BLAST_FURNACE))
+    ->setName(clienttranslate("Blast furnace"))
+    ->setDescription(clienttranslate("Warrior: Power +1, Defense +1."))
+    ->setScience(15)
+    ->setResources([$wood, $wood, $metal, $metal])
+    ->addUnit($worker)
+    ->addGive(new Bonus(1, Bonus::POWER))
+    ->addGive(new Bonus(1, Bonus::DEFENSE_WARRIOR));
+$wall = (new Invention(Invention::TYPE_FIGHT, Invention::WALL))
+    ->setName(clienttranslate("Stone wall"))
+    ->setDescription(clienttranslate("City defense +2."))
+    ->setScience(15)
+    ->setResources([$stone, $stone])
+    ->setUnits([$warrior, $warrior])
+    ->addGive(new Bonus(2, Bonus::DEFENSE_CITY));
+$herbalism = (new Invention(Invention::TYPE_GROWTH, Invention::HERBALISM))
+    ->setName(clienttranslate("Herbalism"))
+    ->setDescription(clienttranslate("Growth: +1. Savant: Action & Medicinal = Cure disease on a unit."))
+    ->setScience(10)
+    ->addGive(new Bonus(1, Bonus::GROWTH));
+$waterFilter = (new Invention(Invention::TYPE_SCIENCE, Invention::WATER_FILTER))
+    ->setName(clienttranslate("Water filter"))
+    ->setDescription(clienttranslate("Savant: Action = Heal 2 units (Like Heal spell)."))
+    ->setScience(15)
+    ->addResource($clay);
+$anesthesia = (new Invention(Invention::TYPE_SCIENCE, Invention::ANESTHESIA))
+    ->setName(clienttranslate("Anesthesia"))
+    ->setDescription(clienttranslate("Savant x2: Action = Heal 4 units (Like Group heal)."))
+    ->setScience(20)
+    ->addResource($medic);
+$sewer  = (new Invention(Invention::TYPE_GROWTH, Invention::SEWER))
+    ->setName(clienttranslate("Sewer"))
+    ->setDescription(clienttranslate("Growth: +1. Protect from disease level 2."))
+    ->setScience(20)
+    ->setResources([$stone, $stone])
+    ->addGive(new Bonus(1, Bonus::GROWTH))
+    ->addGive(new Bonus(2, Bonus::DISEASE));
+$alchemy = (new Invention(Invention::TYPE_SCIENCE, Invention::ALCHEMY))
+    ->setName(clienttranslate("Alchemy"))
+    ->setDescription(clienttranslate("Savant: Science +1."))
+    ->setScience(15)
+    ->addResource($medic)
+    ->addUnit($savant)
+    ->addGive(new Bonus(1, Bonus::SCIENCE));
+$maths = (new Invention(Invention::TYPE_SCIENCE, Invention::MATHS))
+    ->setName(clienttranslate("Mathematics"))
+    ->setDescription(clienttranslate("Savant: Science +1."))
+    ->setScience(15)
+    ->addResource($paper)
+    ->addGive(new Bonus(1, Bonus::SCIENCE));
+$clothes = (new Invention(Invention::TYPE_GROWTH, Invention::CLOTHES))
+    ->setName(clienttranslate("Reinforced clothes"))
+    ->setDescription(clienttranslate("Growth: +1."))
+    ->setScience(5)
+    ->addResource($animal)
+    ->addUnit($worker)
+    ->addGive(new Bonus(1, Bonus::GROWTH));
+$roads = (new Invention(Invention::TYPE_DEVELOPMENT, Invention::ROADS))
+    ->setName(clienttranslate("Roads"))
+    ->setDescription(clienttranslate("Unit move is increased by 1."))
+    ->setScience(10)
+    ->setResources([$stone, $stone])
+    ->addUnit($worker)
+    ->addGive(new Bonus(0, Bonus::MOVE));
+$cooler = (new Invention(Invention::TYPE_DEVELOPMENT, Invention::COOLER))
+    ->setName(clienttranslate("Cooler"))
+    ->setDescription(clienttranslate("Food stock is increased by 10."))
+    ->setScience(15)
+    ->addUnit($worker)
+    ->addGive(new Bonus(10, Bonus::STOCK));
+$fermenting = (new Invention(Invention::TYPE_DEVELOPMENT, Invention::FERMENTING))
+    ->setName(clienttranslate("Fermenting"))
+    ->setDescription(clienttranslate("Food +5."))
+    ->setScience(10)
+    ->addResource($animal)
+    ->addUnit($worker)
+    ->addGive(new Bonus(5, Bonus::FOOD_FOUND));
+$festival = (new Invention(Invention::TYPE_GROWTH, Invention::FESTIVAL))
+    ->setName(clienttranslate("Festival"))
+    ->setDescription(clienttranslate("End of turn: Food -10, growth: +3 (Max 7)."))
+    ->setScience(5)
+    ->setResources([$wood, $clay, $animal])
+    ->setUnits([$worker, $worker])
+    ->addGive(new Bonus(-10, Bonus::FOOD_FOUND))
+    ->addGive(new Bonus(3, Bonus::GROWTH));
+$gemCutting = (new Invention(Invention::TYPE_DEVELOPMENT, Invention::GEM_CUTTING))
+    ->setName(clienttranslate("Gem cutting"))
+    ->setDescription(clienttranslate("End of turn: +3 Gem."))
+    ->setScience(15)
+    ->addResource($gem)
+    ->addUnit($worker)
+    ->addGive(new Bonus(3, Bonus::RESOURCE, $gem->getCode()));
+$breeding = (new Invention(Invention::TYPE_DEVELOPMENT, Invention::BREEDING))
+    ->setName(clienttranslate("Breeding"))
+    ->setDescription(clienttranslate("Food +5."))
+    ->setScience(10)
+    ->addResource($animal)
+    ->addUnit($worker)
+    ->addGive(new Bonus(5, Bonus::FOOD_FOUND));
 $invention
-    ->addCard($smithing)
-
+    ->addCard($stoneCutting)
+    ->addCard($hunting)
+    ->addCard($fishing)
+    ->addCard($school)
+    ->addCard($stoneCircle)
+    ->addCard($tools)
+    ->addCard($longBow)
+    ->addCard($pottery)
+    ->addCard($granary)
+    ->addCard($metallurgy)
+    ->addCard($fence)
+    ->addCard($irrigation)
+    ->addCard($domestication)
+    ->addCard($wheel)
+    ->addCard($oven)
+    ->addCard($writing)
+    ->addCard($soap)
+    ->addCard($bellows)
+    ->addCard($glass)
+    ->addCard($toilets)
+    ->addCard($bricks)
+    ->addCard($grindstone)
+    ->addCard($steel)
+    ->addCard($shield)
+    ->addCard($inoculation)
+    ->addCard($pulley)
+    ->addCard($crossbow)
+    ->addCard($blastFurnace)
+    ->addCard($wall)
+    ->addCard($herbalism)
+    ->addCard($waterFilter)
+    ->addCard($anesthesia)
+    ->addCard($sewer)
+    ->addCard($alchemy)
+    ->addCard($maths)
+    ->addCard($clothes)
+    ->addCard($roads)
+    ->addCard($cooler)
+    ->addCard($fermenting)
+    ->addCard($festival)
+    ->addCard($gemCutting)
+    ->addCard($breeding)
 ;
 $this->cards[$invention->getType()] = $invention;
 
 //      Spell
 // -------------------
-
+$magic
+    ->addCard((new Spell(Spell::TYPE_HEALING, Spell::HEAL))
+        ->setName(clienttranslate("Heal"))
+        ->setDescription(clienttranslate("Until 2 units are saved from death."))
+        ->setWhen(Spell::WHEN_FIGHT_END_ROUND)
+        ->setTarget(Spell::TARGET_UNIT_ANY)
+        ->setTargetCount(2)
+        ->setRange(Spell::RANGE_NEARBY)
+        ->setCost($medic)
+        ->setEffect(Spell::EFFECT_HEAL)
+    )
+    ->addCard((new Spell(Spell::TYPE_COMBAT, Spell::MAGIC_MISSILE))
+        ->setName(clienttranslate("Magic missile"))
+        ->setDescription(clienttranslate("Puissance +1"))
+        ->setWhen(Spell::WHEN_FIGHT_START_ROUND)
+        ->setTarget(Spell::TARGET_FIGHT_POWER)
+        ->setRange(Spell::RANGE_NEARBY)
+        ->addGive(new Bonus(1, Bonus::DISTANT_POWER))
+    )
+    ->addCard((new Spell(Spell::TYPE_COMBAT, Spell::FIRE_CONTROL))
+        ->setName(clienttranslate("Fire control"))
+        ->setDescription(clienttranslate("Puissance +2"))
+        ->setWhen(Spell::WHEN_FIGHT_START_ROUND)
+        ->setTarget(Spell::TARGET_FIGHT_POWER)
+        ->setRange(Spell::RANGE_TILE)
+        ->addGive(new Bonus(2, Bonus::DISTANT_POWER))
+    )
+    ->addCard((new Spell(Spell::TYPE_COMBAT, Spell::LIGHTNING))
+        ->setName(clienttranslate("Lightning"))
+        ->setDescription(clienttranslate("Puissance +5"))
+        ->setWhen(Spell::WHEN_FIGHT_START_ROUND)
+        ->setTarget(Spell::TARGET_FIGHT_POWER)
+        ->setRange(Spell::RANGE_TILE)
+        ->setCasterCount(2)
+        ->addGive(new Bonus(5, Bonus::DISTANT_POWER))
+    )
+    ->addCard((new Spell(Spell::TYPE_COMBAT, Spell::METEOR))
+        ->setName(clienttranslate("Meteor"))
+        ->setDescription(clienttranslate("Puissance +7"))
+        ->setWhen(Spell::WHEN_FIGHT_START_ROUND)
+        ->setTarget(Spell::TARGET_FIGHT_POWER)
+        ->setRange(Spell::RANGE_NEARBY)
+        ->setCasterCount(2)
+        ->setCost($gem)
+        ->addGive(new Bonus(7, Bonus::DISTANT_POWER))
+    )
+    ->addCard((new Spell(Spell::TYPE_HEALING, Spell::GROUPED_HEAL))
+        ->setName(clienttranslate("Group heal"))
+        ->setDescription(clienttranslate("Until 4 units are saved from death."))
+        ->setWhen(Spell::WHEN_FIGHT_END_ROUND)
+        ->setCasterCount(2)
+        ->setTarget(Spell::TARGET_UNIT_ANY)
+        ->setRange(Spell::RANGE_NEARBY)
+        ->setCasterCount(2)
+        ->setCost($medic)
+        ->setEffect(Spell::EFFECT_HEAL)
+    )
+    ->addCard((new Spell(Spell::TYPE_COMBAT, Spell::SACRIFICE))
+        ->setName(clienttranslate("Sacrifice"))
+        ->setDescription(clienttranslate("Puissance +4. Mage died."))
+        ->setWhen(Spell::WHEN_FIGHT_START_ROUND)
+        ->setTarget(Spell::TARGET_FIGHT_POWER)
+        ->setRange(Spell::RANGE_TILE)
+        ->setEffect(Spell::EFFECT_DIE)
+        ->addGive(new Bonus(4, Bonus::DISTANT_POWER))
+    )
+    ->addCard((new Spell(Spell::TYPE_COMBAT, Spell::WEAKNESS))
+        ->setName(clienttranslate("Weakness"))
+        ->setDescription(clienttranslate("Power -1 for opponent."))
+        ->setWhen(Spell::WHEN_FIGHT_START_ROUND)
+        ->setTarget(Spell::TARGET_MONSTER)
+        ->setRange(Spell::RANGE_NEARBY)
+        ->addGive(new Bonus(-1, Bonus::POWER))
+    )
+    ->addCard((new Spell(Spell::TYPE_NATURE, Spell::LIANA_PRISON))
+        ->setName(clienttranslate("Liana prison"))
+        ->setDescription(clienttranslate("If you leave combat, opponent can't attack city."))
+        ->setWhen(Spell::WHEN_FIGHT_END_ROUND)
+        ->setTarget(Spell::TARGET_MONSTER)
+        ->setRange(Spell::RANGE_NEARBY)
+        ->setCost($wood)
+        ->setEffect(Spell::EFFECT_CANCEL)
+    )
+    ->addCard((new Spell(Spell::TYPE_ENCHANT, Spell::ENCHANT))
+        ->setName(clienttranslate("Enchantment"))
+        ->setDescription(clienttranslate("1 warrior gain +1 Power, +1 Defense"))
+        ->setWhen(Spell::WHEN_FIGHT_START_ROUND)
+        ->setTarget(Spell::TARGET_UNIT_WARRIOR)
+        ->setTargetCount(1)
+        ->setRange(Spell::RANGE_TILE)
+        ->setGives([
+            new Bonus(1, Bonus::POWER),
+            new Bonus(1, Bonus::DEFENSE_WARRIOR)
+        ])
+    )
+    ->addCard((new Spell(Spell::TYPE_ENCHANT, Spell::GREAT_ENCHANT))
+        ->setName(clienttranslate("Magical armory"))
+        ->setDescription(clienttranslate("Until 5 warriors gain : +1 Power, +1 Defense"))
+        ->setWhen(Spell::WHEN_FIGHT_START_ROUND)
+        ->setTarget(Spell::TARGET_UNIT_WARRIOR)
+        ->setTargetCount(5)
+        ->setRange(Spell::RANGE_TILE)
+        ->setCasterCount(2)
+        ->setCost($gem)
+        ->setGives([
+            new Bonus(1, Bonus::POWER),
+            new Bonus(1, Bonus::DEFENSE_WARRIOR)
+        ])
+    )
+    ->addCard((new Spell(Spell::TYPE_HEALING, Spell::CURE))
+        ->setName(clienttranslate("Cure"))
+        ->setDescription(clienttranslate("Protect until 2 units from disease effect"))
+        ->setWhen(Spell::WHEN_EXPLORE_DISEASE)
+        ->setTarget(Spell::TARGET_UNIT_ANY)
+        ->setTargetCount(2)
+        ->setRange(Spell::RANGE_TILE)
+        ->setEffect(Spell::EFFECT_CURE)
+    )
+    ->addCard((new Spell(Spell::TYPE_NATURE, Spell::FOG))
+        ->setName(clienttranslate("Fog"))
+        ->setDescription(clienttranslate("Cancel the fight. Units on this tile return on nearest discovered tile."))
+        ->setWhen(Spell::WHEN_FIGHT_START_ROUND)
+        ->setTarget(Spell::TARGET_MONSTER)
+        ->setRange(Spell::RANGE_NEARBY)
+        ->setCasterCount(2)
+        ->setCost($gem)
+        ->setEffect(Spell::EFFECT_CANCEL)
+    )
+    ->addCard((new Spell(Spell::TYPE_FORESIGHT, Spell::SHARP_EYE))
+        ->setName(clienttranslate("Sharp eyes"))
+        ->setDescription(clienttranslate("You can watch under a nearby tile. Do not throw explore dice or draw explore cards."))
+        ->setWhen(Spell::WHEN_TURN_ANY)
+        ->setTarget(Spell::TARGET_TILE)
+        ->setRange(Spell::RANGE_NEARBY)
+        ->setEffect(Spell::EFFECT_WATCH)
+    )
+    ->addCard((new Spell(Spell::TYPE_FORESIGHT, Spell::CLEAR_VISION))
+        ->setName(clienttranslate("Clear vision"))
+        ->setDescription(clienttranslate("You can watch under a tile. Do not throw explore dice or draw explore cards."))
+        ->setWhen(Spell::WHEN_TURN_ANY)
+        ->setTarget(Spell::TARGET_TILE)
+        ->setRange(Spell::RANGE_ENDLESS)
+        ->setCost($gem)
+        ->setEffect(Spell::EFFECT_WATCH)
+    )
+    ->addCard((new Spell(Spell::TYPE_NATURE, Spell::YOUTH))
+        ->setName(clienttranslate("Youth"))
+        ->setDescription(clienttranslate("At the end of turn, at growth phase, add +1 worker (Limited to one per turn)."))
+        ->setWhen(Spell::WHEN_GROWTH)
+        ->setRange(Spell::RANGE_CITY)
+        ->setCasterCount(2)
+        ->setCost($animal)
+        ->setTimes(Spell::TIMES_ONE)
+        ->addGive(new Bonus(1, Bonus::BIRTH, $worker->getCode()))
+    )
+    ->addCard((new Spell(Spell::TYPE_FORESIGHT, Spell::LUKE))
+        ->setName(clienttranslate("Luke"))
+        ->setDescription(clienttranslate("Cancel Various explore event if it affect only one target."))
+        ->setWhen(Spell::WHEN_EXPLORE_OTHER)
+        ->setCasterCount(2)
+        ->setCost($gem)
+        ->setEffect(Spell::EFFECT_CANCEL)
+    )
+    ->addCard((new Spell(Spell::TYPE_FORESIGHT, Spell::PROBABILITY))
+        ->setName(clienttranslate("Probability control"))
+        ->setDescription(clienttranslate("After a die throw, you can use this spell to flip it."))
+        ->setWhen(Spell::WHEN_DIE_THROW)
+        ->setTarget(Spell::TARGET_DICE)
+        ->setEffect(Spell::EFFECT_FLIP)
+        ->setCasterCount(2)
+        ->setCost($gem)
+    )
+    ->addCard((new Spell(Spell::TYPE_FORESIGHT, Spell::GENIUS))
+        ->setName(clienttranslate("Masterstroke"))
+        ->setDescription(clienttranslate("Add +2 Sciences."))
+        ->setWhen(Spell::WHEN_TURN_ANY)
+        ->setTarget(Spell::TARGET_NO)
+        ->setRange(Spell::RANGE_CITY)
+        ->addGive(new Bonus(2, Bonus::SCIENCE_FOUND))
+    )
+    ->addCard((new Spell(Spell::TYPE_NATURE, Spell::GROWTH))
+        ->setName(clienttranslate("Growth"))
+        ->setDescription(clienttranslate("+1 Food when tile is harvested by a worker."))
+        ->setWhen(Spell::WHEN_FOOD_HARVEST)
+        ->setTarget(Spell::TARGET_TILE)
+        ->setRange(Spell::RANGE_NEARBY)
+        ->addGive(new Bonus(1, Bonus::FOOD_FOUND))
+    )
+    ->addCard((new Spell(Spell::TYPE_NATURE, Spell::FERTILE_LAND))
+        ->setName(clienttranslate("Fertile land"))
+        ->setDescription(clienttranslate("On a tile, each worker harvest +1 Food."))
+        ->setWhen(Spell::WHEN_FOOD_HARVEST)
+        ->setTarget(Spell::TARGET_TILE)
+        ->setRange(Spell::RANGE_TILE)
+        ->addGive(new Bonus(1, Bonus::FOOD))
+    )
+    ->addCard((new Spell(Spell::TYPE_NATURE, Spell::WEATHER_CONTROl))
+        ->setName(clienttranslate("Weather control"))
+        ->setDescription(clienttranslate("On a tile, each worker can harvest Food twice."))
+        ->setWhen(Spell::WHEN_FOOD_HARVEST)
+        ->setTarget(Spell::TARGET_TILE)
+        ->setRange(Spell::RANGE_NEARBY)
+        ->setCasterCount(2)
+        ->setCost($gem)
+        ->setEffect(Spell::EFFECT_HARVEST_TWICE)
+    )
+    ->addCard((new Spell(Spell::TYPE_NATURE, Spell::CREATION))
+        ->setName(clienttranslate("Creation"))
+        ->setDescription(clienttranslate("Add one resource of your choice to city."))
+        ->setWhen(Spell::WHEN_TURN_ANY)
+        ->setTarget(Spell::TARGET_RESOURCE_ANY)
+        ->setRange(Spell::RANGE_CITY)
+        ->setEffect(Spell::EFFECT_NEW_RESOURCE)
+    )
+    ->addCard((new Spell(Spell::TYPE_NATURE, Spell::STAMINA))
+        ->setName(clienttranslate("Stamina"))
+        ->setDescription(clienttranslate("Harvest 2 resources instead of one."))
+        ->setWhen(Spell::WHEN_RESOURCE_HARVEST)
+        ->setTarget(Spell::TARGET_UNIT_WORKER)
+        ->setRange(Spell::RANGE_TILE)
+        ->setEffect(Spell::EFFECT_HARVEST_TWICE)
+    )
+    ->addCard((new Spell(Spell::TYPE_NATURE, Spell::ANIMAL_FRIENDSHIP))
+        ->setName(clienttranslate("Animal friendship"))
+        ->setDescription(clienttranslate("Add until 3 Animal resources to city."))
+        ->setWhen(Spell::WHEN_TURN_ANY)
+        ->setTarget(Spell::TARGET_NO)
+        ->setRange(Spell::RANGE_CITY)
+        ->addGive(new Bonus(2, Bonus::RESOURCE, $animal->getCode()))
+    )
+    ->addCard((new Spell(Spell::TYPE_HEALING, Spell::GREAT_CURE))
+        ->setName(clienttranslate("Great cure"))
+        ->setDescription(clienttranslate("One unit is released from all diseases."))
+        ->setWhen(Spell::WHEN_EXPLORE_DISEASE)
+        ->setTarget(Spell::TARGET_UNIT_ANY)
+        ->setTargetCount(1)
+        ->setRange(Spell::RANGE_TILE)
+        ->setCost($medic)
+        ->setEffect(Spell::EFFECT_CURE)
+    )
+    ->addCard((new Spell(Spell::TYPE_COMBAT, Spell::EXHAUSTING))
+        ->setName(clienttranslate("Exhausting"))
+        ->setDescription(clienttranslate("Power -2 for opponent."))
+        ->setWhen(Spell::WHEN_FIGHT_START_ROUND)
+        ->setTarget(Spell::TARGET_MONSTER)
+        ->setRange(Spell::RANGE_TILE)
+        ->addGive(new Bonus(-2, Bonus::POWER))
+    )
+;
 $this->cards[$magic->getType()] = $magic;
 
-//      Explore
+//      Disease
 // -------------------
-$explore
-    ->addCard((new Explore(Explore::TYPE_DISEASE, Explore::DISEASE_NO_WIZARD))
+$exploreDisease
+    ->addCard((new Disease(Disease::LEVEL_2, Disease::NO_WIZARD))
         ->setName("Mentalite aïgué")
-        ->setDescription(clienttranslate("Nearby wizards (1 tile distance) become workers."))
+        ->setDescription(clienttranslate("Wizards on tile become workers.")),
+        2
     )
-    ->addCard((new Explore(Explore::TYPE_DISEASE, Explore::DISEASE_ACT_DONE))
+    ->addCard((new Disease(Disease::LEVEL_3, Disease::ACTED_ZONE))
         ->setName("Vide-boyau")
-        ->setDescription(clienttranslate("Flip units on this tile to unavailable. They can't do more action this turn."))
+        ->setDescription(clienttranslate("Flip units (1 tile distance) to unavailable. They can't do more action this turn.")),
+        3
+    )
+    ->addCard((new Disease(Disease::LEVEL_1, Disease::ACTED_MOVED_HEAL))
+        ->setName("Fièvre draconique")
+        ->setDescription(clienttranslate("Units on tile can't move or do anything until they are healed."))
+    )
+    ->addCard((new Disease(Disease::LEVEL_1, Disease::DEAD))
+        ->setName("Mort-soif")
+        ->setDescription(clienttranslate("Units on tile die if not healed this turn."))
+    )
+    ->addCard((new Disease(Disease::LEVEL_1, Disease::ACTED_HEAL))
+        ->setName("Creuse-os")
+        ->setDescription(clienttranslate("Units on tile can't do anything until they are healed (Move is possible)."))
+    )
+    ->addCard((new Disease(Disease::LEVEL_2, Disease::ACTED_MOVED))
+        ->setName("Jambe-coton")
+        ->setDescription(clienttranslate("Units on tile can't move or do anything this turn.")),
+        2
     )
 ;
-$this->cards[$explore->getType()] = $explore;
+$this->cards[$exploreDisease->getType()] = $exploreDisease;
 
-//      EndOfTurn
-// -------------------
-$endOfTurn
-    ->addCard((new EndTurn(EndTurn::END_FLOOD))
+$exploreFight
+    ->addCard((new Fight(Fight::PIC_BULL, 5))
+        ->setName(clienttranslate("Pic-bull"))
+        ->setGives([
+            new Bonus(1, Bonus::RESOURCE, $animal->getCode()),
+            new Bonus(5, Bonus::FOOD_FOUND)
+        ])
+    )
+    ->addCard((new Fight(Fight::CRAWLING, 1))
+        ->setName(clienttranslate("Grouilleux")),
+        2
+    )
+    ->addCard((new Fight(Fight::LIZARDS, 10, true))
+        ->setName(clienttranslate("Hunter-lizards"))
+        ->setGives([
+            new Bonus(1, Bonus::RESOURCE, $clay->getCode()),
+            new Bonus(1, Bonus::RESOURCE, $metal->getCode())
+        ])
+    )
+    ->addCard((new Fight(Fight::SAND_WORM, 15))
+        ->setName(clienttranslate("Sand worm"))
+        ->addGive(new Bonus(1, Bonus::RESOURCE, $gem->getCode()))
+    )
+    ->addCard((new Fight(Fight::LICH, 20, true))
+        ->setName(clienttranslate("Lich"))
+        ->setDescription(clienttranslate("Until it is killed, Lich stay on tile and send a monster to city each turn."))
+        ->addGive(new Bonus(1, Bonus::RESOURCE, $gem->getCode()))
+    )
+    ->addCard((new Fight(Fight::WOLFS, 3))
+        ->setName(clienttranslate("Wolf pack"))
+        ->setDescription(clienttranslate("Until they are killed, wolf pack attack an occupied nearby tile next turn."))
+        ->addGive(new Bonus(1, Bonus::RESOURCE, $animal->getCode())),
+        2
+    )
+    ->addCard((new Fight(Fight::BASILISK, 8))
+        ->setName(clienttranslate("Basilisk"))
+        ->setDescription(clienttranslate("Only Cure spell can save units wounded by basilisk."))
+        ->setGives([
+            new Bonus(1, Bonus::RESOURCE, $stone->getCode()),
+            new Bonus(1, Bonus::RESOURCE, $gem->getCode())
+        ])
+    )
+    ->addCard((new Fight(Fight::ELEMENTAL, 15, true))
+        ->setName(clienttranslate("Stone elemental"))
+        ->addGive(new Bonus(1, Bonus::RESOURCE, $stone->getCode()))
+    )
+    ->addCard((new Fight(Fight::UNDEAD, 5, true))
+        ->setName(clienttranslate("Undead"))
+        ->setDescription(clienttranslate("For each unit killed, add +1 power to Undead for next fight round")),
+        2
+    )
+    ->addCard((new Fight(Fight::VAMPIRES, 10))
+        ->setName(clienttranslate("Vampires"))
+        ->setDescription(clienttranslate("On fight ending, send an Undead monster (+1 Power x Killed units) to city."))
+    )
+    ->addCard((new Fight(Fight::GIANT_SPIDERS, 5))
+        ->setName(clienttranslate("Giant spiders")),
+        2
+    )
+    ->addCard((new Fight(Fight::GIANTS, 15, true))
+        ->setName(clienttranslate("Giants"))
+        ->setDescription(clienttranslate("City defense is 0 for giants."))
+    )
+    ->addCard((new Fight(Fight::SAND_SPIRIT, 15))
+        ->setName(clienttranslate("Sand spirits"))
+        ->setDescription(clienttranslate("You can't use fight spells against Sand spirits."))
+        ->addGive(new Bonus(1, Bonus::RESOURCE, $gem->getCode()))
+    )
+    ->addCard((new Fight(Fight::BRIGANDS, 8))
+        ->setName(clienttranslate("Brigands"))
+        ->setDescription(clienttranslate("Until they are killed, Brigands steal every resource produced on nearby tiles."))
+        ->addGive(new Bonus(1, Bonus::RESOURCE, $gem->getCode())),
+        2
+    )
+    ->addCard((new Fight(Fight::SORCERER, 15))
+        ->setName(clienttranslate("Sorcerer"))
+        ->setDescription(clienttranslate("Warriors power is ignored except if their weapons are enchanted."))
+        ->setGives([
+            new Bonus(1, Bonus::RESOURCE, $paper->getCode()),
+            new Bonus(1, Bonus::RESOURCE, $gem->getCode()),
+            new Bonus(2, Bonus::DRAW_CARD, AbstractCard::TYPE_MAGIC),
+        ])
+    )
+    ->addCard((new Fight(Fight::CENTAURS, 10))
+        ->setName(clienttranslate("Centaurs"))
+        ->setDescription(clienttranslate("It is impossible to flee Centaurs at the end of a fight round."))
+        ->setGives([
+            new Bonus(1, Bonus::RESOURCE, $animal->getCode()),
+            new Bonus(5, Bonus::SCIENCE_FOUND)
+        ])
+    )
+;
+$this->cards[$exploreFight->getType()] = $exploreFight;
+
+$exploreOther
+    ->addCard((new Other(Other::ABANDONED_GEM_MINE))
+        ->setName(clienttranslate("Gem mine"))
+        ->setDescription(clienttranslate("It still contains some beautiful gems"))
+        ->setGives([
+            new Bonus(1, Bonus::RESOURCE, $wood->getCode()),
+            new Bonus(3, Bonus::RESOURCE, $gem->getCode())
+        ])
+    )
+    ->addCard((new Other(Other::ABANDONED_METAL_MINE))
+        ->setName(clienttranslate("Metal mine"))
+        ->setDescription(clienttranslate("It still contains some metal ore"))
+        ->setGives([
+            new Bonus(1, Bonus::RESOURCE, $wood->getCode()),
+            new Bonus(3, Bonus::RESOURCE, $metal->getCode())
+        ])
+    )
+    ->addCard((new Other(Other::RUINED_COTTAGE))
+        ->setName(clienttranslate("Ruined cottage"))
+        ->setDescription(clienttranslate("Among the rubble you discover interesting writtings"))
+        ->addGive(new Bonus(5, Bonus::SCIENCE_FOUND)),
+        2
+    )
+    ->addCard((new Other(Other::TELLURIC_CROSSING))
+        ->setName(clienttranslate("Telluric crossing"))
+        ->setDescription(clienttranslate("You may change until 3 units into mage"))
+        ->addGive(new Bonus(3, Bonus::CONVERT, $mage->getCode())),
+        2
+    )
+    ->addCard((new Other(Other::HERMIT_WEAPON_MASTER))
+        ->setName(clienttranslate("Hermit weapon master"))
+        ->setDescription(clienttranslate("You may change until 3 units into warrior"))
+        ->addGive(new Bonus(3, Bonus::CONVERT, $warrior->getCode())),
+        2
+    )
+    ->addCard((new Other(Other::WISH_FOUNTAIN))
+        ->setName(clienttranslate("Wish fountain"))
+        ->setDescription(clienttranslate("You may change until 3 units into an other type of your choice"))
+        ->addGive(new Bonus(3, Bonus::CONVERT, $all->getCode()))
+    )
+    ->addCard((new Other(Other::LOST_LIBRARY))
+        ->setName(clienttranslate("Lost library"))
+        ->setDescription(clienttranslate("You discover a huge knowledge place, miraculously preserved"))
+        ->setGives([
+            new Bonus(10, Bonus::SCIENCE_FOUND),
+            new Bonus(2, Bonus::DRAW_CARD, AbstractCard::TYPE_INVENTION)
+        ])
+    )
+    ->addCard((new Other(Other::FIRE))
+        ->setName(clienttranslate("Fire"))
+        ->setDescription(clienttranslate("Impossible to harvest on this tile (Food, Resources, Science)"))
+    )
+    ->addCard((new Other(Other::EXPLOSIVE_ARTEFACT))
+        ->setName(clienttranslate("Explosive artefact"))
+        ->setDescription(clienttranslate("An artefact found during exploration has exploded and has killed 1 Mage and 1 Savant"))
+    )
+    ->addCard((new Other(Other::DAMAGED_FRUITS))
+        ->setName(clienttranslate("Damaged fruits"))
+        ->setDescription(clienttranslate("Fruits taken during exploration have rotted and destroyed harvests (Food stock is now 0)")),
+        2
+    )
+    ->addCard((new Other(Other::DROUGHT))
+        ->setName(clienttranslate("Drought"))
+        ->setDescription(clienttranslate("Plains and hills on this tile and nearby can't produce any food this turn"))
+    )
+    ->addCard((new Other(Other::FLOOD))
         ->setName(clienttranslate("Flood"))
-        ->setDescription(clienttranslate(""))
+        ->setDescription(clienttranslate("Resources can't be harvested on this and nearby tiles this turn"))
+    )
+    ->addCard((new Other(Other::LANDSLIDE))
+        ->setName(clienttranslate("Landslide"))
+        ->setDescription(clienttranslate("Until 2 units died during exploration, no possible healing."))
+    )
+    ->addCard((new Other(Other::INHABITED_CAVE))
+        ->setName(clienttranslate("Inhabited cave"))
+        ->setDescription(clienttranslate("Case inhabitant join us."))
+        ->setGives([
+            new Bonus(1, Bonus::BIRTH, $worker->getCode()),
+            new Bonus(1, Bonus::BIRTH, $warrior->getCode()),
+            new Bonus(5, Bonus::FOOD_FOUND),
+            new Bonus(2, Bonus::SCIENCE_FOUND)
+        ])
+    )
+    ->addCard((new Other(Other::CURSE))
+        ->setName(clienttranslate("Curse"))
+        ->setDescription(clienttranslate("Explorers found a cursed ancient tomb. All exploring units died."))
     )
 ;
-$this->cards[$endOfTurn->getType()] = $endOfTurn;
-
+$this->cards[$exploreOther->getType()] = $exploreOther;
 
 /*--------------------------------------
  *          Fill terrains parts
  * ------------------------------------- */
 
-$townHumanis = new City(clienttranslate('Espérys'), Terrain::TOWN_HUMANIS, true, [$clay, $animal]);
+$townHumanis = new City(clienttranslate('Espérys'), Terrain::TOWN_HUMANIS, true, true, [$clay]);
 $townHumanis
     ->addUnit($worker)->addUnit($mage)
-    ->addInvention($smithing)->addInvention($smithing)
+    ->addInvention($pottery)->addInvention($irrigation)
 ;
-$townElven   = new City(clienttranslate("Gala\'ar"), Terrain::TOWN_ELVEN, true, [$paper, $wood, $animal]);
+$townElven   = new City(clienttranslate("Gala\'ar"), Terrain::TOWN_ELVEN, true, true, [$clay, $medic]);
 $townElven
     ->addUnit($mage)->addUnit($savant)
-    ->addInvention($smithing)->addInvention($smithing)
+    ->addInvention($writing)->addInvention($herbalism)
 ;
-$townNani    = new City(clienttranslate('Nundurahl'), Terrain::TOWN_NANI, true, [$stone, $metal, $gem]);
+$townNani    = new City(clienttranslate('Nundurahl'), Terrain::TOWN_NANI, true, true, [$stone, $metal]);
 $townNani
     ->addUnit($worker)->addUnit($warrior)
-    ->addInvention($smithing)->addInvention($smithing)
+    ->addInvention($metallurgy)->addInvention($gemCutting)
 ;
-$townOrk     = new City(clienttranslate('Arakh Dhul'), Terrain::TOWN_ORK, true, [$wood, $metal]);
+$townOrk     = new City(clienttranslate('Arakh Dhul'), Terrain::TOWN_ORK, true, true, [$wood, $metal]);
 $townOrk
     ->addUnit($warrior)->addUnit($warrior)
-    ->addInvention($smithing)->addInvention($smithing)
+    ->addInvention($metallurgy)->addInvention($fence)
 ;
 
 $this->terrains = [
-    $mountain->getCode()    => $mountain,
-    $plain->getCode()       => $plain,
-    $desert->getCode()      => $desert,
-    $swamp->getCode()       => $swamp,
-    $hill->getCode()        => $hill,
-    $forest->getCode()      => $forest,
-    $townHumanis->getCode() => $townHumanis,
-    $townElven->getCode()   => $townElven,
-    $townNani->getCode()    => $townNani,
-    $townOrk->getCode()     => $townOrk
+    $mountain->getCode()       => $mountain,
+    $mountainLair->getCode()   => $mountainLair,
+    $mountainLake->getCode()   => $mountainLake,
+    $mountainRiver->getCode()  => $mountainRiver,
+    $mountainTower->getCode()  => $mountainTower,
+    $mountainWood->getCode()   => $mountainWood,
+
+    $plain->getCode()          => $plain,
+    $plainDesert->getCode()    => $plainDesert,
+    $plainLake->getCode()      => $plainLake,
+    $plainRiverRuin->getCode() => $plainRiverRuin,
+    $plainWood->getCode()      => $plainWood,
+
+    $desert->getCode()         => $desert,
+    $desertStone->getCode()    => $desertStone,
+
+    $swamp->getCode()          => $swamp,
+    $swampLair->getCode()      => $swampLair,
+    $swampTower->getCode()     => $swampTower,
+
+    $hill->getCode()           => $hill,
+    $hillLake->getCode()       => $hillLake,
+    $hillPlateau->getCode()    => $hillPlateau,
+    $hillRuin->getCode()       => $hillRuin,
+    $hillWoodLair->getCode()   => $hillWoodLair,
+    $hillWoodRiver->getCode()  => $hillWoodRiver,
+
+    $forest->getCode()         => $forest,
+    $forestRuin->getCode()     => $forestRuin,
+    $forestDense->getCode()    => $forestDense,
+    $forestLair->getCode()     => $forestLair,
+    $forestTower->getCode()    => $forestTower,
+
+    $townHumanis->getCode()    => $townHumanis,
+    $townElven->getCode()      => $townElven,
+    $townNani->getCode()       => $townNani,
+    $townOrk->getCode()        => $townOrk
 ];

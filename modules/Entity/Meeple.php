@@ -6,11 +6,12 @@ use LdH\Entity\Cards\Lineage;
 
 class Meeple
 {
-    public const MAGE    = 'mage';
-    public const WORKER  = 'worker';
-    public const WARRIOR = 'warrior';
-    public const SAVANT  = 'savant';
-    public const MONSTER = 'monster';
+    public const MAGE          = 'mage';
+    public const WORKER        = 'worker';
+    public const WARRIOR       = 'warrior';
+    public const SAVANT        = 'savant';
+    public const ALL           = 'all';
+    public const MONSTER       = 'monster';
     public const ELVEN_MAGE    = 'elven_mage';
     public const ELVEN_SAVANT  = 'elven_savant';
     public const NANI_WARRIOR  = 'nani_warrior';
