@@ -35,8 +35,8 @@ class Terrain implements \JsonSerializable
     public const SWAMP_LAIR       = 'swamp_lair';
     public const SWAMP_TOWER      = 'swamp_tower';
     public const FOREST           = 'forest';
-    public const FOREST_TOWER     = 'forest_TOWER';
-    public const FOREST_LAIR      = 'forest_LAIR';
+    public const FOREST_TOWER     = 'forest_tower';
+    public const FOREST_LAIR      = 'forest_lair';
     public const FOREST_DENSE     = 'forest_dense';
     public const FOREST_RUIN      = 'forest_ruin';
     public const DESERT           = 'desert';

@@ -7,8 +7,8 @@ use LdH\Entity\Map\Tile;
 class MapRepository
 {
     /**
-     * @param array $map
-     * @param bool  $creation
+     * @param Tile[] $map
+     * @param bool   $creation
      *
      * @return string[]
      */
@@ -16,7 +16,6 @@ class MapRepository
     {
         $queries = [];
 
-        /** @var Tile $tile */
         foreach ($map as $tile) {
             $queries[] = $creation?
                 sprintf('INSERT IGNORE INTO `map`(`tile_id`, `tile_x`, `tile_y`, `tile_revealed`, `tile_disabled`, `tile_far`, `tile_terrain`, `tile_variant`) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)',

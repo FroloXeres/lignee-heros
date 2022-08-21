@@ -163,7 +163,6 @@ class ligneeheros extends Table
         self::reloadPlayersBasicInfos();
 
         /************ Start the game initialization *****/
-
         $this->initTables();
 
         // Init global values with their initial values
@@ -203,7 +202,7 @@ class ligneeheros extends Table
     {
         // Generate map
         $this->tiles = MapService::generateMap(MapService::DEFAULT_RADIUS);
-        MapService::initMap($this->tiles, $this->terrains, $this->variants);
+        MapService::initMap($this->tiles, $this->terrains);
         foreach (MapRepository::getSaveQueries($this->tiles) as $qry) {
             self::DbQuery($qry);
         }
@@ -222,7 +221,6 @@ class ligneeheros extends Table
         }
 
         // Init units
-
     }
 
     /*

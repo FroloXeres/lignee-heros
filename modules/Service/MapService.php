@@ -17,7 +17,7 @@ class MapService
      *
      * @param int $radius
      *
-     * @return array
+     * @return Tile[]
      */
     public static function generateMap(int $radius = self::DEFAULT_RADIUS): array
     {
@@ -55,18 +55,13 @@ class MapService
     /**
      * @param array $defaultMap
      * @param array $terrains
-     * @param array $variants
      *
      * @return array
      */
-    public static function initMap(array $defaultMap, array $terrains = [], array $variants = []): array
+    public static function initMap(array $defaultMap, array $terrains = []): array
     {
         if (!empty($terrains)) {
             $defaultMap = self::randomTerrain($defaultMap, $terrains);
-        }
-
-        if (!empty($variants)) {
-            $defaultMap = self::addVariants($variants, $defaultMap);
         }
 
         return $defaultMap;
@@ -75,11 +70,10 @@ class MapService
     /**
      * @param array $dbLines
      * @param array $terrains
-     * @param array $variants
      *
      * @return array
      */
-    public static function buildMapFromDb(array $dbLines, array $terrains = [], array $variants = []): array
+    public static function buildMapFromDb(array $dbLines, array $terrains = []): array
     {
         $tiles = [];
 
@@ -93,7 +87,6 @@ class MapService
                 $line['tile_revealed'] === '1'
             );
             $tile->setTerrain($terrains[$line['tile_terrain']]?? null);
-            //$tile->variant = $variants[$line['tile_variant']]?? null;
 
             $tiles[] = $tile;
         }
@@ -194,47 +187,34 @@ class MapService
      */
     private static function getTerrainByDistance(): array
     {
-        $terrainByDistance = [0 => [], 1 => [], 2 => [], 3 => []];
-        $terrainByDistance[0][] = Terrain::TOWN_HUMANIS;
-
         // 6 tiles at level 1
-        $terrainByDistance[1][] = Terrain::HILL;
-        for ($i = 0; $i < 2; $i++) $terrainByDistance[1][] = Terrain::PLAIN;
-        for ($i = 0; $i < 3; $i++) $terrainByDistance[1][] = Terrain::FOREST;
-        shuffle($terrainByDistance[1]);
-
         // 12 tiles at level 2
-        $terrainByDistance[2][] = Terrain::DESERT;
-        for ($i = 0; $i < 2; $i++) $terrainByDistance[2][] = Terrain::SWAMP;
-        for ($i = 0; $i < 2; $i++) $terrainByDistance[2][] = Terrain::HILL;
-        for ($i = 0; $i < 3; $i++) $terrainByDistance[2][] = Terrain::MOUNTAIN;
-        for ($i = 0; $i < 2; $i++) $terrainByDistance[2][] = Terrain::PLAIN;
-        for ($i = 0; $i < 2; $i++) $terrainByDistance[2][] = Terrain::FOREST;
-        shuffle($terrainByDistance[2]);
-
         // 18 tiles at level 3
-        for ($i = 0; $i < 3; $i++) $terrainByDistance[3][] = Terrain::DESERT;
-        for ($i = 0; $i < 3; $i++) $terrainByDistance[3][] = Terrain::SWAMP;
-        for ($i = 0; $i < 2; $i++) $terrainByDistance[3][] = Terrain::HILL;
-        for ($i = 0; $i < 6; $i++) $terrainByDistance[3][] = Terrain::MOUNTAIN;
-        for ($i = 0; $i < 2; $i++) $terrainByDistance[3][] = Terrain::PLAIN;
-        for ($i = 0; $i < 2; $i++) $terrainByDistance[3][] = Terrain::FOREST;
+        $terrainByDistance = [
+            0 => [Terrain::TOWN_HUMANIS],
+            1 => [
+                Terrain::PLAIN, Terrain::PLAIN_LAKE, Terrain::PLAIN_WOOD,
+                Terrain::HILL, Terrain::MOUNTAIN_WOOD, Terrain::FOREST
+            ],
+            2 => [
+                Terrain::PLAIN, Terrain::PLAIN_DESERT, Terrain::HILL_PLATEAU,
+                Terrain::HILL_WOOD_RIVER, Terrain::SWAMP, Terrain::SWAMP_LAIR,
+                Terrain::DESERT, Terrain::MOUNTAIN_LAIR, Terrain::MOUNTAIN_LAKE,
+                Terrain::MOUNTAIN_WOOD, Terrain::FOREST_DENSE, Terrain::FOREST_RUIN
+            ],
+            3 => [
+                Terrain::PLAIN, Terrain::PLAIN_WOOD, Terrain::PLAIN_RIVER_RUIN,
+                Terrain::HILL_RUIN, Terrain::HILL_LAKE, Terrain::SWAMP,
+                Terrain::SWAMP, Terrain::SWAMP_TOWER, Terrain::DESERT,
+                Terrain::DESERT_STONE, Terrain::DESERT_STONE, Terrain::MOUNTAIN,
+                Terrain::HILL_WOOD_LAIR, Terrain::MOUNTAIN_TOWER, Terrain::MOUNTAIN_RIVER,
+                Terrain::FOREST_TOWER, Terrain::FOREST_LAIR, Terrain::FOREST_DENSE
+            ]
+        ];
+        shuffle($terrainByDistance[1]);
+        shuffle($terrainByDistance[2]);
         shuffle($terrainByDistance[3]);
 
         return $terrainByDistance;
-    }
-
-    /**
-     * Set variants to tile map
-     *
-     * @param array  $variants
-     * @param Tile[] $tiles
-     *
-     * @return array
-     */
-    public static function addVariants(array $variants, array $tiles): array
-    {
-
-        return $tiles;
     }
 }

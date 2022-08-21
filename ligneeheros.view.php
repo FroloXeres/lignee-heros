@@ -45,8 +45,7 @@ class view_ligneeheros_ligneeheros extends game_view
         // Load Map from Db
         $tiles = MapService::buildMapFromDb(
             self::getCollectionFromDb(MapRepository::getMapQry()),
-            $this->game->terrains,
-            $this->game->variants
+            $this->game->terrains
         );
 
         // Prepare HTML/CSS map

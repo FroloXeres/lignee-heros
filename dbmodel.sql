@@ -28,7 +28,7 @@ CREATE TABLE IF NOT EXISTS `lineage` (
     PRIMARY KEY (`card_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
-CREATE TABLE IF NOT EXISTS `end_turn` (
+CREATE TABLE IF NOT EXISTS `explore_fight` (
     `card_id` smallint(2) unsigned NOT NULL AUTO_INCREMENT,
     `card_type` varchar(16) NOT NULL,
     `card_type_arg` int(11) NOT NULL,
@@ -37,7 +37,16 @@ CREATE TABLE IF NOT EXISTS `end_turn` (
     PRIMARY KEY (`card_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
-CREATE TABLE IF NOT EXISTS `explore` (
+CREATE TABLE IF NOT EXISTS `explore_disease` (
+    `card_id` smallint(2) unsigned NOT NULL AUTO_INCREMENT,
+    `card_type` varchar(16) NOT NULL,
+    `card_type_arg` int(11) NOT NULL,
+    `card_location` varchar(16) NOT NULL,
+    `card_location_arg` int(11) NOT NULL,
+    PRIMARY KEY (`card_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+
+CREATE TABLE IF NOT EXISTS `explore_other` (
     `card_id` smallint(2) unsigned NOT NULL AUTO_INCREMENT,
     `card_type` varchar(16) NOT NULL,
     `card_type_arg` int(11) NOT NULL,
