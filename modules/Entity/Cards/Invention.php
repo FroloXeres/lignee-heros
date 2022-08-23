@@ -91,9 +91,9 @@ class Invention extends AbstractCard
     }
 
     /**
-     * @return int
+     * @return string
      */
-    public function getCode(): int
+    public function getCode(): string
     {
         return $this->code;
     }

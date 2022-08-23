@@ -412,7 +412,7 @@ $lineage
         ->setMeeplePower((new Bonus(1, Bonus::IS_ALSO, Meeple::MAGE))->setDescription(clienttranslate("Count as a mage to discover or launch Nature spells")))
         ->setObjective($objHumaniWorker)
         ->setObjectiveBonus((new Bonus(1, Bonus::IS_ALSO, Meeple::MAGE))->setDescription(clienttranslate("Count as one more")))
-        ->setLeadingBonus(new Bonus(1, Bonus::DRAW_CARD, AbstractCard::TYPE_MAGICAL))
+        ->setLeadingBonus(new Bonus(1, Bonus::DRAW_CARD, AbstractCard::TYPE_MAGIC))
         ->setArtist('Kevins Darnis')
     )
     ->addCard((new Lineage(Meeple::HUMANI_MAGE))
@@ -1167,7 +1167,7 @@ $exploreFight
         ->setGives([
             new Bonus(1, Bonus::RESOURCE, $paper->getCode()),
             new Bonus(1, Bonus::RESOURCE, $gem->getCode()),
-            new Bonus(2, Bonus::DRAW_CARD, AbstractCard::TYPE_MAGICAL),
+            new Bonus(2, Bonus::DRAW_CARD, AbstractCard::TYPE_MAGIC),
         ])
     )
     ->addCard((new Fight(Fight::CENTAURS, 10))

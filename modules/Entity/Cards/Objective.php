@@ -88,16 +88,12 @@ class Objective extends AbstractCard
     }
 
     /**
-     * @param int $code
-     *
-     * @return Objective
+     * @param string $code
      */
-    public function setCode(int $code): Objective
+    public function setCode(string $code): void
     {
         $this->code = self::TYPE_OBJECTIVE . '_' . $code;
         $this->setType($code);
-
-        return $this;
     }
 
     /**
