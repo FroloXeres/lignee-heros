@@ -45,9 +45,7 @@ class Disease extends AbstractCard
      */
     public function setCode(string $code): Disease
     {
-        $this->code = $code;
-
-        $this->setId(Deck::TYPE_EXPLORE_DISEASE . '_' . $code);
+        $this->code = self::TYPE_DISEASE . '_' . $code;
         $this->setTypeArg($code);
 
         return $this;

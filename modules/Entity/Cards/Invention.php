@@ -10,7 +10,7 @@ class Invention extends AbstractCard
 {
     public const TYPE_START       = 'start';
     public const TYPE_DEVELOPMENT = 'development';
-    public const TYPE_MAGIC       = 'magic';
+    public const TYPE_MAGICAL     = 'magic';
     public const TYPE_FIGHT       = 'fight';
     public const TYPE_GROWTH      = 'growth';
     public const TYPE_SCIENCE     = 'science';
@@ -107,9 +107,7 @@ class Invention extends AbstractCard
      */
     public function setCode(int $code): Invention
     {
-        $this->setId(self::TYPE_INVENTION . '_' . $code);
-
-        $this->code = $code;
+        $this->code = self::TYPE_INVENTION . '_' . $code;
         $this->setTypeArg($code);
 
         return $this;

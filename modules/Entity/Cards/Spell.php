@@ -122,9 +122,7 @@ class Spell extends AbstractCard
      */
     public function setCode(string $code): Spell
     {
-        $this->setId(Deck::TYPE_MAGIC . '_' . $code);
-
-        $this->code = $code;
+        $this->code = self::TYPE_MAGIC . '_' . $code;
         $this->setTypeArg($code);
 
         return $this;

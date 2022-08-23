@@ -46,9 +46,7 @@ class Lineage extends AbstractCard
      */
     public function setCode(string $code): Lineage
     {
-        $this->setId(self::TYPE_LINEAGE . '_' . $code);
-
-        $this->code = $code;
+        $this->code = self::TYPE_LINEAGE . '_' . $code;
         $this->setType($code);
 
         return $this;

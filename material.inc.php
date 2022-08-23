@@ -412,7 +412,7 @@ $lineage
         ->setMeeplePower((new Bonus(1, Bonus::IS_ALSO, Meeple::MAGE))->setDescription(clienttranslate("Count as a mage to discover or launch Nature spells")))
         ->setObjective($objHumaniWorker)
         ->setObjectiveBonus((new Bonus(1, Bonus::IS_ALSO, Meeple::MAGE))->setDescription(clienttranslate("Count as one more")))
-        ->setLeadingBonus(new Bonus(1, Bonus::DRAW_CARD, AbstractCard::TYPE_MAGIC))
+        ->setLeadingBonus(new Bonus(1, Bonus::DRAW_CARD, AbstractCard::TYPE_MAGICAL))
         ->setArtist('Kevins Darnis')
     )
     ->addCard((new Lineage(Meeple::HUMANI_MAGE))
@@ -499,7 +499,7 @@ $school = (new Invention(Invention::TYPE_SCIENCE, Invention::SCHOOL))
     ->setResources([$animal, $clay])
     ->addUnit($savant)
 ;
-$stoneCircle = (new Invention(Invention::TYPE_MAGIC, Invention::STONE_CIRCLE))
+$stoneCircle = (new Invention(Invention::TYPE_MAGICAL, Invention::STONE_CIRCLE))
     ->setName(clienttranslate("Stone circle"))
     ->setDescription(clienttranslate("End of turn: Convert one unit into mage."))
     ->setScience(2)
@@ -1167,7 +1167,7 @@ $exploreFight
         ->setGives([
             new Bonus(1, Bonus::RESOURCE, $paper->getCode()),
             new Bonus(1, Bonus::RESOURCE, $gem->getCode()),
-            new Bonus(2, Bonus::DRAW_CARD, AbstractCard::TYPE_MAGIC),
+            new Bonus(2, Bonus::DRAW_CARD, AbstractCard::TYPE_MAGICAL),
         ])
     )
     ->addCard((new Fight(Fight::CENTAURS, 10))

@@ -7,7 +7,7 @@ abstract class AbstractCard
     public const TYPE_DISEASE     = 'disease';
     public const TYPE_FIGHT     = 'fight';
     public const TYPE_OTHER     = 'other';
-    public const TYPE_MAGIC     = 'magic';
+    public const TYPE_MAGIC     = 'spell';
     public const TYPE_INVENTION = 'invention';
     public const TYPE_OBJECTIVE = 'objective';
     public const TYPE_LINEAGE   = 'lineage';

@@ -3,7 +3,6 @@
 namespace LdH\Entity\Cards;
 
 use LdH\Entity\Bonus;
-use LdH\Entity\Map\Resource;
 use LdH\Entity\Meeple;
 
 class Objective extends AbstractCard
@@ -90,15 +89,13 @@ class Objective extends AbstractCard
     }
 
     /**
-     * @param string $code
+     * @param int $code
      *
      * @return Objective
      */
-    public function setCode(string $code): Objective
+    public function setCode(int $code): Objective
     {
-        $this->setId(Deck::TYPE_OBJECTIVE . '_' . $code);
-
-        $this->code = $code;
+        $this->code = self::TYPE_OBJECTIVE . '_' . $code;
         $this->setType($code);
 
         return $this;

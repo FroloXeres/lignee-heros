@@ -56,9 +56,7 @@ class Other extends AbstractCard
      */
     public function setCode(string $code): Other
     {
-        $this->setId(self::TYPE_OTHER . '_' . $code);
-
-        $this->code = $code;
+        $this->code = self::TYPE_OTHER . '_' . $code;
         $this->setType($code);
 
         return $this;

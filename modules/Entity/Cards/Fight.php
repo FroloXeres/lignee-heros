@@ -63,9 +63,7 @@ class Fight extends AbstractCard
      */
     public function setCode(string $code): Fight
     {
-        $this->setId(Deck::TYPE_EXPLORE_FIGHT . '_' . $code);
-
-        $this->code = $code;
+        $this->code = self::TYPE_FIGHT . '_' . $code;
         $this->setType($code);
 
         return $this;
