@@ -62,8 +62,6 @@ class Invention extends AbstractCard
     public const GEM_CUTTING   = 141;
     public const BREEDING      = 142;
 
-    protected string $code = '';
-
     // Cost
     /** @var int */
     protected int $science = 0;
@@ -101,16 +99,12 @@ class Invention extends AbstractCard
     }
 
     /**
-     * @param int $code
-     *
-     * @return Invention
+     * @param string $code
      */
-    public function setCode(int $code): Invention
+    public function setCode(string $code): void
     {
         $this->code = self::TYPE_INVENTION . '_' . $code;
         $this->setTypeArg($code);
-
-        return $this;
     }
 
     /**

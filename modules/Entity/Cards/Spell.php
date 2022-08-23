@@ -79,7 +79,6 @@ class Spell extends AbstractCard
     public const GREAT_CURE        = 626;
     public const EXHAUSTING        = 627;
 
-    protected int       $code;
     protected int       $when        = self::WHEN_TURN_ANY;
     protected int       $target      = self::TARGET_NO;
     protected int       $targetCount = 1;
@@ -117,15 +116,11 @@ class Spell extends AbstractCard
 
     /**
      * @param string $code
-     *
-     * @return Spell
      */
-    public function setCode(string $code): Spell
+    public function setCode(string $code): void
     {
         $this->code = self::TYPE_MAGIC . '_' . $code;
         $this->setTypeArg($code);
-
-        return $this;
     }
 
     /**

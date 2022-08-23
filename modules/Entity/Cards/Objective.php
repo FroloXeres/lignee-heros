@@ -58,10 +58,9 @@ class Objective extends AbstractCard
     public const NEED_SUB_WARRIOR      = 15;
     public const NEED_SUB_WORKER       = 16;
 
-    protected int $code;
-    protected int $need;
-    protected int $subNeed;
-    protected int $needCount;
+    protected int    $need;
+    protected int    $subNeed;
+    protected int    $needCount;
 
     /**
      * @param int $code

@@ -56,15 +56,7 @@ class Deck implements \Iterator
      */
     public function getCards(): array
     {
-        return array_values($this->cards);
-    }
-
-    /**
-     * @return AbstractCard|null
-     */
-    public function getCard(string $id):? AbstractCard
-    {
-        return $this->cards[$id]?? null;
+        return $this->cards;
     }
 
     /**
@@ -76,7 +68,7 @@ class Deck implements \Iterator
     public function addCard(AbstractCard $card, int $count = 1): Deck
     {
         for ($i = 0; $i < $count; $i++) {
-            $this->cards[$card->getId()] = $card;
+            $this->cards[] = $card;
         }
 
         return $this;

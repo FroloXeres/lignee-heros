@@ -23,7 +23,6 @@ class Fight extends AbstractCard
     public const SORCERER      = 215;
     public const CENTAURS      = 216;
 
-    protected int  $code;
     protected bool $toCity = false;
     protected int  $power;
 
@@ -58,15 +57,11 @@ class Fight extends AbstractCard
 
     /**
      * @param string $code
-     *
-     * @return Fight
      */
-    public function setCode(string $code): Fight
+    public function setCode(string $code): void
     {
         $this->code = self::TYPE_FIGHT . '_' . $code;
         $this->setType($code);
-
-        return $this;
     }
 
     /**

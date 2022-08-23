@@ -10,7 +10,6 @@ class Lineage extends AbstractCard
     public const LEADING_TYPE_EVERY3TURN = 1;
     public const LEADING_TYPE_FIGHT      = 2;
 
-    protected string  $code        = '';
     protected ?Meeple $meeple      = null;
 
     protected ?Bonus     $meeplePower    = null;
@@ -41,15 +40,11 @@ class Lineage extends AbstractCard
 
     /**
      * @param string $code
-     *
-     * @return Lineage
      */
-    public function setCode(string $code): Lineage
+    public function setCode(string $code): void
     {
         $this->code = self::TYPE_LINEAGE . '_' . $code;
         $this->setType($code);
-
-        return $this;
     }
 
     /**

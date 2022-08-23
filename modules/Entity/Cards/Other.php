@@ -22,8 +22,6 @@ class Other extends AbstractCard
     public const INHABITED_CAVE       = 414;
     public const CURSE                = 415;
 
-    protected int  $code;
-
     /**
      * @var Bonus[]
      */
@@ -51,15 +49,11 @@ class Other extends AbstractCard
 
     /**
      * @param string $code
-     *
-     * @return Other
      */
-    public function setCode(string $code): Other
+    public function setCode(string $code): void
     {
         $this->code = self::TYPE_OTHER . '_' . $code;
         $this->setType($code);
-
-        return $this;
     }
 
     /**

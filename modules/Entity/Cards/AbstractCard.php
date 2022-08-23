@@ -18,7 +18,7 @@ abstract class AbstractCard
     public const LOCATION_HIDDEN  = 'hidden';
     public const LOCATION_REMOVED = 'removed';
 
-    protected int    $id;
+    protected string $code         = '';
     protected string $type;
     protected ?int   $type_arg;
     protected string $location     = self::LOCATION_DEFAULT;
@@ -29,19 +29,19 @@ abstract class AbstractCard
     protected string  $artist      = '';
 
     /**
-     * @return int
+     * @return string
      */
-    public function getId(): int
+    public function getCode(): string
     {
-        return $this->id;
+        return $this->code;
     }
 
     /**
-     * @param int $id
+     * @param string $code
      */
-    public function setId(int $id): void
+    public function setCode(string $code): void
     {
-        $this->id = $id;
+        $this->code = $code;
     }
 
     /**
@@ -205,7 +205,7 @@ abstract class AbstractCard
     public function toTpl(string $deck): array
     {
         return [
-            self::TPL_ID              => $this->getId(),
+            self::TPL_ID              => $this->getCode(),
             self::TPL_DECK            => $deck,
             self::TPL_ICON            => 'none',
             self::TPL_COST            => null,
