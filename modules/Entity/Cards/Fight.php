@@ -39,12 +39,11 @@ class Fight extends AbstractCard
      */
     public function __construct(int $code, int $power, bool $toCity = false)
     {
-        $this->code   = $code;
+        $this->setCode($code);
         $this->power  = $power;
         $this->toCity = $toCity;
 
         // Card specific
-        $this->type         = $code;
         $this->type_arg     = 0;
         $this->location_arg = 0;
     }
@@ -64,6 +63,8 @@ class Fight extends AbstractCard
      */
     public function setCode(string $code): Fight
     {
+        $this->setId(Deck::TYPE_EXPLORE_FIGHT . '_' . $code);
+
         $this->code = $code;
         $this->setType($code);
 
@@ -111,7 +112,7 @@ class Fight extends AbstractCard
     }
 
     /**
-     * @return array
+     * @return Bonus[]
      */
     public function getGives(): array
     {
@@ -154,5 +155,24 @@ class Fight extends AbstractCard
             'type_arg'     => $this->getTypeArg(),
             'nbr'          => 1
         ];
+    }
+
+    /**
+     * Return data for Card template build
+     *
+     * @param string $deck
+     *
+     * @return array
+     */
+    public function toTpl(string $deck): array
+    {
+        $tpl = parent::toTpl($deck);
+
+        $tpl[self::TPL_ICON] = self::TYPE_FIGHT;
+        $tpl[self::TPL_COST] = $this->getPower();
+        $tpl[self::TPL_GAIN] = join( ' ', $this->getGives());
+        $tpl[self::TPL_TEXT_BOLD] = $this->toCity()? clienttranslate('City raid') : null;
+
+        return $tpl;
     }
 }

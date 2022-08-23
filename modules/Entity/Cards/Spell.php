@@ -100,11 +100,10 @@ class Spell extends AbstractCard
      */
     public function __construct(string $type, int $code)
     {
-        $this->code = $code;
+        $this->setType($type);
+        $this->setCode($code);
 
         // Card specific
-        $this->type         = $type;
-        $this->type_arg     = $code;
         $this->location_arg = 0;
     }
 
@@ -123,6 +122,8 @@ class Spell extends AbstractCard
      */
     public function setCode(string $code): Spell
     {
+        $this->setId(Deck::TYPE_MAGIC . '_' . $code);
+
         $this->code = $code;
         $this->setTypeArg($code);
 
@@ -322,6 +323,33 @@ class Spell extends AbstractCard
     }
 
     /**
+     * @param string $type
+     *
+     * @return string
+     */
+    public static function getTypeAsText(string $type): string
+    {
+        return clienttranslate(ucfirst($type));
+    }
+
+    /**
+     * @param int $count
+     *
+     * @return string
+     */
+    public static function getCasterAsIcon(int $count): string
+    {
+        return join(
+            ' ',
+            array_fill(
+                0,
+                $count,
+                '[.icon.cube.mage]'
+            )
+        );
+    }
+
+    /**
      * Return data for Card module
      *
      * @return array
@@ -333,5 +361,25 @@ class Spell extends AbstractCard
             'type_arg' => $this->getTypeArg(),
             'nbr'      => 1
         ];
+    }
+
+    /**
+     * Return data for Card template build
+     *
+     * @param string $deck
+     *
+     * @return array
+     */
+    public function toTpl(string $deck): array
+    {
+        $tpl = parent::toTpl($deck);
+
+        $tpl[self::TPL_ICON]      = Deck::TYPE_MAGIC;
+        $tpl[self::TPL_TYPE_ICON] = $this->getType();
+        $tpl[self::TPL_TYPE]      = self::getTypeAsText($this->getType());
+        $tpl[self::TPL_NEED_1]    = self::getCasterAsIcon($this->getCasterCount());
+        $tpl[self::TPL_NEED_2]    = $this->getCost()? '[.icon.cube.'.$this->getCost()->getCode().']' : null;
+
+        return $tpl;
     }
 }

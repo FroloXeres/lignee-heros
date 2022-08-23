@@ -132,8 +132,8 @@
 }
 
 .card {
+    position: relative;
     display: inline-block;
-    border: 1px solid #111;
     aspect-ratio: 7/11;
     border-top-left-radius: 6% 3.8%;
     border-top-right-radius: 6% 3.8%;
@@ -203,6 +203,11 @@
     padding: 1% 2.5%;
     text-align: left;
 }
+.card .cost {
+    width: 11%;
+    border-radius: 50%;
+    text-align: center;
+}
 .card .text:not(:last-child) {
     margin-bottom: 1%;
 }
@@ -255,6 +260,7 @@
     height: 28%;
     font-style: italic;
     font-size: .9em;
+    overflow-y: auto;
 }
 .card .status {
     padding-left: 12%;
@@ -296,6 +302,21 @@
     left: 6%;
 }
 .card.verso.explore .inner::before {
+    background-size: 630% 270%;
+    background-position: 26.35% 10%;
+    top: 23%;
+}
+.card.verso.explore_fight .inner::before {
+    background-size: 630% 270%;
+    background-position: 26.35% 10%;
+    top: 23%;
+}
+.card.verso.explore_other .inner::before {
+    background-size: 630% 270%;
+    background-position: 26.35% 10%;
+    top: 23%;
+}
+.card.verso.explore_disease .inner::before {
     background-size: 630% 270%;
     background-position: 26.35% 10%;
     top: 23%;
@@ -343,6 +364,15 @@
 .icon.cube.all {background-position: 44.8% 0;}
 .icon.cube.monster {background-position: 56% 0;}
 
+.icon.cube.elven_mage {background-position: 40% 80%;}
+.icon.cube.elven_savant {background-position: 50% 80%;}
+.icon.cube.nani_warrior {background-position: 90% 80%;}
+.icon.cube.nani_savant {background-position: 80% 80%;}
+.icon.cube.humani_mage {background-position: 60% 80%;}
+.icon.cube.humani_worker {background-position: 70% 80%;}
+.icon.cube.ork_warrior {background-position: 30% 80%;}
+.icon.cube.ork_worker {background-position: 20% 80%;}
+
 .icon.cube.warrior.moved {background-position: 0 33.33%;}
 .icon.cube.worker.moved {background-position: 11.2% 33.33%;}
 .icon.cube.mage.moved {background-position: 22.4% 33.33%;}
@@ -363,6 +393,9 @@
 .icon.cube.treasure {background-position: 56% 33.33%;}
 .icon.cube.disease {background-position: 67.2% 33.33%;}
 .icon.cube.nature {background-position: 78.4% 33.33%;}
+.icon.cube.healing {background-position: 44.8% 33.33%;}
+.icon.cube.foresight {background-position: 44.8% 33.33%;}
+.icon.cube.enchant {background-position: 44.8% 33.33%;}
 
 .icon.cube.city {background-position: 67.2% 0;}
 .icon.cube.lineage {background-position: 100.8% 66.67%;}
@@ -379,9 +412,20 @@
 .icon.cube.stone {background-position: 56% 100%;}
 .icon.cube.animal {background-position: 11.2% 100%;}
 .icon.cube.clay {background-position: 67.2% 100%;}
+.icon.cube.medic {background-position: 67.2% 100%;}
 
+.icon.cube.food_stock {background-position: 40% 100%;}
+.icon.cube.science_stock {background-position: 50% 100%;}
 .icon.cube.life {background-position: 89.6% 100%;}
 .icon.cube.power {background-position: 100.8% 100%;}
+.icon.cube.defense_city {background-position: 0% 80%;}
+.icon.cube.defense_warrior {background-position: 10% 80%;}
+
+.icon.cube.draw {background-position: 30% 100%;}
+.icon.cube.undraw {background-position: 60% 100%;}
+.icon.cube.dice_fight {background-position: 0% 100%;}
+.icon.cube.dice_growth {background-position: 10% 100%;}
+.icon.cube.dice_explore {background-position: 20% 100%;}
 
 /********* MAP **********/
 #map-zone {

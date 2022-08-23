@@ -32,16 +32,23 @@
     <!-- END CARD -->
     <ul class="card_list">
         <!-- BEGIN CARDS -->
-        <li><div class="card recto {DECK} {ID} {SUB_ID}">
+        <li><div class="card recto {DECK} {ID}">
                 <div class="content">
                     <div class="inner">
+                        <div class="text icon {ICON}"></div>
+                        <div class="text cost">{COST}</div>
                         <div class="text title">{NAME}</div>
-                        <div class="text cost-gain">
-                            <div class="cost"></div>
-                            <div class="gain"></div>
+                        <div class="sub {TYPE_ICON}">{TYPE}</div>
+                        <div class="text cost">
+                            <div>{NEED_1}</div>
+                            <div>{NEED_2}</div>
+                        </div>
+                        <div class="text gain">{GAIN}</div>
+                        <div class="text info">
+                            <div class="bold">{TEXT_BOLD}</div>
+                            <div>{TEXT}</div>
                         </div>
                         <div class="text graph"></div>
-                        <div class="text info">{DESCRIPTION}</div>
                         <div class="status">{ARTIST}</div>
                     </div>
                 </div>

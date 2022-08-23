@@ -7,7 +7,7 @@ class Deck implements \Iterator
     public const TYPE_EXPLORE_DISEASE = 'explore_disease';
     public const TYPE_EXPLORE_FIGHT   = 'explore_fight';
     public const TYPE_EXPLORE_OTHER   = 'explore_other';
-    public const TYPE_MAGIC           = 'magic';
+    public const TYPE_MAGIC           = 'spell';
     public const TYPE_INVENTION       = 'invention';
     public const TYPE_OBJECTIVE       = 'objective';
     public const TYPE_LINEAGE         = 'lineage';
@@ -56,7 +56,15 @@ class Deck implements \Iterator
      */
     public function getCards(): array
     {
-        return $this->cards;
+        return array_values($this->cards);
+    }
+
+    /**
+     * @return AbstractCard|null
+     */
+    public function getCard(string $id):? AbstractCard
+    {
+        return $this->cards[$id]?? null;
     }
 
     /**
@@ -68,7 +76,7 @@ class Deck implements \Iterator
     public function addCard(AbstractCard $card, int $count = 1): Deck
     {
         for ($i = 0; $i < $count; $i++) {
-            $this->cards[] = $card;
+            $this->cards[$card->getId()] = $card;
         }
 
         return $this;

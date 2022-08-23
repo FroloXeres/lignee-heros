@@ -15,6 +15,7 @@ abstract class AbstractCard
     public const LOCATION_DEFAULT = 'deck';
     public const LOCATION_HAND    = 'hand';
     public const LOCATION_DISCARD = 'discard';
+    public const LOCATION_HIDDEN  = 'hidden';
     public const LOCATION_REMOVED = 'removed';
 
     protected int    $id;
@@ -25,6 +26,7 @@ abstract class AbstractCard
 
     protected string  $name        = '';
     protected string  $description = '';
+    protected string  $artist      = '';
 
     /**
      * @return int
@@ -147,9 +149,79 @@ abstract class AbstractCard
     }
 
     /**
+     * @return string
+     */
+    public function getArtist(): string
+    {
+        return $this->artist;
+    }
+
+    /**
+     * @param string $artist
+     *
+     * @return AbstractCard
+     */
+    public function setArtist(string $artist): AbstractCard
+    {
+        $this->artist = $artist;
+
+        return $this;
+    }
+
+    /**
      * Return data for Card module
      *
      * @return array
      */
     abstract public function toArray(): array;
+
+    public const TPL_ID        = 'ID';
+    public const TPL_DECK      = 'DECK';
+    public const TPL_ICON      = 'ICON';
+    public const TPL_COST      = 'COST';
+    public const TPL_NAME      = 'NAME';
+    public const TPL_TYPE_ICON = 'TYPE_ICON';
+    public const TPL_TYPE      = 'TYPE';
+    public const TPL_NEED_1    = 'NEED_1';
+    public const TPL_NEED_2    = 'NEED_2';
+    public const TPL_GAIN      = 'GAIN';
+    public const TPL_TEXT_BOLD = 'TEXT_BOLD';
+    public const TPL_TEXT      = 'TEXT';
+    public const TPL_ARTIST    = 'ARTIST';
+
+    public const TPL_MEEPLE_POWER    = 'MEEPLE_POWER';
+    public const TPL_OBJECTIVE       = 'OBJECTIVE';
+    public const TPL_OBJECTIVE_BONUS = 'OBJECTIVE_BONUS';
+    public const TPL_LEAD_TYPE       = 'LEAD_TYPE';
+    public const TPL_LEAD_POWER      = 'LEAD_POWER';
+
+    /**
+     * Return data for Card template build
+     *
+     * @param string $deck
+     *
+     * @return array
+     */
+    public function toTpl(string $deck): array
+    {
+        return [
+            self::TPL_ID              => $this->getId(),
+            self::TPL_DECK            => $deck,
+            self::TPL_ICON            => 'none',
+            self::TPL_COST            => null,
+            self::TPL_NAME            => $this->getName(),
+            self::TPL_TYPE_ICON       => null,
+            self::TPL_TYPE            => null,
+            self::TPL_NEED_1          => null,
+            self::TPL_NEED_2          => null,
+            self::TPL_GAIN            => null,
+            self::TPL_TEXT_BOLD       => null,
+            self::TPL_TEXT            => $this->getDescription(),
+            self::TPL_ARTIST          => $this->getArtist(),
+            self::TPL_MEEPLE_POWER    => null,
+            self::TPL_OBJECTIVE       => null,
+            self::TPL_OBJECTIVE_BONUS => null,
+            self::TPL_LEAD_POWER      => null
+        ];
+    }
 }

@@ -23,12 +23,10 @@ class Disease extends AbstractCard
      */
     public function __construct(int $level, int $code)
     {
-        $this->code  = $code;
-        $this->level = $level;
+        $this->setLevel($level);
+        $this->setCode($code);
 
         // Card specific
-        $this->type         = $this->level;
-        $this->type_arg     = $this->code;
         $this->location_arg = 0;
     }
 
@@ -48,6 +46,8 @@ class Disease extends AbstractCard
     public function setCode(string $code): Disease
     {
         $this->code = $code;
+
+        $this->setId(Deck::TYPE_EXPLORE_DISEASE . '_' . $code);
         $this->setTypeArg($code);
 
         return $this;
@@ -98,5 +98,22 @@ class Disease extends AbstractCard
             'type_arg'     => $this->getTypeArg(),
             'nbr'          => 1
         ];
+    }
+
+    /**
+     * Return data for Card template build
+     *
+     * @param string $deck
+     *
+     * @return array
+     */
+    public function toTpl(string $deck): array
+    {
+        $tpl = parent::toTpl($deck);
+
+        $tpl[self::TPL_ICON] = AbstractCard::TYPE_DISEASE;
+        $tpl[self::TPL_COST] = join('', array_fill(0, $this->getLevel(), 'I'));
+
+        return $tpl;
     }
 }

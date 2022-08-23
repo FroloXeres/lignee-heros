@@ -34,10 +34,9 @@ class Other extends AbstractCard
      */
     public function __construct(int $code)
     {
-        $this->code   = $code;
+        $this->setCode($code);
 
         // Card specific
-        $this->type         = $code;
         $this->type_arg     = 0;
         $this->location_arg = 0;
     }
@@ -57,6 +56,8 @@ class Other extends AbstractCard
      */
     public function setCode(string $code): Other
     {
+        $this->setId(self::TYPE_OTHER . '_' . $code);
+
         $this->code = $code;
         $this->setType($code);
 
@@ -107,5 +108,21 @@ class Other extends AbstractCard
             'type_arg'     => $this->getTypeArg(),
             'nbr'          => 1
         ];
+    }
+
+    /**
+     * Return data for Card template build
+     *
+     * @param string $deck
+     *
+     * @return array
+     */
+    public function toTpl(string $deck): array
+    {
+        $tpl = parent::toTpl($deck);
+
+        $tpl[self::TPL_GAIN] = join(' ', $this->getGives());
+
+        return $tpl;
     }
 }

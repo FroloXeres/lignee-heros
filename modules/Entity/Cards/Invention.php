@@ -62,23 +62,23 @@ class Invention extends AbstractCard
     public const GEM_CUTTING   = 141;
     public const BREEDING      = 142;
 
-    protected string $code  = '';
+    protected string $code = '';
 
     // Cost
-    /** @var int  */
-    protected int   $science   = 0;
+    /** @var int */
+    protected int $science = 0;
 
-    /** @var bool  */
+    /** @var bool */
     protected bool $or = false;
 
     /** @var Resource[] */
     protected array $resources = [];
 
-    /** @var Meeple[]  */
-    protected array $units     = [];
+    /** @var Meeple[] */
+    protected array $units = [];
 
     /** @var Bonus[] */
-    protected array  $gives = [];
+    protected array $gives = [];
 
     /**
      * @param string $type
@@ -86,11 +86,9 @@ class Invention extends AbstractCard
      */
     public function __construct(string $type, int $code)
     {
-        $this->code        = $code;
+        $this->setType($type);
+        $this->setCode($code);
 
-        // Card specific
-        $this->type         = $type;
-        $this->type_arg     = $this->code;
         $this->location_arg = 0;
     }
 
@@ -109,6 +107,8 @@ class Invention extends AbstractCard
      */
     public function setCode(int $code): Invention
     {
+        $this->setId(self::TYPE_INVENTION . '_' . $code);
+
         $this->code = $code;
         $this->setTypeArg($code);
 
@@ -164,7 +164,7 @@ class Invention extends AbstractCard
     {
         $this->resources = $resources;
 
-        return  $this;
+        return $this;
     }
 
     /**
@@ -248,6 +248,14 @@ class Invention extends AbstractCard
     }
 
     /**
+     * @return string
+     */
+    public static function getTypeName(string $type): string
+    {
+        return clienttranslate(ucfirst($type));
+    }
+
+    /**
      * Return data for Card module
      *
      * @return array
@@ -255,9 +263,37 @@ class Invention extends AbstractCard
     public function toArray(): array
     {
         return [
-            'type'         => $this->getType(),
-            'type_arg'     => $this->getTypeArg(),
-            'nbr'          => 1
+            'type'     => $this->getType(),
+            'type_arg' => $this->getTypeArg(),
+            'nbr'      => 1
         ];
+    }
+
+    /**
+     * Return data for Card template build
+     *
+     * @param string $deck
+     *
+     * @return array
+     */
+    public function toTpl(string $deck): array
+    {
+        $tpl = parent::toTpl($deck);
+
+        $tpl[self::TPL_ICON]      = Deck::TYPE_INVENTION;
+        $tpl[self::TPL_COST]      = $this->getScience();
+        $tpl[self::TPL_TYPE_ICON] = $this->getType();
+        $tpl[self::TPL_TYPE]      = self::getTypeName($this->getType());
+        $tpl[self::TPL_NEED_1]    = join(' ', array_map(function(Meeple $unit) {
+            return sprintf('[.icon.cube.%s]', $unit->getCode());
+        }, $this->getUnits()));
+        $tpl[self::TPL_NEED_2]    = join(' ', array_map(function(Resource $resource) {
+            return sprintf('[.icon.cube.%s]', $resource->getCode());
+        }, $this->getResources()));
+
+        // Description/Gain are the same... See if it works like that
+        $tpl[self::TPL_GAIN]      = join(' ', $this->getGives());
+
+        return $tpl;
     }
 }

@@ -2,6 +2,10 @@
 
 namespace LdH\Entity\Cards;
 
+use LdH\Entity\Bonus;
+use LdH\Entity\Map\Resource;
+use LdH\Entity\Meeple;
+
 class Objective extends AbstractCard
 {
     public const ABUNDANCE         = 501;
@@ -20,6 +24,14 @@ class Objective extends AbstractCard
     public const RESEARCHER        = 514;
     public const MAGISTER          = 515;
     public const ESTINY_CHILD      = 516;
+    public const ELVEN_MAGE        = 517;
+    public const ELVEN_SAVANT      = 518;
+    public const NANI_WARRIOR      = 519;
+    public const NANI_SAVANT       = 520;
+    public const HUMANI_WORKER     = 521;
+    public const HUMANI_MAGE       = 522;
+    public const ORK_WARRIOR       = 523;
+    public const ORK_WORKER        = 524;
 
     public const NEED_INVENTION = 1;
     public const NEED_SPELL     = 2;
@@ -27,6 +39,7 @@ class Objective extends AbstractCard
     public const NEED_HARVEST   = 4;
     public const NEED_SURVIVE   = 5;
     public const NEED_WIN_FIGHT = 6;
+    public const NEED_UNITS     = 7;
 
     public const NEED_SUB_ANY          = 0;
     public const NEED_SUB_FIGHT        = 1;
@@ -41,6 +54,10 @@ class Objective extends AbstractCard
     public const NEED_SUB_RESOURCE_ALL = 10;
     public const NEED_SUB_RESOURCE_ONE = 11;
     public const NEED_SUB_NO_WOUND     = 12;
+    public const NEED_SUB_MAGE         = 13;
+    public const NEED_SUB_SAVANT       = 14;
+    public const NEED_SUB_WARRIOR      = 15;
+    public const NEED_SUB_WORKER       = 16;
 
     protected int $code;
     protected int $need;
@@ -50,16 +67,17 @@ class Objective extends AbstractCard
     /**
      * @param int $code
      */
-    public function __construct(int $code)
+    public function __construct(int $code, bool $lineage = false)
     {
-        $this->code      = $code;
+        $this->setCode($code);
         $this->need      = self::NEED_EXPLORE;
         $this->subNeed   = self::NEED_SUB_ANY;
         $this->needCount = 1;
 
         // Card specific
-        $this->type         = $this->code;
         $this->type_arg     = 0;
+
+        $this->location     = $lineage? self::LOCATION_HIDDEN : self::LOCATION_DEFAULT;
         $this->location_arg = 0;
     }
 
@@ -78,6 +96,8 @@ class Objective extends AbstractCard
      */
     public function setCode(string $code): Objective
     {
+        $this->setId(Deck::TYPE_OBJECTIVE . '_' . $code);
+
         $this->code = $code;
         $this->setType($code);
 
@@ -144,6 +164,13 @@ class Objective extends AbstractCard
         return $this;
     }
 
+    public function getDescription(): string
+    {
+        $entityAsText = (string) $this;
+
+        return $entityAsText?? parent::getDescription();
+    }
+
     /**
      * Return data for Card module
      *
@@ -159,5 +186,69 @@ class Objective extends AbstractCard
             'sub'          => $this->getSubNeed(),
             'count'        => $this->getNeedCount()
         ];
+    }
+
+    /**
+     * Return data for Card template build
+     *
+     * @param string $deck
+     *
+     * @return array
+     */
+    public function toTpl(string $deck): array
+    {
+        $tpl = parent::toTpl($deck);
+
+        $tpl[self::TPL_ICON] = Deck::TYPE_OBJECTIVE;
+
+        return $tpl;
+    }
+
+    /**
+     * @param int $subNeed
+     *
+     * @return string
+     */
+    protected static function getSubNeedAsText(int $subNeed): string
+    {
+        switch ($subNeed) {
+            case self::NEED_SUB_WORKER: return Meeple::WORKER;
+            case self::NEED_SUB_WARRIOR: return Meeple::WARRIOR;
+            case self::NEED_SUB_MAGE: return Meeple::MAGE;
+            case self::NEED_SUB_SAVANT: return Meeple::SAVANT;
+            case self::NEED_SUB_NATURE: return Spell::TYPE_NATURE;
+            case self::NEED_SUB_FIGHT: return Spell::TYPE_FIGHT;
+            case self::NEED_SUB_SCIENCE: return Bonus::SCIENCE;
+            case self::NEED_SUB_FOOD: return Bonus::FOOD;
+            case self::NEED_SUB_FAR_I:
+            case self::NEED_SUB_FAR_III:
+                return 'tile';
+
+            default: return '';
+        }
+    }
+
+    /**
+     * @return string
+     */
+    public function __toString(): string
+    {
+        $txt = [];
+
+        switch ($this->getNeed()) {
+            case self::NEED_UNITS:
+                $txt[] = '[.icon.cube.'.self::getSubNeedAsText($this->getSubNeed()).']';
+                break;
+            case self::NEED_SPELL:
+                $txt[] = '[.icon.cube.spell]';
+
+                if ($this->getSubNeed()) {
+                    $txt[] = '[.icon.cube.'.$this->getSubNeed().']';
+                }
+                break;
+            default: break;
+        }
+
+        return join(' ', $txt);
     }
 }
