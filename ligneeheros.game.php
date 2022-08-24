@@ -214,6 +214,7 @@ class ligneeheros extends Table
                 $ldhDeck = $this->cards[$type];
 
                 $deck->createCards($ldhDeck->toArray(), AbstractCard::LOCATION_DEFAULT);
+
                 if (!$ldhDeck->isPublic()) {
                     $deck->shuffle(AbstractCard::LOCATION_DEFAULT);
                 }

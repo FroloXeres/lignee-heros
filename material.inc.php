@@ -177,15 +177,20 @@ $objective = (new Deck(Deck::TYPE_OBJECTIVE))
     ->setName(clienttranslate('Objective cards'))
     ->setIsPublic(true);
 $magic = (new Deck(Deck::TYPE_MAGIC))
-    ->setName(clienttranslate('Sepll cards'));
+    ->setName(clienttranslate('Sepll cards'))
+    ->setIsPublic(true);
 $invention = (new Deck(Deck::TYPE_INVENTION))
-    ->setName(clienttranslate('Invention cards'));
+    ->setName(clienttranslate('Invention cards'))
+    ->setIsPublic(true);
 $exploreFight = (new Deck(Deck::TYPE_EXPLORE_FIGHT))
-    ->setName(clienttranslate('Explore : Fight cards'));
+    ->setName(clienttranslate('Explore : Fight cards'))
+    ->setIsPublic(true);
 $exploreOther = (new Deck(Deck::TYPE_EXPLORE_OTHER))
-    ->setName(clienttranslate('Explore : Other cards'));
+    ->setName(clienttranslate('Explore : Other cards'))
+    ->setIsPublic(true);
 $exploreDisease = (new Deck(Deck::TYPE_EXPLORE_DISEASE))
-    ->setName(clienttranslate('Explore : Disease cards'));
+    ->setName(clienttranslate('Explore : Disease cards'))
+    ->setIsPublic(true);
 $this->cards = [
     $lineage->getType()        => $lineage,
     $objective->getType()      => $objective,

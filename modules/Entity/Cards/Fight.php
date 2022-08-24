@@ -24,12 +24,12 @@ class Fight extends AbstractCard
     public const CENTAURS      = 216;
 
     protected bool $toCity = false;
-    protected int  $power;
+    protected int  $power  = 0;
 
     /**
      * @var Bonus[]
      */
-    protected array $gives;
+    protected array $gives = [];
 
     /**
      * @param int  $code

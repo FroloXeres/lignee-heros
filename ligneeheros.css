@@ -105,16 +105,19 @@
 .card.end_turn {float: right;}
 
 .deck-list .card {
+    display: inline-block;
     width: 15%;
 }
 .deck-list .card.large {
     width: 20%;
 }
 .card_list {
-    /*display: none;*/
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
 }
 .card_list li {
-    display: inline-block;
     width: 15%;
 }
 .counter {
@@ -123,8 +126,8 @@
     font-weight: 700;
     height: 1em;
     width: 2em;
-    bottom: .5em;
-    right: .75em;
+    bottom: 5%;
+    right: 8%;
     color: #eee;
     text-align: right;
     z-index: 1;
@@ -133,25 +136,26 @@
 
 .card {
     position: relative;
-    display: inline-block;
     aspect-ratio: 7/11;
     border-top-left-radius: 6% 3.8%;
     border-top-right-radius: 6% 3.8%;
     border-bottom-left-radius: 6% 3.8%;
     border-bottom-right-radius: 6% 3.8%;
-    font-size: .8em;
+    font-size: .7em;
 }
 .card.verso {
     background-color: #000;
 }
 .card.recto {
     background-color: #fff;
+    padding: .1%;
+    border: 1px solid #000;
 }
 .card .content {
     background: url(img/card-sprites.png) 0 0 no-repeat;
-    width: calc(100% - 6%);
-    height: calc(100% - 3%);
-    background-size: 522% 137%;
+    width: 94%;
+    height: 100%;
+    background-size: 640% 135%;
     box-sizing: border-box;
     margin: 3%;
     padding-top: 5%;
@@ -160,8 +164,8 @@
     background-position: 100% 0%;
 }
 .card.recto .content {
-    background-position: 76.25% 0%;
-    background-size: 531% 137%;
+    background-position: 81% 0%;
+    background-size: 655% 135.4%;
     padding-top: 0;
 }
 .card.verso .content .inner {
@@ -182,10 +186,11 @@
     position: relative;
     box-sizing: border-box;
     height: 100%;
-    padding: 1%;
+    padding: 1.5%;
     display: flex;
     flex-direction: column;
-    justify-content: flex-start;
+    justify-content: stretch;
+    align-items: stretch;
 }
 .card.recto .content .inner::after {
     content: "";
@@ -194,75 +199,125 @@
     right: 0;
     width: 11%;
     height: 7%;
-    background: url("img/card-sprites.png") 86.5% 79.5% no-repeat;
-    background-size: 3980% 1683.3%;
+    background: url("img/card-sprites.png") 90.3% 80% no-repeat;
+    background-size: 4200% 2100%;
 }
 .card .text {
     border: 1px solid #c29253;
-    background-color: #f0e094;
+    background-color: #f5ebb8;
     padding: 1% 2.5%;
     text-align: left;
 }
-.card .cost {
-    width: 11%;
-    border-radius: 50%;
-    text-align: center;
-}
-.card .text:not(:last-child) {
+.card .header {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    height: 9.8%;
     margin-bottom: 1%;
 }
+.card .header .card-icon {
+    width: 16%;
+    margin-right: 1%;
+}
+.card-icon .icon {
+    width: 90%;
+    height: 90%;
+}
+.card .cost {
+    width: 16%;
+    border-radius: 50%;
+    text-align: center;
+    margin-right: 1%;
+    padding: 0;
+}
+.card .cost:empty {display: none}
+
 .card .title {
-    height: 7%;
-    margin-left: 11%;
     font-weight: bold;
+    flex-grow: 1;
+    overflow: hidden;
 }
-.card .cost-gain {
-    height: 15%;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-}
-.card .cost-gain > div {
-    height: 50%;
-    padding-left: 11%;
+
+.card .type {
     position: relative;
+    text-align: left;
+    padding-left: 11%;
+    font-size: .7em;
+    font-weight: bold;
+    height: 4.5%;
+    margin-bottom: 1%;
 }
-.card .cost-gain > div::before {
+.card .type::before {
     content: "";
-    background: url("img/icons.png") no-repeat;
-    background-size: 990% 400%;
     position: absolute;
-    width: 8%;
-    height: 70%;
-    top: 15%;
+    top: 0;
     left: 0;
+    width: 8%;
+    height: 100%;
+    background: url("img/icons.png") 0 0 no-repeat;
+    background-size: 980% 400%;
 }
-.card .cost-gain .cost::before {
-    background-position: 100.8% 0;
+.card .type.development::before {background-position: 67.2% 0%;}
+.card .type.nature::before {background-position: 79% 33.33%;}
+.card .type.healing::before {background-position: 0% 0%;}
+.card .type.fight::before {background-position: 44.7% 33.33%;}
+.card .type.science::before {background-position: 100% 33.33%;}
+.card .type.growth::before {background-position: 89.6% 100%;}
+.card .type.enchant::before {background-position: 0% 0%;}
+.card .type.magic::before {background-position: 67.2% 66.67%;}
+.card .type.foresight::before {background-position: 0% 0%;}
+.card .type:empty {display: none}
+
+.card .needs {
+    border-top-left-radius: 5% 21%;
+    border-top-right-radius: 5% 21%;
+    border-bottom-left-radius: 5% 21%;
+    border-bottom-right-radius: 5% 21%;
+    margin-bottom: 1%;
+    max-height: 9.8%;
 }
-.card .cost-gain .gain::before {
-    background-position: 56% 33.33%;
+.card .needs:empty {display: none}
+.card .needs > div:empty {display: none}
+
+.card .gain {
+    border-top-left-radius: 5% 21%;
+    border-top-right-radius: 5% 21%;
+    border-bottom-left-radius: 5% 21%;
+    border-bottom-right-radius: 5% 21%;
+    height: 9.8%;
+    margin-bottom: 1%;
 }
+.card .gain:empty {display: none}
+
 .card .graph {
     height: 32.25%;
     background: url("img/graphs.jpg") 0 0 no-repeat;
-    background-size: 700% 100%;
+    background-size: 1010% 101%;
+    margin-bottom: 1%;
 }
-.card.stock .graph {background-position: 16.67% 0%;}
-.card.defense .graph {background-position: 83.33% 0%;}
-.card.smith .graph {background-position: 33.33% 0%;}
-.card.hut .graph {background-position: 66.67% 0%;}
-.card.center .graph {background-position: 100% 0%;}
+.card.explore_disease .graph {background-position: 22.2% 0%;}
+.card.stock .graph {background-position: 11.1% 0%;}
+.card.fence .graph {background-position: 55.5% 0%;}
+.card.smith .graph {background-position: 22.2% 0%;}
+.card.hut .graph {background-position: 44.4% 0%;}
+.card.center .graph {background-position: 66.6% 0%;}
 .card.stone_cut .graph {background-position: 0% 0%;}
-.card.pottery .graph {background-position: 50% 0%;}
+.card.pottery .graph {background-position: 33.3% 0%;}
+.card.talus .graph {background-position: 77.7% 0%;}
+.card.cooler .graph {background-position: 88.8% 0%;}
+.card.stone_circle .graph {background-position: 100% 0%;}
 
 .card .info {
-    height: 28%;
+    flex-grow: 1;
     font-style: italic;
     font-size: .9em;
     overflow-y: auto;
+    margin-bottom: 1%;
 }
-.card .status {
+.card .info .bold {
+    text-align: center;
+}
+.card .footer {
     padding-left: 12%;
     height: 7%;
     display: flex;
@@ -271,13 +326,13 @@
     justify-content: flex-start;
     margin-top: auto;
 }
-.card .status::before {
+.card .footer::before {
     position: absolute;
     content: "";
-    background: url(img/card-sprites.png) 82.3% 76.25% no-repeat;
-    background-size: 4975% 2404.76%;
+    background: url(img/card-sprites.png) 87% 78.3% no-repeat;
+    background-size: 5550% 2200%;
     left: 1%;
-    bottom: 0;
+    bottom: 1%;
     width: 11%;
     height: 7%;
 }
@@ -292,8 +347,9 @@
     left: 5%;
 }
 .card.verso.invention .inner::before {
-    background-size: 660% 280%;
-    background-position: 26.55% 88%;
+    background-size: 800% 280%;
+    background-position: 22.2% 89%;
+    top: 23%;
 }
 .card.verso.end_turn .inner::before {
     background-position: 2% 88%;
@@ -307,34 +363,35 @@
     top: 23%;
 }
 .card.verso.explore_fight .inner::before {
-    background-size: 630% 270%;
-    background-position: 26.35% 10%;
-    top: 23%;
+    background-size: 880% 300%;
+    background-position: 61.3% 92%;
+    top: 26%;
 }
 .card.verso.explore_other .inner::before {
-    background-size: 630% 270%;
-    background-position: 26.35% 10%;
+    background-size: 880% 300%;
+    background-position: 22.5% 15%;
     top: 23%;
 }
 .card.verso.explore_disease .inner::before {
-    background-size: 630% 270%;
-    background-position: 26.35% 10%;
-    top: 23%;
+    background-size: 820% 300%;
+    background-position: 61.35% 16.5%;
+    top: 21%;
 }
-.card.verso.magic .inner::before {
-    background-position: 51.3% 92%;
+.card.verso.spell .inner::before {
+    background-size: 880% 290%;
+    background-position: 41.8% 92%;
     top: 26%;
 }
 .card.verso.lineage .inner::before {
     background-size: 590% 230%;
-    background-position: 0.8% 5%;
+    background-position: 0 5%;
     aspect-ratio: 0.9;
     top: 22%;
 }
 .card.verso.objective .inner::before {
-    background-position: 51% 14%;
-    background-size: 660% 260%;
-    top: 26%;
+    background-position: 41.7% 13%;
+    background-size: 900% 300%;
+    top: 24%;
 }
 
 #city-zone {
@@ -389,8 +446,8 @@
 .icon.cube.invention {background-position: 78.4% 66.67%;}
 .icon.cube.end_turn {background-position: 89.6% 66.67%;}
 
-.icon.cube.battle {background-position: 44.8% 33.33%;}
-.icon.cube.treasure {background-position: 56% 33.33%;}
+.icon.cube.fight {background-position: 44.8% 33.33%;}
+.icon.cube.other {background-position: 56% 33.33%;}
 .icon.cube.disease {background-position: 67.2% 33.33%;}
 .icon.cube.nature {background-position: 78.4% 33.33%;}
 .icon.cube.healing {background-position: 44.8% 33.33%;}

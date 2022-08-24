@@ -25,7 +25,7 @@ class Other extends AbstractCard
     /**
      * @var Bonus[]
      */
-    protected array $gives;
+    protected array $gives = [];
 
     /**
      * @param int $code
@@ -113,6 +113,7 @@ class Other extends AbstractCard
     {
         $tpl = parent::toTpl($deck);
 
+        $tpl[self::TPL_ICON] = self::TYPE_OTHER;
         $tpl[self::TPL_GAIN] = join(' ', $this->getGives());
 
         return $tpl;

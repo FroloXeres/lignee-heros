@@ -55,7 +55,7 @@ CREATE TABLE IF NOT EXISTS `explore_other` (
     PRIMARY KEY (`card_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
-CREATE TABLE IF NOT EXISTS `magic` (
+CREATE TABLE IF NOT EXISTS `spell` (
     `card_id` smallint(2) unsigned NOT NULL AUTO_INCREMENT,
     `card_type` varchar(16) NOT NULL,
     `card_type_arg` int(11) NOT NULL,
