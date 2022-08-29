@@ -132,30 +132,65 @@ class Bonus
     {
         if ($this->description) return $this->description;
         // Else
-
+        $preOp     = '';
         $operation = '+';
 
         switch ($this->code) {
-        case self::FOOD:
-        case self::FOOD_FOUND:
-            $icon = '[.icon.cube.food]';
-            break;
-        case self::SCIENCE:
-        case self::SCIENCE_FOUND:
-            $icon = '[.icon.cube.science]';
-            break;
-        case self::RESOURCE:
-            $icon      = '[.icon.cube.'.$this->getType().']';
-            $operation = $this->count > 1? 'x' : '';
-            break;
-        default:
-            $icon = '[none]';
-            break;
+            case self::DISTANT_POWER:
+                $icon = '[power][move]';
+                break;
+            case self::POWER:
+            case self::DEFENSE_CITY:
+            case self::DEFENSE_WARRIOR:
+            case self::GROWTH:
+            case self::MOVE:
+                $icon = '['.$this->code.']';
+                break;
+            case self::BIRTH:
+                $icon = '['.$this->type.']';
+                break;
+            case self::STOCK:
+                $icon = '[food_stock]';
+                break;
+            case self::FOOD:
+                $icon = '[worker][end_turn][food]';
+                break;
+            case self::FOOD_FOUND:
+                $icon = '[food]';
+                break;
+            case self::SCIENCE:
+                $icon = '[savant][end_turn][science]';
+                break;
+            case self::SCIENCE_FOUND:
+                $icon = '[science]';
+                break;
+            case self::RESOURCE:
+                $icon      = '['.$this->getType().']';
+                $operation = $this->count > 1? 'x' : '';
+                break;
+            case self::DRAW_CARD:
+                $icon = '[draw]['.$this->type.']';
+                $operation = '';
+                break;
+            case self::CONVERTER:
+                $preOp = ' + ';
+            case self::CONVERT:
+                $operation = '';
+                $icon      = '[all][end_turn]['.$this->type.']';
+                break;
+            case self::DISEASE:
+                $operation = '';
+                $icon = '[healing][disease] ' . $this->type;
+                break;
+            default:
+                $icon = '[none]';
+                break;
         }
 
-        return sprintf('%s %s%s',
+        return sprintf('%s%s %s%s',
+            $preOp,
             $icon,
-            $operation,
+            $this->count >= 0? $operation : '',
             ($operation === '+' || $this->count > 1)? $this->count : ''
         );
     }

@@ -53,61 +53,24 @@
     text-align: center;
     margin: 1em auto;
 }
-.deck {
-    background: url("img/cards.png") 0 0;
-    background-size: auto 100%;
-    width: 15%;
-    max-width: 124px;
-    aspect-ratio: 124 / 193;
-
-    display: inline-block;
-    position: relative;
-    margin: auto 0.5em;
-    cursor: pointer;
-}
-.deck:before, .deck:after {
-    content: "";
-    position: absolute;
-    box-sizing: border-box;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    background: url("img/cards.png") 0 0;
-    background-size: auto 100%;
-}
-.mode_3d .deck:before, .mode_3d .deck:after {display: none;}
-.deck.large:before, .deck.large:after {
-    background: url("img/big_cards.png") 0 0;
-    background-size: auto 100%;
-}
-.deck:before {transform: translate(-3px, -3px);}
-.deck:after {transform: translate(3px, 3px);}
-.deck.large {
-    background: url("img/big_cards.png") 0 0;
-    background-size: auto 100%;
-    width: 15%;
-    max-width: 192px;
-    aspect-ratio: 192 / 295;
-}
 
 .card.disabled {display: none;}
 .card.inactive {cursor: not-allowed;}
-.card.lineage {
-    display: none;
-}
-.card.objective {
-    display: none;
-}
-.card.invention {margin-right: 2em;}
-.card.magic {}
-.card.explore {}
-.card.end_turn {float: right;}
 
 .deck-list .card {
     display: inline-block;
     width: 15%;
 }
+.deck-list .card.lineage {
+    display: none;
+}
+.deck-list .card.objective {
+    display: none;
+}
+.card.magic {}
+.card.end_turn {float: right;}
+
+.deck-list .card.invention {margin-right: 2em;}
 .deck-list .card.large {
     width: 20%;
 }
@@ -128,6 +91,7 @@
     width: 2em;
     bottom: 5%;
     right: 8%;
+    font-size: 1rem;
     color: #eee;
     text-align: right;
     z-index: 1;
@@ -154,7 +118,7 @@
 .card .content {
     background: url(img/card-sprites.png) 0 0 no-repeat;
     width: 94%;
-    height: 100%;
+    height: 96%;
     background-size: 640% 135%;
     box-sizing: border-box;
     margin: 3%;
@@ -208,6 +172,12 @@
     padding: 1% 2.5%;
     text-align: left;
 }
+.card .text.middle {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
 .card .header {
     display: flex;
     flex-direction: row;
@@ -226,7 +196,7 @@
 .card .cost {
     width: 16%;
     border-radius: 50%;
-    text-align: center;
+    font-weight: bold;
     margin-right: 1%;
     padding: 0;
 }
@@ -255,37 +225,68 @@
     width: 8%;
     height: 100%;
     background: url("img/icons.png") 0 0 no-repeat;
-    background-size: 980% 400%;
+    background-size: 1100% 600%;
 }
-.card .type.development::before {background-position: 67.2% 0%;}
-.card .type.nature::before {background-position: 79% 33.33%;}
+.card .type.development::before {background-position: 60% 0%;}
+.card .type.nature::before {background-position: 70% 20%;}
 .card .type.healing::before {background-position: 0% 0%;}
-.card .type.fight::before {background-position: 44.7% 33.33%;}
-.card .type.science::before {background-position: 100% 33.33%;}
-.card .type.growth::before {background-position: 89.6% 100%;}
+.card .type.fight::before {background-position: 40% 20%;}
+.card .type.science::before {background-position: 90% 20%;}
+.card .type.growth::before {background-position: 80% 60%;}
 .card .type.enchant::before {background-position: 0% 0%;}
-.card .type.magic::before {background-position: 67.2% 66.67%;}
+.card .type.magic::before {background-position: 60% 40%;}
 .card .type.foresight::before {background-position: 0% 0%;}
 .card .type:empty {display: none}
 
 .card .needs {
+    position: relative;
     border-top-left-radius: 5% 21%;
     border-top-right-radius: 5% 21%;
     border-bottom-left-radius: 5% 21%;
     border-bottom-right-radius: 5% 21%;
     margin-bottom: 1%;
-    max-height: 9.8%;
+    height: 9.8%;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+.card .needs::before {
+    content: "";
+    position: absolute;
+    width: 15%;
+    height: 80%;
+    background: url(img/icons.png) 90% 0% no-repeat;
+    background-size: 1100% 600%;
+    opacity: 0.2;
+    left: 2.5%;
+    top: 10%;
 }
 .card .needs:empty {display: none}
-.card .needs > div:empty {display: none}
-
 .card .gain {
+    position: relative;
     border-top-left-radius: 5% 21%;
     border-top-right-radius: 5% 21%;
     border-bottom-left-radius: 5% 21%;
     border-bottom-right-radius: 5% 21%;
     height: 9.8%;
     margin-bottom: 1%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+.card .gain::before {
+    content: "";
+    position: absolute;
+    width: 15%;
+    height: 80%;
+    background: url(img/icons.png) 50% 20% no-repeat;
+    background-size: 1100% 600%;
+    opacity: 0.2;
+    left: 2.5%;
+    top: 10%;
 }
 .card .gain:empty {display: none}
 
@@ -295,17 +296,20 @@
     background-size: 1010% 101%;
     margin-bottom: 1%;
 }
+
+/* Graphs for card list  */
 .card.explore_disease .graph {background-position: 22.2% 0%;}
+
 .card.stock .graph {background-position: 11.1% 0%;}
-.card.fence .graph {background-position: 55.5% 0%;}
-.card.smith .graph {background-position: 22.2% 0%;}
+.card.invention_111 .graph {background-position: 55.5% 0%;}
+.card.invention_110 .graph {background-position: 22.2% 0%;}
 .card.hut .graph {background-position: 44.4% 0%;}
 .card.center .graph {background-position: 66.6% 0%;}
-.card.stone_cut .graph {background-position: 0% 0%;}
-.card.pottery .graph {background-position: 33.3% 0%;}
+.card.invention_101 .graph {background-position: 0% 0%;}
+.card.invention_108 .graph {background-position: 33.3% 0%;}
 .card.talus .graph {background-position: 77.7% 0%;}
-.card.cooler .graph {background-position: 88.8% 0%;}
-.card.stone_circle .graph {background-position: 100% 0%;}
+.card.invention_138 .graph {background-position: 88.8% 0%;}
+.card.invention_105 .graph {background-position: 100% 0%;}
 
 .card .info {
     flex-grow: 1;
@@ -313,10 +317,15 @@
     font-size: .9em;
     overflow-y: auto;
     margin-bottom: 1%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    text-align: center;
 }
 .card .info .bold {
     text-align: center;
 }
+.card .info:empty {display: none}
 .card .footer {
     padding-left: 12%;
     height: 7%;
@@ -404,7 +413,7 @@
     width: 32px;
     height: 32px;
     background: url("img/icons.png") 0 0 no-repeat;
-    background-size: 990% 400%;
+    background-size: 1100% 600%;
 }
 .icon.large {
     width: 64px;
@@ -415,11 +424,11 @@
     height: 16px;
 }
 .icon.cube.warrior {background-position: 0 0;}
-.icon.cube.worker {background-position: 11.2% 0;}
-.icon.cube.mage {background-position: 22.4% 0;}
-.icon.cube.savant {background-position: 33.6% 0;}
-.icon.cube.all {background-position: 44.8% 0;}
-.icon.cube.monster {background-position: 56% 0;}
+.icon.cube.worker {background-position: 10% 0;}
+.icon.cube.mage {background-position: 20% 0;}
+.icon.cube.savant {background-position: 30% 0;}
+.icon.cube.all {background-position: 40% 0;}
+.icon.cube.monster {background-position: 50% 0;}
 
 .icon.cube.elven_mage {background-position: 40% 80%;}
 .icon.cube.elven_savant {background-position: 50% 80%;}
@@ -430,51 +439,51 @@
 .icon.cube.ork_warrior {background-position: 30% 80%;}
 .icon.cube.ork_worker {background-position: 20% 80%;}
 
-.icon.cube.warrior.moved {background-position: 0 33.33%;}
-.icon.cube.worker.moved {background-position: 11.2% 33.33%;}
-.icon.cube.mage.moved {background-position: 22.4% 33.33%;}
-.icon.cube.savant.moved {background-position: 33.6% 33.33%;}
+.icon.cube.warrior.moved {background-position: 0 20%;}
+.icon.cube.worker.moved {background-position: 10% 20%;}
+.icon.cube.mage.moved {background-position: 20% 20%;}
+.icon.cube.savant.moved {background-position: 30% 20%;}
 
-.icon.cube.warrior.acted {background-position: 0 66.67%;}
-.icon.cube.worker.acted {background-position: 11.2% 66.67%;}
-.icon.cube.mage.acted {background-position: 22.4% 66.67%;}
-.icon.cube.savant.acted {background-position: 33.6% 66.67%;}
+.icon.cube.warrior.acted {background-position: 0 40%;}
+.icon.cube.worker.acted {background-position: 10% 40%;}
+.icon.cube.mage.acted {background-position: 20% 40%;}
+.icon.cube.savant.acted {background-position: 30% 40%;}
 
-.icon.cube.explore {background-position: 44.8% 66.67%;}
-.icon.cube.objective {background-position: 56% 66.67%;}
-.icon.cube.spell {background-position: 67.2% 66.67%;}
-.icon.cube.invention {background-position: 78.4% 66.67%;}
-.icon.cube.end_turn {background-position: 89.6% 66.67%;}
+.icon.cube.explore {background-position: 40% 40%;}
+.icon.cube.objective {background-position: 50% 40%;}
+.icon.cube.spell {background-position: 60% 40%;}
+.icon.cube.invention {background-position: 70% 40%;}
+.icon.cube.end_turn {background-position: 80% 40%;}
 
-.icon.cube.fight {background-position: 44.8% 33.33%;}
-.icon.cube.other {background-position: 56% 33.33%;}
-.icon.cube.disease {background-position: 67.2% 33.33%;}
-.icon.cube.nature {background-position: 78.4% 33.33%;}
-.icon.cube.healing {background-position: 44.8% 33.33%;}
-.icon.cube.foresight {background-position: 44.8% 33.33%;}
-.icon.cube.enchant {background-position: 44.8% 33.33%;}
+.icon.cube.fight {background-position: 40% 20%;}
+.icon.cube.other {background-position: 50% 20%;}
+.icon.cube.disease {background-position: 60% 20%;}
+.icon.cube.nature {background-position: 70% 20%;}
+.icon.cube.healing {background-position: 40% 20%;}
+.icon.cube.foresight {background-position: 40% 20%;}
+.icon.cube.enchant {background-position: 40% 20%;}
 
-.icon.cube.city {background-position: 67.2% 0;}
-.icon.cube.lineage {background-position: 100.8% 66.67%;}
-.icon.cube.lead {background-position: 78.4% 0;}
-.icon.cube.generate {background-position: 89.6% 0;}
-.icon.cube.turn {background-position: 100.8% 0;}
+.icon.cube.city {background-position: 60% 0;}
+.icon.cube.lineage {background-position: 100.8% 40%;}
+.icon.cube.lead {background-position: 70% 0;}
+.icon.cube.generate {background-position: 80% 0;}
+.icon.cube.turn {background-position: 100% 0;}
 
-.icon.cube.food {background-position: 89.6% 33.33%;}
-.icon.cube.science {background-position: 100.8% 33.33%;}
+.icon.cube.food {background-position: 80% 20%;}
+.icon.cube.science {background-position: 100% 20%;}
 .icon.cube.wood {background-position: 0% 100%;}
-.icon.cube.gem {background-position: 22.4% 100%;}
-.icon.cube.paper {background-position: 33.6% 100%;}
-.icon.cube.metal {background-position: 44.8% 100%;}
-.icon.cube.stone {background-position: 56% 100%;}
-.icon.cube.animal {background-position: 11.2% 100%;}
-.icon.cube.clay {background-position: 67.2% 100%;}
-.icon.cube.medic {background-position: 67.2% 100%;}
+.icon.cube.gem {background-position: 20% 100%;}
+.icon.cube.paper {background-position: 30% 100%;}
+.icon.cube.metal {background-position: 40% 100%;}
+.icon.cube.stone {background-position: 50% 100%;}
+.icon.cube.animal {background-position: 10% 100%;}
+.icon.cube.clay {background-position: 60% 100%;}
+.icon.cube.medic {background-position: 60% 100%;}
 
 .icon.cube.food_stock {background-position: 40% 100%;}
 .icon.cube.science_stock {background-position: 50% 100%;}
-.icon.cube.growth {background-position: 89.6% 100%;}
-.icon.cube.power {background-position: 100.8% 100%;}
+.icon.cube.growth {background-position: 80% 100%;}
+.icon.cube.power {background-position: 100% 100%;}
 .icon.cube.defense_city {background-position: 0% 80%;}
 .icon.cube.defense_warrior {background-position: 10% 80%;}
 
@@ -486,9 +495,9 @@
 
 /********* MAP **********/
 #map-zone {
-    width: 60%;
+    width: 80%;
     min-width: 320px;
-    margin: -8% 17.5% 0;
+    margin: -8% 10% 0;
     transform: rotate(90deg);
 }
 

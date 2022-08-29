@@ -37,14 +37,11 @@
                     <div class="inner">
                         <div class="header">
                             <div class="card-icon"><div class="icon cube {ICON}"></div></div>
-                            <div class="text cost">{COST}</div>
-                            <div class="text title">{NAME}</div>
+                            <div class="text cost middle">{COST}</div>
+                            <div class="text title middle">{NAME}</div>
                         </div>
                         <div class="type {TYPE_ICON}">{TYPE}</div>
-                        <div class="needs text">
-                            <div>{NEED_1}</div>
-                            <div>{NEED_2}</div>
-                        </div>
+                        <div class="needs text">{NEED_1}{NEED_2}</div>
                         <div class="text gain">{GAIN}</div>
                         <div class="text info">
                             <div class="bold">{TEXT_BOLD}</div>

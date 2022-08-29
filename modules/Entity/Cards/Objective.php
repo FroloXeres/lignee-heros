@@ -229,13 +229,13 @@ class Objective extends AbstractCard
 
         switch ($this->getNeed()) {
             case self::NEED_UNITS:
-                $txt[] = '[.icon.cube.'.self::getSubNeedAsText($this->getSubNeed()).']';
+                $txt[] = '['.self::getSubNeedAsText($this->getSubNeed()).']';
                 break;
             case self::NEED_SPELL:
-                $txt[] = '[.icon.cube.spell]';
+                $txt[] = '[spell]';
 
                 if ($this->getSubNeed()) {
-                    $txt[] = '[.icon.cube.'.$this->getSubNeed().']';
+                    $txt[] = '['.$this->getSubNeed().']';
                 }
                 break;
             default: break;
