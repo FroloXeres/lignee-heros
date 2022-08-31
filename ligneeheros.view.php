@@ -77,7 +77,7 @@ class view_ligneeheros_ligneeheros extends game_view
 
             if ($ldhDeck->isPublic()) {
                 foreach ($ldhDeck as $card) {
-                    $this->page->insert_block('CARDS', $card->toTpl($type));
+                    $this->page->insert_block('CARDS', $card->toTpl($ldhDeck));
                 }
             }
         }

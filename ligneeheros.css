@@ -71,7 +71,7 @@
 .card.end_turn {float: right;}
 
 .deck-list .card.invention {margin-right: 2em;}
-.deck-list .card.large {
+.card_list .large {
     width: 20%;
 }
 .card_list {

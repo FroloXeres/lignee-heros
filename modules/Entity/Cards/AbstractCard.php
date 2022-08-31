@@ -177,6 +177,7 @@ abstract class AbstractCard
 
     public const TPL_ID        = 'ID';
     public const TPL_DECK      = 'DECK';
+    public const TPL_LARGE     = 'LARGE';
     public const TPL_ICON      = 'ICON';
     public const TPL_COST      = 'COST';
     public const TPL_NAME      = 'NAME';
@@ -198,15 +199,16 @@ abstract class AbstractCard
     /**
      * Return data for Card template build
      *
-     * @param string $deck
+     * @param Deck $deck
      *
      * @return array
      */
-    public function toTpl(string $deck): array
+    public function toTpl(Deck $deck): array
     {
         return [
             self::TPL_ID              => $this->getCode(),
-            self::TPL_DECK            => $deck,
+            self::TPL_DECK            => $deck->getType(),
+            self::TPL_LARGE           => ($deck->isLarge()? 'large' : ''),
             self::TPL_ICON            => 'none',
             self::TPL_COST            => null,
             self::TPL_NAME            => $this->getName(),

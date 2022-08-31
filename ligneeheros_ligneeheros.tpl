@@ -32,7 +32,7 @@
     <!-- END CARD -->
     <ul class="card_list">
         <!-- BEGIN CARDS -->
-        <li><div class="card recto {DECK} {ID}">
+        <li class="{LARGE}"><div class="card recto {DECK} {ID}">
                 <div class="content">
                     <div class="inner">
                         <div class="header">

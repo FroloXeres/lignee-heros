@@ -78,13 +78,13 @@ function (dojo, declare) {
             
             switch( stateName ) {
             case 'GameInit' :
-                alert('GameInit');
+                console.log('GameInit');
                 break;
             case 'ChooseLineage' :
-                alert('ChooseLineage');
+                console.log('ChooseLineage');
                 break;
             case 'DrawObjective' :
-                alert('DrawObjective');
+                console.log('DrawObjective');
                 break;
             /* Example:
             case 'myGameState':
