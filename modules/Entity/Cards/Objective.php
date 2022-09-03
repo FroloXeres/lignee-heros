@@ -209,7 +209,7 @@ class Objective extends AbstractCard
             case self::NEED_SUB_MAGE: return Meeple::MAGE;
             case self::NEED_SUB_SAVANT: return Meeple::SAVANT;
             case self::NEED_SUB_NATURE: return Spell::TYPE_NATURE;
-            case self::NEED_SUB_FIGHT: return Spell::TYPE_FIGHT;
+            case self::NEED_SUB_FIGHT: return Spell::TYPE_COMBAT;
             case self::NEED_SUB_SCIENCE: return Bonus::SCIENCE;
             case self::NEED_SUB_FOOD: return Bonus::FOOD;
             case self::NEED_SUB_FAR_I:
@@ -228,17 +228,24 @@ class Objective extends AbstractCard
         $txt = [];
 
         switch ($this->getNeed()) {
+            case self::NEED_HARVEST:
+                $txt[] = '[end_turn]';
             case self::NEED_UNITS:
-                $txt[] = '['.self::getSubNeedAsText($this->getSubNeed()).']';
+            case self::NEED_EXPLORE:
                 break;
-            case self::NEED_SPELL:
-                $txt[] = '[spell]';
+            case self::NEED_SPELL: $txt[] = '[spell]'; break;
+            case self::NEED_INVENTION: $txt[] = '[invention]'; break;
+            case self::NEED_WIN_FIGHT: $txt[] = '[fight]'; break;
+            default:
+                $txt[] = '[none]';
+                break;
+        }
 
-                if ($this->getSubNeed()) {
-                    $txt[] = '['.$this->getSubNeed().']';
-                }
-                break;
-            default: break;
+        if ($this->getSubNeed()) {
+            $txt[] = '['.self::getSubNeedAsText($this->getSubNeed()).']';
+        }
+        if ($this->getNeedCount() > 1) {
+            $txt[] = 'x' . $this->getNeedCount();
         }
 
         return join(' ', $txt);
