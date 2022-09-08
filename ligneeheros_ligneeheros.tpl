@@ -43,6 +43,15 @@
                         <div class="type {TYPE_ICON}">{TYPE}</div>
                         <div class="needs text">{NEED_1}{NEED_2}</div>
                         <div class="text gain">{GAIN}</div>
+                        <div class="ldh_meeple">
+                            <div class="text power">{MEEPLE_POWER}</div>
+                            <div class="text objective">{OBJECTIVE}</div>
+                            <div class="text bonus">{OBJECTIVE_BONUS}</div>
+                        </div>
+                        <div class="text leading {LEAD_TYPE}">
+                            <span></span>
+                            {LEAD_POWER}
+                        </div>
                         <div class="text info">
                             <div class="bold">{TEXT_BOLD}</div>
                             <div>{TEXT}</div>

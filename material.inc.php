@@ -443,7 +443,7 @@ $lineage
         ->setMeeple($orkWorker)
         ->setMeeplePower((new Bonus(1, Bonus::FOOD))->setDescription(clienttranslate("Produce 1 food more")))
         ->setObjective($objOrkWorker)
-        ->setObjectiveBonus((new Bonus(1, Bonus::FOOD))->setDescription(clienttranslate("1 food more")))
+        ->setObjectiveBonus((new Bonus(1, Bonus::FOOD))->setDescription(clienttranslate("+1 [food]")))
         ->setLeadingBonus(new Bonus(1, Bonus::FOOD, $warrior->getCode()))
         ->setArtist('Kevins Darnis')
     );

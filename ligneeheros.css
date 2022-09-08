@@ -290,6 +290,90 @@
 }
 .card .gain:empty {display: none}
 
+.card:not(.lineage) .ldh_meeple {display: none;}
+.card:not(.lineage) .leading {display: none;}
+
+.card .ldh_meeple {
+    display: grid;
+    grid-template-columns: auto 30%;
+    grid-template-rows: 50% 50%;
+    grid-template-areas: "power bonus" "objective bonus";
+    grid-gap: 4% 1%;
+    height: 18.6%;
+}
+.card.lineage .power {
+    grid-area: power;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding-left: 17%;
+    position: relative;
+}
+.card.lineage .power::before {
+    content: "";
+    position: absolute;
+    background: url('img/icons.png') 0 0 no-repeat;
+    background-size: 1100% 600%;
+    width: 13%;
+    height: 60%;
+    top: 20%;
+    left: 2%;
+}
+.card.lineage.lineage_elven_mage .power::before {background-position: 40% 80.1%;}
+.card.lineage.lineage_elven_savant .power::before {background-position: 50% 80%;}
+.card.lineage.lineage_nani_warrior .power::before {background-position: 90% 80%;}
+.card.lineage.lineage_nani_savant .power::before {background-position: 80% 80%;}
+.card.lineage.lineage_humani_mage .power::before {background-position: 60% 80%;}
+.card.lineage.lineage_humani_worker .power::before {background-position: 70% 80%;}
+.card.lineage.lineage_ork_warrior .power::before {background-position: 30% 80%;}
+.card.lineage.lineage_ork_worker .power::before {background-position: 20% 80%;}
+
+.card.lineage .objective {
+    grid-area: objective;
+    display: flex;
+    align-items: center;
+}
+.card.lineage .objective::before {
+    content: "";
+    background: url('img/icons.png') 50% 40% no-repeat;
+    background-size: 1100% 600%;
+    margin-right: 2%;
+    height: 65%;
+    aspect-ratio: 1;
+}
+.card.lineage .bonus {
+    grid-area: bonus;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+.card.lineage .leading {
+    height: 9.8%;
+    margin: 2% 0 1%;
+    display: flex;
+    align-items: center;
+}
+.card.lineage .leading::before {
+    content: "";
+    background: url('img/icons.png') 70% 0 no-repeat;
+    background-size: 1100% 600%;
+    aspect-ratio: 1;
+    height: 70%;
+    margin-right: 2%;
+}
+.card.lineage .leading span {
+    display: block;
+    background: url('img/icons.png') 0 0 no-repeat;
+    background-size: 1100% 600%;
+    aspect-ratio: 1;
+    height: 40%;
+    margin-right: 2%;
+}
+.card.lineage .leading.end_turn span {background-position: 80% 40%;}
+.card.lineage .leading.fight span {background-position: 40% 20%;}
+
 .card .graph {
     height: 32.25%;
     background: url("img/graphs.jpg") 0 0 no-repeat;
@@ -430,7 +514,7 @@
 .icon.cube.all {background-position: 40% 0;}
 .icon.cube.monster {background-position: 50% 0;}
 
-.icon.cube.elven_mage {background-position: 40% 80%;}
+.icon.cube.elven_mage {background-position: 40% 80.1%;}
 .icon.cube.elven_savant {background-position: 50% 80%;}
 .icon.cube.nani_warrior {background-position: 90% 80%;}
 .icon.cube.nani_savant {background-position: 80% 80%;}

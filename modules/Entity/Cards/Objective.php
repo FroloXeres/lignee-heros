@@ -212,10 +212,14 @@ class Objective extends AbstractCard
             case self::NEED_SUB_FIGHT: return Spell::TYPE_COMBAT;
             case self::NEED_SUB_SCIENCE: return Bonus::SCIENCE;
             case self::NEED_SUB_FOOD: return Bonus::FOOD;
-            case self::NEED_SUB_FAR_I:
-            case self::NEED_SUB_FAR_III:
-                return 'tile';
-
+            case self::NEED_SUB_FAR_I: return 'I';
+            case self::NEED_SUB_FAR_III: return 'III';
+            case self::NEED_SUB_TOWER: return 'tower';
+            case self::NEED_SUB_RUINS: return 'ruins';
+            case self::NEED_SUB_LAIR: return 'lair';
+            case self::NEED_SUB_RESOURCE_ONE: return 'resource';
+            case self::NEED_SUB_RESOURCE_ALL: return 'resources';
+            case self::NEED_SUB_NO_WOUND: return 'no_wound';
             default: return '';
         }
     }
@@ -231,11 +235,12 @@ class Objective extends AbstractCard
             case self::NEED_HARVEST:
                 $txt[] = '[end_turn]';
             case self::NEED_UNITS:
-            case self::NEED_EXPLORE:
                 break;
             case self::NEED_SPELL: $txt[] = '[spell]'; break;
             case self::NEED_INVENTION: $txt[] = '[invention]'; break;
             case self::NEED_WIN_FIGHT: $txt[] = '[fight]'; break;
+            case self::NEED_SURVIVE: $txt[] = '[turn]'; break;
+            case self::NEED_EXPLORE: $txt[] = '[tile]'; break;
             default:
                 $txt[] = '[none]';
                 break;

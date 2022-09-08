@@ -197,11 +197,11 @@ class Lineage extends AbstractCard
         $tpl = parent::toTpl($deck);
 
         $tpl[self::TPL_ICON]            = $this->getMeeple()->getCode();
-        $tpl[self::TPL_MEEPLE_POWER]    = (string)$this->getMeeplePower();
+        $tpl[self::TPL_MEEPLE_POWER]    = (string) $this->getMeeplePower();
         $tpl[self::TPL_OBJECTIVE]       = (string) $this->getObjective();
-        $tpl[self::TPL_OBJECTIVE_BONUS] = (string)$this->getObjectiveBonus();
+        $tpl[self::TPL_OBJECTIVE_BONUS] = (string) $this->getObjectiveBonus();
         $tpl[self::TPL_LEAD_TYPE]       = $this->getLeadingType() === self::LEADING_TYPE_EVERY3TURN ? 'end_turn' : 'fight';
-        $tpl[self::TPL_LEAD_POWER]      = (string)$this->getLeadingBonus();
+        $tpl[self::TPL_LEAD_POWER]      = (string) $this->getLeadingBonus();
 
         return $tpl;
     }
