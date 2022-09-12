@@ -29,6 +29,7 @@ require_once( APP_BASE_PATH."view/common/game.view.php" );
 use LdH\Repository\MapRepository;
 use LdH\Service\MapService;
 use LdH\Entity\Cards\Deck;
+use LdH\Entity\Map\Tile;
 
 class view_ligneeheros_ligneeheros extends game_view
 {
@@ -50,12 +51,38 @@ class view_ligneeheros_ligneeheros extends game_view
 
         // Prepare HTML/CSS map
         foreach ($tiles as $tile) {
-            $this->page->insert_block('MAP_TILES', [
-                'ID'      => $tile->getId(),
-                'COORD'   => $tile->getX() . '_' . $tile->getY(),
-                'CLASS'   => MapService::getClass($tile),
-                'HOW_FAR' => MapService::getDistanceToDisplay($tile)
-            ]);
+            /** @var Tile $tile */
+            $params = [
+                'ID'         => $tile->getId(),
+                'COORD'      => $tile->getX() . '_' . $tile->getY(),
+                'CLASS'      => MapService::getClass($tile),
+                'HOW_FAR'    => MapService::getDistanceToDisplay($tile),
+                'COUNT'      => '',
+                'RESOURCE_1' => '',
+                'RESOURCE_2' => '',
+                'RESOURCE_3' => '',
+                'NAME'       => '',
+                'FOOD'       => '',
+                'FOOD_COUNT' => '',
+                'SCIENCE'    => ''
+            ];
+
+            $terrain = $tile->getTerrain();
+            if ($terrain) {
+                $resources = $terrain->getResources();
+
+                $i = 1;
+                $params['COUNT']      = count($resources);
+                foreach ($resources as $resource) {
+                    $params['RESOURCE_' . $i++] = $resource->getCode();
+                }
+                $params['NAME']       = $terrain->getName();
+                $params['FOOD']       = $terrain->hasFood()? '' : 'none';
+                $params['FOOD_COUNT'] = $terrain->getFood();
+                $params['SCIENCE']    = $terrain->hasScience()? '' : 'none';
+            }
+
+            $this->page->insert_block('MAP_TILES', $params);
         }
     }
 

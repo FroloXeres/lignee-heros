@@ -60,6 +60,7 @@
 .deck-list .card {
     display: inline-block;
     width: 15%;
+    max-width: 250px;
 }
 .deck-list .card.lineage {
     display: none;
@@ -75,6 +76,7 @@
     width: 20%;
 }
 .card_list {
+    /* display: none; */
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
@@ -82,6 +84,7 @@
 }
 .card_list li {
     width: 15%;
+    max-width: 250px;
 }
 .counter {
     content: attr(data-count);
@@ -209,23 +212,21 @@
 }
 
 .card .type {
-    position: relative;
     text-align: left;
-    padding-left: 11%;
     font-size: .7em;
     font-weight: bold;
     height: 4.5%;
     margin-bottom: 1%;
+    display: flex;
+    align-items: center;
 }
 .card .type::before {
     content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 8%;
     height: 100%;
+    aspect-ratio: 1;
     background: url("img/icons.png") 0 0 no-repeat;
     background-size: 1100% 600%;
+    margin-right: 2%;
 }
 .card .type.development::before {background-position: 60% 0%;}
 .card .type.nature::before {background-position: 70% 20%;}
@@ -304,20 +305,16 @@
 .card.lineage .power {
     grid-area: power;
     display: flex;
-    flex-direction: column;
-    justify-content: center;
-    padding-left: 17%;
+    align-items: center;
     position: relative;
+    overflow-y: auto;
 }
 .card.lineage .power::before {
     content: "";
-    position: absolute;
     background: url('img/icons.png') 0 0 no-repeat;
     background-size: 1100% 600%;
-    width: 13%;
     height: 60%;
-    top: 20%;
-    left: 2%;
+    aspect-ratio: 1;
 }
 .card.lineage.lineage_elven_mage .power::before {background-position: 40% 80.1%;}
 .card.lineage.lineage_elven_savant .power::before {background-position: 50% 80%;}
@@ -332,6 +329,7 @@
     grid-area: objective;
     display: flex;
     align-items: center;
+    overflow-y: auto;
 }
 .card.lineage .objective::before {
     content: "";
@@ -348,12 +346,14 @@
     justify-content: center;
     align-items: center;
     text-align: center;
+    overflow-y: auto;
 }
 .card.lineage .leading {
     height: 9.8%;
     margin: 2% 0 1%;
     display: flex;
     align-items: center;
+    overflow-y: auto;
 }
 .card.lineage .leading::before {
     content: "";
@@ -585,12 +585,6 @@
     transform: rotate(90deg);
 }
 
-@media all and (max-width: 720px) {
-    #map-zone {
-        max-width: 600px;
-    }
-}
-
 .map-hex-grid {
     --amount: 7;
     --counter: 1
@@ -676,35 +670,154 @@
 }
 
 .tile {
-    background: url('img/tile_sprites.png') no-repeat center #ece3cf;
-    background-size: 70%;
+    background: url('img/card-sprites.png') 99% 8% no-repeat;
+    background-size: 710% 145%;
     cursor: not-allowed;
 }
-.tile.tile_reveal {
-    background: none;
+.tile::before {
+    content: "";
+    background: url("img/icons.png") 40% 40% no-repeat;
+    background-size: 1120% 600%;
+    width: 65%;
+    aspect-ratio: 1;
 }
+
+.tile.tile_reveal {background: none;}
+.tile.tile_reveal::before {display: none;}
+
 .tile.explorable {
     cursor: pointer;
 }
-.tile.tile_reveal .map-dist-bg {
-    display: none;
+.tile.tile_reveal .map-dist-bg {display: none;}
+.tile .map-content {display: none;}
+.tile.tile_reveal .map-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-content: space-around;
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+    margin-left: -10%;
 }
 .tile.tile_disabled {display: none;}
-.tile.tile_reveal.tile_town {background-color: brown;}
-.tile.tile_reveal.tile_forest {background-color: forestgreen;}
-.tile.tile_reveal.tile_mountain {background-color: grey;}
-.tile.tile_reveal.tile_plain {background-color: mediumseagreen;}
+
+.tile.tile_reveal .resources {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 40%;
+    padding-top: 2%;
+    flex-wrap: wrap;
+}
+.tile .resources.resources_0 .resource-1 {display: none}
+.tile .resources.resources_0 .resource-2 {display: none}
+.tile .resources.resources_0 .resource-3 {display: none}
+.tile .resources.resources_1 .resource-2 {display: none}
+.tile .resources.resources_1 .resource-3 {display: none}
+.tile .resources.resources_2 .resource-3 {display: none}
+.tile .resource {
+    background: url("img/icons.png") 0 0 no-repeat #FFF;
+    background-size: 1100% 600%;
+    height: 32.5%;
+    aspect-ratio: 1;
+    border: 1px solid #000;
+}
+.tile .resource-2, .tile .resource-3 {margin-left: 3%;}
+.tile .resources.resources_3 .resource-2 {margin-left: 3%;}
+
+.tile .resources .resource.food {background-position: 80% 20%;}
+.tile .resources .resource.science {background-position: 100% 20%;}
+.tile .resources .resource.wood {background-position: 0% 60%;}
+.tile .resources .resource.gem {background-position: 20% 60%;}
+.tile .resources .resource.paper {background-position: 30% 60%;}
+.tile .resources .resource.metal {background-position: 40% 60%;}
+.tile .resources .resource.stone {background-position: 50% 60%;}
+.tile .resources .resource.animal {background-position: 10% 60%;}
+.tile .resources .resource.clay {background-position: 60% 60%;}
+.tile .resources .resource.medic {background-position: 60% 60%;}
+
+.tile.tile_reveal .name {
+    font-weight: bold;
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+}
+.tile .harvest {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 20%;
+}
+.tile.tile_reveal .food {
+    background-position: 80% 20%;
+    height: 65%;
+    position: relative;
+}
+.tile.tile_reveal .food::after {
+    position: absolute;
+    z-index: 1;
+    content: attr(data-count);
+    font-size: 0.6rem;
+    width: 50%;
+    height: 50%;
+    border: 1px solid #000;
+    background-color: #fff;
+    border-radius: 50%;
+    bottom: -25%;
+    right: -25%;
+    text-align: center;
+    line-height: 150%;
+}
+.tile.tile_reveal .science {
+    background-position: 90% 20%;
+    height: 65%;
+    margin-left: 5%;
+}
+.tile.tile_reveal .food.none {display: none}
+.tile.tile_reveal .science.none {display: none}
+
+.tile.tile_reveal.tile_town_humani {background-color: antiquewhite;}
+.tile.tile_reveal.tile_town_elven {background-color: antiquewhite;}
+.tile.tile_reveal.tile_town_nani {background-color: antiquewhite;}
+.tile.tile_reveal.tile_town_ork {background-color: antiquewhite;}
+
+.tile.tile_reveal.tile_mountain {background-color: dimgray;}
+.tile.tile_reveal.tile_mountain_lair {background-color: dimgray;}
+.tile.tile_reveal.tile_mountain_lake {background-color: dimgray;}
+.tile.tile_reveal.tile_mountain_wood {background-color: dimgray;}
+.tile.tile_reveal.tile_mountain_tower {background-color: dimgray;}
+.tile.tile_reveal.tile_mountain_river {background-color: dimgray;}
+.tile.tile_reveal.tile_plain {background-color: lightgreen;}
+.tile.tile_reveal.tile_plain_lake {background-color: lightgreen;}
+.tile.tile_reveal.tile_plain_wood {background-color: lightgreen;}
+.tile.tile_reveal.tile_plain_desert {background-color: lightgreen;}
+.tile.tile_reveal.tile_plain_river_ruin {background-color: lightgreen;}
+.tile.tile_reveal.tile_hill {background-color: saddlebrown;}
+.tile.tile_reveal.tile_hill_plateau {background-color: saddlebrown;}
+.tile.tile_reveal.tile_hill_wood_river {background-color: saddlebrown;}
+.tile.tile_reveal.tile_hill_ruin {background-color: saddlebrown;}
+.tile.tile_reveal.tile_hill_lake {background-color: saddlebrown;}
+.tile.tile_reveal.tile_hill_wood_lair {background-color: saddlebrown;}
+.tile.tile_reveal.tile_swamp {background-color: darkolivegreen;}
+.tile.tile_reveal.tile_swamp_lair {background-color: darkolivegreen;}
+.tile.tile_reveal.tile_swamp_tower {background-color: darkolivegreen;}
+.tile.tile_reveal.tile_forest {background-color: darkgreen;}
+.tile.tile_reveal.tile_forest_tower {background-color: darkgreen;}
+.tile.tile_reveal.tile_forest_lair {background-color: darkgreen;}
+.tile.tile_reveal.tile_forest_dense {background-color: darkgreen;}
+.tile.tile_reveal.tile_forest_ruin {background-color: darkgreen;}
 .tile.tile_reveal.tile_desert {background-color: sandybrown;}
-.tile.tile_reveal.tile_swamp {background-color: steelblue;}
-.tile.tile_reveal.tile_hill {background-color: seagreen;}
+.tile.tile_reveal.tile_desert_stone {background-color: sandybrown;}
 
 .tile .map-dist-bg {
     position: absolute;
-    top: calc(50% - 5%);
-    left: 0.3em;
+    top: 45%;
+    left: 0.6em;
     width: 10%;
     height: 10%;
-    background: #f6f2e9;
+    background: #f0e094;
     transform: rotate(-135deg);
 }
 .tile .map-dist-bg label {
@@ -716,6 +829,27 @@
 .tile .map-dist-bg label::before {
     content: attr(data-dist);
 }
+
+@media all and (min-width: 1024px) {
+    .card {
+        font-size: 1rem;
+    }
+}
+
+@media all and (max-width: 720px) {
+    .card {
+        font-size: 0.6rem;
+    }
+
+    #map-zone {
+        width: 86%;
+        margin-left: 3.5%;
+    }
+    .map-hex-item {
+        margin: 0.01em 0.01em;
+    }
+}
+
 
 /*
     Example of CSS sprites (a black token and a white token, 20x20px each, embedded in the same "tokens.png" 40x20px image):

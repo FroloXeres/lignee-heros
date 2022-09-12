@@ -81,6 +81,18 @@
             <li data-id="{ID}" data-coord="{COORD}" class="map-hex-item">
                 <div class="map-hex-content {CLASS}">
                     <div class="map-dist-bg"><label data-dist="{HOW_FAR}"></label></div>
+                    <div class="map-content">
+                        <div class="resources resources_{COUNT}">
+                            <div class="resource resource-1 {RESOURCE_1}"></div>
+                            <div class="resource resource-2 {RESOURCE_2}"></div>
+                            <div class="resource resource-3 {RESOURCE_3}"></div>
+                        </div>
+                        <div class="name">{NAME}</div>
+                        <div class="harvest">
+                            <div class="resource food {FOOD}" data-count="{FOOD_COUNT}"></div>
+                            <div class="resource science {SCIENCE}"></div>
+                        </div>
+                    </div>
                 </div>
             </li>
         <!-- END MAP_TILES -->
