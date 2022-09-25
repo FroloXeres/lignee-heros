@@ -24,9 +24,10 @@ function (dojo, declare) {
     return declare("bgagame.ligneeheros", ebg.core.gamegui, {
         constructor: function(){
             console.log('ligneeheros constructor');
-              
-            // Here, you can init the global variables of your user interface
-            // Example:
+
+            this.map       = [];
+            this.resources = [];
+            this.terrains  = [];
             // this.myGlobalValue = 0;
 
         },
@@ -46,7 +47,7 @@ function (dojo, declare) {
         
         setup: function( gamedatas )
         {
-            console.log( "Starting game setup" );
+            console.log( gamedatas );
             
             // Setting up player boards
             for( var player_id in gamedatas.players )
@@ -55,16 +56,66 @@ function (dojo, declare) {
                          
                 // TODO: Setting up players boards if needed
             }
-            
-            // TODO: Set up your game interface here, according to "gamedatas"
-            
- 
+
+            //this.setupGameState(gamedatas);
+            this.setupGameData(gamedatas);
+            this.setupMap();
+
             // Setup game notifications to handle (see "setupNotifications" method below)
             this.setupNotifications();
 
             console.log( "Ending game setup" );
         },
-       
+
+        setupGameState: function(gamedatas)
+        {
+            this.currentState = gamedatas.currentState;
+
+            //$('#turn').data('turn', this.currentState.turn);
+        },
+
+        setupGameData: function(gamedatas)
+        {
+            this.resources = gamedatas.resources;
+            for (let code in this.resources) {
+                if (this.resources.hasOwnProperty(code)) {
+                    this.resources[code].name = _(this.resources[code].name);
+                    this.resources[code].description = _(this.resources[code].description);
+                }
+            }
+
+            this.terrains  = gamedatas.terrains;
+            for (let code in this.terrains) {
+                if (this.terrains.hasOwnProperty(code)) {
+                    this.terrains[code].name = _(this.terrains[code].name);
+                }
+            }
+
+            this.map       = gamedatas.map;
+        },
+
+        setupMap: function()
+        {
+            var _self       = this;
+            var tileTerrain = {};
+            var tileContent = null;
+            _self.map.forEach(function(tile) {
+                tileTerrain = _self.terrains[tile.terrain];
+                tileContent = _self.format_block('jstpl_tile', {
+                    count: tileTerrain.resources.length,
+                    resource1: tileTerrain.resources[0]? tileTerrain.resources[0] : '',
+                    resource2: tileTerrain.resources[1]? tileTerrain.resources[1] : '',
+                    resource3: tileTerrain.resources[2]? tileTerrain.resources[2] : '',
+                    name: tileTerrain.name,
+                    food: tileTerrain.food? '' : 'none',
+                    foodCount: tileTerrain.food,
+                    science: tileTerrain.science? '' : 'none'
+                });
+                dojo.place(tileContent, 'tile-content-'+tile.id);
+                dojo.query('#tile-' + tile.id + ' .map-hex-content')
+                    .addClass('tile_reveal tile_' + tileTerrain.code);
+            });
+        },
 
         ///////////////////////////////////////////////////
         //// Game & client states
@@ -237,10 +288,10 @@ function (dojo, declare) {
             // dojo.subscribe( 'cardPlayed', this, "notif_cardPlayed" );
             // this.notifqueue.setSynchronous( 'cardPlayed', 3000 );
             // 
-        },  
-        
+        },
+
         // TODO: from this point and below, you can write your game notifications handling methods
-        
+
         /*
         Example:
         

@@ -2,7 +2,7 @@
 
 namespace LdH\Entity;
 
-class Bonus
+class Bonus implements \JsonSerializable
 {
     public const FOOD            = 'food';            // More food produced by meeple/terrain
     public const FOOD_FOUND      = 'food_found';      // Food put into stock
@@ -125,6 +125,16 @@ class Bonus
         return $this;
     }
 
+    public function jsonSerialize(): array
+    {
+        return [
+            'code' => $this->code,
+            'type' => $this->type,
+            'description' => $this->description,
+            'count' => $this->count
+        ];
+    }
+
     /**
      * @return string
      */
@@ -184,7 +194,12 @@ class Bonus
                 $preOp = ' + ';
             case self::CONVERT:
                 $operation = '';
-                $icon      = '[all][end_turn]['.$this->getType().']';
+                $count     = $this->getCount() > 1? 'x'.$this->getCount() : '';
+                $icon      = sprintf(
+                    '[all]%s[end_turn]['.$this->getType().']%s',
+                    $count,
+                    $count
+                );
                 break;
             case self::DISEASE:
                 $operation = '';

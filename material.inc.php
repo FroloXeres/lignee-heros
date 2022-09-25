@@ -177,15 +177,20 @@ $objective = (new Deck(Deck::TYPE_OBJECTIVE))
     ->setName(clienttranslate('Objective cards'))
     ->setIsPublic(true);
 $magic = (new Deck(Deck::TYPE_MAGIC))
-    ->setName(clienttranslate('Sepll cards'));
+    ->setName(clienttranslate('Sepll cards'))
+    ->setIsPublic(true);
 $invention = (new Deck(Deck::TYPE_INVENTION))
-    ->setName(clienttranslate('Invention cards'));
+    ->setName(clienttranslate('Invention cards'))
+    ->setIsPublic(true);
 $exploreFight = (new Deck(Deck::TYPE_EXPLORE_FIGHT))
-    ->setName(clienttranslate('Explore : Fight cards'));
+    ->setName(clienttranslate('Explore : Fight cards'))
+    ->setIsPublic(true);
 $exploreOther = (new Deck(Deck::TYPE_EXPLORE_OTHER))
-    ->setName(clienttranslate('Explore : Other cards'));
+    ->setName(clienttranslate('Explore : Other cards'))
+    ->setIsPublic(true);
 $exploreDisease = (new Deck(Deck::TYPE_EXPLORE_DISEASE))
-    ->setName(clienttranslate('Explore : Disease cards'));
+    ->setName(clienttranslate('Explore : Disease cards'))
+    ->setIsPublic(true);
 $this->cards = [
     $lineage->getType()        => $lineage,
     $objective->getType()      => $objective,
@@ -369,9 +374,9 @@ $lineage
         ->setName("Fal'san'in")
         ->setDescription(clienttranslate("Fal'San'In born awakened to magic for generations. Also, they look ageless."))
         ->setMeeple($elvenMage)
-        ->setMeeplePower((new Bonus(3, Bonus::CONVERTER, Meeple::ELVEN_MAGE))->setDescription(clienttranslate("Can teach magic to 3 units")))
+        ->setMeeplePower((new Bonus(3, Bonus::CONVERTER, Meeple::MAGE)))
         ->setObjective($objElvenMage)
-        ->setObjectiveBonus((new Bonus(1, Bonus::CONVERTER, Meeple::ELVEN_MAGE))->setDescription(clienttranslate("1 unit more")))
+        ->setObjectiveBonus((new Bonus(1, Bonus::CONVERTER, Meeple::MAGE))->setDescription(clienttranslate("1 unit more")))
         ->setLeadingBonus(new Bonus(1, Bonus::BIRTH, $mage->getCode()))
         ->setArtist('Kevins Darnis')
     )
@@ -379,7 +384,7 @@ $lineage
         ->setName("Reth'los")
         ->setDescription(clienttranslate("The Reth'los are often cited for their inventions and their legendary ingenuity! Are they blessed by the gods?"))
         ->setMeeple($elvenSavant)
-        ->setMeeplePower((new Bonus(1, Bonus::SCIENCE))->setDescription(clienttranslate("Produce 1 science more")))
+        ->setMeeplePower((new Bonus(1, Bonus::SCIENCE))) // ->setDescription(clienttranslate("Produce 1 science more"))
         ->setObjective($objElvenSavant)
         ->setObjectiveBonus((new Bonus(1, Bonus::SCIENCE))->setDescription(clienttranslate("1 science more")))
         ->setLeadingBonus(new Bonus(1, Bonus::BIRTH, $savant->getCode()))

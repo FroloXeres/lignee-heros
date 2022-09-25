@@ -27,6 +27,8 @@
 require_once( APP_BASE_PATH."view/common/game.view.php" );
 
 use LdH\Repository\MapRepository;
+use LdH\Service\CurrentStateService;
+use LdH\Service\StateService;
 use LdH\Service\MapService;
 use LdH\Entity\Cards\Deck;
 use LdH\Entity\Map\Tile;
@@ -44,10 +46,7 @@ class view_ligneeheros_ligneeheros extends game_view
         $this->page->begin_block('ligneeheros_ligneeheros', 'MAP_TILES');
 
         // Load Map from Db
-        $tiles = MapService::buildMapFromDb(
-            self::getCollectionFromDb(MapRepository::getMapQry()),
-            $this->game->terrains
-        );
+        $tiles = MapService::buildMapFromDb(self::getCollectionFromDb(MapRepository::getMapQry()));
 
         // Prepare HTML/CSS map
         foreach ($tiles as $tile) {
@@ -57,39 +56,17 @@ class view_ligneeheros_ligneeheros extends game_view
                 'COORD'      => $tile->getX() . '_' . $tile->getY(),
                 'CLASS'      => MapService::getClass($tile),
                 'HOW_FAR'    => MapService::getDistanceToDisplay($tile),
-                'COUNT'      => '',
-                'RESOURCE_1' => '',
-                'RESOURCE_2' => '',
-                'RESOURCE_3' => '',
-                'NAME'       => '',
-                'FOOD'       => '',
-                'FOOD_COUNT' => '',
-                'SCIENCE'    => ''
             ];
-
-            $terrain = $tile->getTerrain();
-            if ($terrain) {
-                $resources = $terrain->getResources();
-
-                $i = 1;
-                $params['COUNT']      = count($resources);
-                foreach ($resources as $resource) {
-                    $params['RESOURCE_' . $i++] = $resource->getCode();
-                }
-                $params['NAME']       = $terrain->getName();
-                $params['FOOD']       = $terrain->hasFood()? '' : 'none';
-                $params['FOOD_COUNT'] = $terrain->getFood();
-                $params['SCIENCE']    = $terrain->hasScience()? '' : 'none';
-            }
 
             $this->page->insert_block('MAP_TILES', $params);
         }
     }
 
+    /**
+     * @deprecated
+     */
     function createDecks() {
         $this->page->begin_block('ligneeheros_ligneeheros', 'DECKS');
-        $this->page->begin_block('ligneeheros_ligneeheros', 'CARDS');
-
         foreach ($this->game->decks as $type => $deck) {
             /** @var Deck $ldhDeck */
             $ldhDeck = $this->game->cards[$type];
@@ -101,12 +78,6 @@ class view_ligneeheros_ligneeheros extends game_view
                 'CAN_DRAW' => $ldhDeck->canDraw()? '' : 'inactive',
                 'COUNT'    => count($ldhDeck->getCards())
             ]);
-
-            if ($ldhDeck->isPublic()) {
-                foreach ($ldhDeck as $card) {
-                    $this->page->insert_block('CARDS', $card->toTpl($ldhDeck));
-                }
-            }
         }
     }
 
@@ -119,11 +90,17 @@ class view_ligneeheros_ligneeheros extends game_view
         /*********** Place your code below:  ************/
         $this->populateMapBlock();
 
-        // Create cards if needed
-        $this->createDecks();
+        // Current state
+//        $currentState = $this->game->getCurrentState();
+//        $this->tpl['TURN']   = $currentState['turn'];
+//        $this->tpl['PEOPLE'] = $currentState[CurrentStateService::GLB_PEOPLE_CNT];
+//        $this->tpl['WORKER'] = $currentState[CurrentStateService::GLB_WORKER_CNT];
+//        $this->tpl['WARRIOR'] = $currentState[CurrentStateService::GLB_WARRIOR_CNT];
+//        $this->tpl['SAVANT'] = $currentState[CurrentStateService::GLB_SAVANT_CNT];
+//        $this->tpl['MAGE'] = $currentState[CurrentStateService::GLB_MAGE_CNT];
+
 
         /*
-        
         // Examples: set the value of some element defined in your tpl file like this: {MY_VARIABLE_ELEMENT}
 
         // Display a specific number / string

@@ -25,6 +25,7 @@ use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use LdH\Service\StateCompilerPass;
 
 use LdH\Repository\MapRepository;
+use LdH\Service\CurrentStateService;
 use LdH\Service\MapService;
 use LdH\Service\StateService;
 use LdH\Entity\Cards\Deck;
@@ -59,18 +60,7 @@ class ligneeheros extends Table
         // Note: afterwards, you can get/set the global variables with getGameStateValue/setGameStateInitialValue/setGameStateValue
         parent::__construct();
 
-        self::initGameStateLabels( array(
-            StateService::GLB_TURN_LFT    => 10,
-            StateService::GLB_PEOPLE_CNT  => 11,
-            StateService::GLB_FOOD_PRD    => 12,
-            StateService::GLB_FOOD_STK    => 13,
-            StateService::GLB_SCIENCE_PRD => 14,
-            StateService::GLB_SCIENCE_STK => 15,
-            StateService::GLB_LIFE        => 16,
-            StateService::GLB_WAR_PWR     => 17,
-            StateService::GLB_WAR_DFS     => 18,
-            StateService::GLB_CTY_DFS     => 19
-        ) );
+        self::initGameStateLabels(CurrentStateService::CURRENT_STATES);
 
         // Use of Symfony DIC
         $this->initContainer();
@@ -164,38 +154,45 @@ class ligneeheros extends Table
 
         /************ Start the game initialization *****/
         $this->initTables();
-
-        // Init global values with their initial values
-        self::setGameStateInitialValue(StateService::GLB_TURN_LFT, 50);
-        self::setGameStateInitialValue(StateService::GLB_PEOPLE_CNT, 10);
-        self::setGameStateInitialValue(StateService::GLB_FOOD_PRD, 0);
-        self::setGameStateInitialValue(StateService::GLB_FOOD_STK, 0);
-        self::setGameStateInitialValue(StateService::GLB_SCIENCE_PRD, 0);
-        self::setGameStateInitialValue(StateService::GLB_SCIENCE_STK, 0);
-        self::setGameStateInitialValue(StateService::GLB_LIFE, 1);
-        self::setGameStateInitialValue(StateService::GLB_WAR_PWR, 1);
-        self::setGameStateInitialValue(StateService::GLB_WAR_DFS, 0);
-        self::setGameStateInitialValue(StateService::GLB_CTY_DFS, 1);
-
-        // Init game statistics
-        // (note: statistics used in this file must be defined in your stats.inc.php file)
-//        self::initStat( 'table', 'table_won', 0 );
-//        self::initStat( 'table', 'table_lost', 0 );
-//        self::initStat( 'table', 'table_lost_turn', 50 );
-//        self::initStat( 'player', 'player_lineage_elven_mage', 0 );
-//        self::initStat( 'player', 'player_lineage_elven_savant', 0 );
-//        self::initStat( 'player', 'player_lineage_humani_mage', 0 );
-//        self::initStat( 'player', 'player_lineage_humani_worker', 0 );
-//        self::initStat( 'player', 'player_lineage_nani_warrior', 0 );
-//        self::initStat( 'player', 'player_lineage_nani_savant', 0 );
-//        self::initStat( 'player', 'player_lineage_ork_worker', 0 );
-//        self::initStat( 'player', 'player_lineage_ork_warrior', 0 );
-//        self::initStat( 'player', 'player_finish_obj', 0 );
+        $this->initGlobalValues();
+        //$this->initStats();
 
         // Activate first player (which is in general a good idea :) )
         $this->activeNextPlayer();
 
         /************ End of the game initialization *****/
+    }
+
+    private function initGlobalValues()
+    {
+        // Init global values with their initial values
+        foreach (array_keys(CurrentStateService::CURRENT_STATES) as $stateName) {
+            $this->setGameStateInitialValue($stateName, 0);
+        }
+
+        $this->setGameStateValue(CurrentStateService::GLB_TURN_LFT, CurrentStateService::LAST_TURN);
+        $this->setGameStateValue(CurrentStateService::GLB_PEOPLE_CNT, CurrentStateService::START_PEOPLE);
+        $this->setGameStateValue(CurrentStateService::GLB_LIFE, 1);
+        $this->setGameStateValue(CurrentStateService::GLB_WAR_PWR, 1);
+        $this->setGameStateValue(CurrentStateService::GLB_CTY_DFS, 1);
+    }
+
+    private function initStats()
+    {
+        // Init game statistics
+        // (note: statistics used in this file must be defined in your stats.inc.php file)
+        $this->initStat( 'table', 'table_won', 0 );
+        $this->initStat( 'table', 'table_lost', 0 );
+        $this->initStat( 'table', 'table_lost_turn', CurrentStateService::LAST_TURN );
+        $this->initStat( 'player', 'player_lineage_elven_mage', 0 );
+        $this->initStat( 'player', 'player_lineage_elven_savant', 0 );
+        $this->initStat( 'player', 'player_lineage_humani_mage', 0 );
+        $this->initStat( 'player', 'player_lineage_humani_worker', 0 );
+        $this->initStat( 'player', 'player_lineage_nani_warrior', 0 );
+        $this->initStat( 'player', 'player_lineage_nani_savant', 0 );
+        $this->initStat( 'player', 'player_lineage_ork_worker', 0 );
+        $this->initStat( 'player', 'player_lineage_ork_warrior', 0 );
+        $this->initStat( 'player', 'player_finish_objective', 0 );
     }
 
     public function initTables()
@@ -245,19 +242,36 @@ class ligneeheros extends Table
         $result['players'] = self::getCollectionFromDb( $sql );
 
         // Send materials
-        $result['resources'] = json_encode($this->resources?? []);
-        $result['terrains']  = json_encode($this->terrains?? []);
+        $result['resources'] = $this->resources?? [];
+        $result['terrains']  = $this->terrains?? [];
 
-        // Send map details
+        // Send map details : Load Map from Db
+        $tiles = MapService::buildMapFromDb(
+            self::getCollectionFromDb(MapRepository::getMapQry(true)),
+            $this->terrains?? []
+        );
+        $result['map'] = $tiles;
 
+        // Game states
+        $result['currentState'] = $this->getCurrentState();
 
         // TODO: Gather all information about current game situation (visible by player $current_player_id).
-        // Get Map from Db
-//        $savedMap = self::getCollectionFromDb(MapRepository::getMapQry());
-//        $this->tiles = MapService::buildMapFromDb($savedMap, $this->terrains, $this->variants);
-//        $result['map'] = MapService::getMapForAjax($this->tiles);
 
         return $result;
+    }
+
+    function getCurrentState(): array
+    {
+        $states = ['turn' => 0];
+
+        foreach (array_keys(CurrentStateService::CURRENT_STATES) as $stateName) {
+            $states[$stateName] = (int) $this->getGameStateValue($stateName);
+        }
+
+        // Computed states
+        $states['turn'] = (CurrentStateService::LAST_TURN - $states[CurrentStateService::GLB_TURN_LFT] + 1);
+
+        return $states;
     }
 
     /*
@@ -272,7 +286,7 @@ class ligneeheros extends Table
     */
     function getGameProgression()
     {
-        $turnLeft = (int) $this->getGameStateValue('turnLeft');
+        $turnLeft = (int) $this->getGameStateValue(CurrentStateService::GLB_TURN_LFT);
 
         return (50 - $turnLeft) * 2;
     }

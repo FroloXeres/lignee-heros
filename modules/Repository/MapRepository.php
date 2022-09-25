@@ -40,8 +40,8 @@ class MapRepository
      *
      * @return string
      */
-    public static function getMapQry(): string
+    public static function getMapQry(bool $onlyRevealed = false): string
     {
-        return 'SELECT * FROM `map`';
+        return 'SELECT * FROM `map`' . ($onlyRevealed? ' WHERE `tile_revealed` = 1' : '');
     }
 }

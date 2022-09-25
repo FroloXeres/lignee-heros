@@ -330,6 +330,7 @@
     display: flex;
     align-items: center;
     overflow-y: auto;
+    position: relative;
 }
 .card.lineage .objective::before {
     content: "";
@@ -347,6 +348,16 @@
     align-items: center;
     text-align: center;
     overflow-y: auto;
+    position: relative;
+}
+.card.lineage .bonus::before {
+    position: absolute;
+    content: "\f05d";
+    font-family: "FontAwesome";
+    color: darkgreen;
+    bottom: 10%;
+    left: -10%;
+    z-index: 2;
 }
 .card.lineage .leading {
     height: 9.8%;
@@ -676,8 +687,8 @@
 }
 .tile::before {
     content: "";
-    background: url("img/icons.png") 40% 40% no-repeat;
-    background-size: 1120% 600%;
+    background: url("img/icons.svg") 45.4% 40% no-repeat;
+    background-size: 1200% 650%;
     width: 65%;
     aspect-ratio: 1;
 }
@@ -713,29 +724,32 @@
 .tile .resources.resources_0 .resource-1 {display: none}
 .tile .resources.resources_0 .resource-2 {display: none}
 .tile .resources.resources_0 .resource-3 {display: none}
+.tile .resources.resources_1 {margin-top: -5%;}
 .tile .resources.resources_1 .resource-2 {display: none}
 .tile .resources.resources_1 .resource-3 {display: none}
+.tile .resources.resources_2 {margin-top: 0%;}
 .tile .resources.resources_2 .resource-3 {display: none}
 .tile .resource {
-    background: url("img/icons.png") 0 0 no-repeat #FFF;
-    background-size: 1100% 600%;
+    background: url("img/icons.svg") 0 0 no-repeat #FFF;
+    background-size: 990% 600%;
     height: 32.5%;
     aspect-ratio: 1;
     border: 1px solid #000;
 }
 .tile .resource-2, .tile .resource-3 {margin-left: 3%;}
-.tile .resources.resources_3 .resource-2 {margin-left: 3%;}
+.tile .resources.resources_3 {margin-top: 4%;}
+.tile .resources.resources_3 .resource-2 {margin-left: 3%; margin-top: -15%;}
 
-.tile .resources .resource.food {background-position: 80% 20%;}
-.tile .resources .resource.science {background-position: 100% 20%;}
+.tile .resource.food {background-position: 89.5% 20%;}
+.tile .resource.science {background-position: 100.8% 20%;}
 .tile .resources .resource.wood {background-position: 0% 60%;}
-.tile .resources .resource.gem {background-position: 20% 60%;}
-.tile .resources .resource.paper {background-position: 30% 60%;}
-.tile .resources .resource.metal {background-position: 40% 60%;}
-.tile .resources .resource.stone {background-position: 50% 60%;}
-.tile .resources .resource.animal {background-position: 10% 60%;}
-.tile .resources .resource.clay {background-position: 60% 60%;}
-.tile .resources .resource.medic {background-position: 60% 60%;}
+.tile .resources .resource.gem {background-position: 22.4% 60%;}
+.tile .resources .resource.paper {background-position: 33.6% 60%;}
+.tile .resources .resource.metal {background-position: 44.8% 60%;}
+.tile .resources .resource.stone {background-position: 56% 60%;}
+.tile .resources .resource.animal {background-position: 11.2% 60%;}
+.tile .resources .resource.clay {background-position: 67.25% 60%;}
+.tile .resources .resource.medic {background-position: 78.4% 60%;}
 
 .tile.tile_reveal .name {
     font-weight: bold;
@@ -751,7 +765,6 @@
     height: 20%;
 }
 .tile.tile_reveal .food {
-    background-position: 80% 20%;
     height: 65%;
     position: relative;
 }
@@ -771,7 +784,6 @@
     line-height: 150%;
 }
 .tile.tile_reveal .science {
-    background-position: 90% 20%;
     height: 65%;
     margin-left: 5%;
 }
