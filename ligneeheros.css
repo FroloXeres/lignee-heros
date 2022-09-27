@@ -70,14 +70,13 @@
     align-items: center;
     flex-wrap: wrap;
 }
-#people-people, #people-worker, #people-warrior, #people-savant, #people-mage,
-#harvest-food, #harvest-science,
-#stock-wood, #stock-animal, #stock-gem, #stock-paper, #stock-metal, #stock-stone, #stock-clay, #stock-medic {
+#people-people::after, #people-worker::after, #people-warrior::after, #people-savant::after, #people-mage::after,
+#harvest-food::after, #harvest-science::after, #stock-food::after, #stock-science::after,
+#stock-wood::after, #stock-animal::after, #stock-gem::after, #stock-paper::after, #stock-metal::after, #stock-stone::after, #stock-clay::after, #stock-medic::after {
     content: attr(data-count);
 }
 #people-worker::before, #people-warrior::before, #people-savant::before, #people-mage::before,
-#harvest-food::before, #harvest-science::before,
-#stock-food::before, #stock-science::before,
+#harvest-food::before, #harvest-science::before, #stock-food::before, #stock-science::before,
 #stock-wood::before, #stock-animal::before, #stock-gem::before, #stock-paper::before,
 #stock-metal::before, #stock-stone::before, #stock-clay::before, #stock-medic::before  {
     display: block;
@@ -91,7 +90,7 @@
 #people-worker::before {background-position: 11.2% 0%;}
 #people-warrior::before {background-position: 0% 0%;}
 #people-savant::before {background-position: 33.6% 0%;}
-#people-mage::before {background-position: 22.13% 0%;}
+#people-mage::before {background-position: 22.5% 0%;}
 
 #cartridge .harvest {
     display: flex;
@@ -108,12 +107,15 @@
     align-items: center;
     flex-wrap: wrap;
 }
+#cartridge .stock-resources {
+    flex-grow: 1;
+}
 #cartridge .stock-resources .group {
     display: flex;
     align-items: center;
     flex-grow: 1;
     flex-wrap: wrap;
-    justify-content: flex-end;
+    justify-content: space-evenly;
 }
 #cartridge .people > div,
 #cartridge .harvest > div,
@@ -133,7 +135,7 @@
 #stock-clay::before {background-position: 67.45% 60%;}
 #stock-paper::before {background-position: 33.6% 60%;}
 #stock-medic::before {background-position: 78.4% 60%;}
-#stock-gem::before {background-position: 22.4% 60%;}
+#stock-gem::before {background-position: 22.5% 60%;}
 
 /********* Cards **********/
 #deck-zone {
@@ -929,13 +931,21 @@
     content: attr(data-dist);
 }
 
-@media all and (min-width: 1024px) {
-    .card {
-        font-size: 1rem;
+@media all and (max-width: 360px) {
+    #map-zone {
+        font-size: 1em;
+    }
+
+    #map-zone .tile .name {
+        font-size: .5em;
     }
 }
 
-@media all and (max-width: 720px) {
+@media all and (max-width: 720px) and (max-width: 720px) {
+    #cartridge {
+        width: 100%;
+    }
+
     .card {
         font-size: 0.6rem;
     }
@@ -943,12 +953,53 @@
     #map-zone {
         width: 86%;
         margin-left: 3.5%;
+        font-size: 1em;
     }
+
+    #map-zone .tile .name {
+        font-size: .6em;
+    }
+
     .map-hex-item {
         margin: 0.01em 0.01em;
     }
 }
 
+@media all and (min-width: 721px) and (max-width: 1100px) {
+    #cartridge {
+        width: 90%;
+    }
+
+    #map-zone {
+        width: 86%;
+        margin-left: 3.5%;
+        font-size: 1em;
+    }
+    #map-zone .tile .name {
+        font-size: .7em;
+    }
+}
+
+@media all and (min-width: 1101px) and (max-width: 1450px) {
+    #cartridge {
+        font-size: 1.1em;
+        width: 70%;
+    }
+
+    #map-zone .tile .name {
+        font-size: .9em;
+    }
+
+    .card {
+        font-size: 1rem;
+    }
+}
+
+@media all and (min-width: 1451px) {
+    #cartridge {
+        font-size: 1.3em;
+    }
+}
 
 /*
     Example of CSS sprites (a black token and a white token, 20x20px each, embedded in the same "tokens.png" 40x20px image):
