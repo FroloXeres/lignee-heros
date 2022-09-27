@@ -16,7 +16,7 @@
  */
 
 define([
-    "dojo","dojo/_base/declare",
+    "dojo", "dojo/_base/declare",
     "ebg/core/gamegui",
     "ebg/counter"
 ],
@@ -57,7 +57,7 @@ function (dojo, declare) {
                 // TODO: Setting up players boards if needed
             }
 
-            //this.setupGameState(gamedatas);
+            this.setupGameState(gamedatas);
             this.setupGameData(gamedatas);
             this.setupMap();
 
@@ -71,7 +71,32 @@ function (dojo, declare) {
         {
             this.currentState = gamedatas.currentState;
 
-            //$('#turn').data('turn', this.currentState.turn);
+            this.$turn   = document.querySelector('#turn');
+
+            this.$peopleTitle = document.querySelector('#people-title');
+            this.$peopleAll = document.querySelector('#people-people');
+            this.$peopleWorker = document.querySelector('#people-worker');
+            this.$peopleWarrior = document.querySelector('#people-warrior');
+            this.$peopleSavant = document.querySelector('#people-savant');
+            this.$peopleMage = document.querySelector('#people-mage');
+
+            this.$harvestTitle = document.querySelector('#harvest-title');
+            this.$foodHarvest = document.querySelector('#harvest-food');
+            this.$scienceHarvest = document.querySelector('#harvest-science');
+
+            this.$stockTitle = document.querySelector('#stock-title');
+            this.$foodStock = document.querySelector('#stock-food');
+            this.$scienceStock = document.querySelector('#stock-science');
+            this.$woodStock = document.querySelector('#stock-wood');
+            this.$animalStock = document.querySelector('#stock-animal');
+            this.$stoneStock = document.querySelector('#stock-stone');
+            this.$metalStock = document.querySelector('#stock-metal');
+            this.$clayStock = document.querySelector('#stock-clay');
+            this.$paperStock = document.querySelector('#stock-paper');
+            this.$medicStock = document.querySelector('#stock-medic');
+            this.$gemStock = document.querySelector('#stock-gem');
+
+            this.updateCartridge();
         },
 
         setupGameData: function(gamedatas)
@@ -115,6 +140,56 @@ function (dojo, declare) {
                 dojo.query('#tile-' + tile.id + ' .map-hex-content')
                     .addClass('tile_reveal tile_' + tileTerrain.code);
             });
+        },
+
+        updateCartridge: function()
+        {
+            this.updateTurn();
+            this.updatePeople();
+            this.updateHarvest();
+            this.updateStock();
+        },
+
+        updateTurn: function()
+        {
+            this.$turn.dataset.turn = this.currentState.turn;
+            this.$turn.innerHTML    = this.currentState.title.turn + ' ' + this.$turn.dataset.turn;
+        },
+
+        updatePeople: function()
+        {
+            this.$peopleTitle.innerHTML = this.currentState.title.people;
+
+            this.$peopleAll.dataset.count = this.currentState.peopleCount;
+            this.$peopleWorker.dataset.count = this.currentState.workerCount;
+            this.$peopleWarrior.dataset.count = this.currentState.warriorCount;
+            this.$peopleSavant.dataset.count = this.currentState.savantCount;
+            this.$peopleMage.dataset.count = this.currentState.mageCount;
+        },
+
+        updateHarvest: function()
+        {
+            this.$harvestTitle.innerHTML = this.currentState.title.harvest;
+
+            this.$foodHarvest.dataset.count = this.currentState.foodProduction;
+            this.$scienceHarvest.dataset.count = this.currentState.scienceProduction;
+        },
+
+        updateStock: function()
+        {
+            this.$stockTitle.innerHTML = this.currentState.title.stock;
+
+            this.$foodStock.dataset.count = this.currentState.foodStock;
+            this.$scienceStock.dataset.count = this.currentState.scienceStock;
+
+            this.$woodStock.dataset.count = this.currentState.woodStock;
+            this.$animalStock.dataset.count = this.currentState.animalStock;
+            this.$stoneStock.dataset.count = this.currentState.stoneStock;
+            this.$metalStock.dataset.count = this.currentState.metalStock;
+            this.$clayStock.dataset.count = this.currentState.clayStock;
+            this.$paperStock.dataset.count = this.currentState.paperStock;
+            this.$medicStock.dataset.count = this.currentState.medicStock;
+            this.$gemStock.dataset.count = this.currentState.gemStock;
         },
 
         ///////////////////////////////////////////////////

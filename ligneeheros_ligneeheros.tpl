@@ -1,19 +1,38 @@
 {OVERALL_GAME_HEADER}
 
 <div id="cartridge">
-    <h2 id="turn" data-turn="{TURN}"></h2>
-    <div id="people" data-count="{PEOPLE}">
-        <div id="worker" data-count="{WORKER}"></div>
-        <div id="warrior" data-count="{WARRIOR}"></div>
-        <div id="savant" data-count="{SAVANT}"></div>
-        <div id="mage" data-count="{MAGE}"></div>
+    <h2 id="turn" data-turn="1">Turn 0</h2>
+    <div class="people">
+        <div id="people-title"></div>
+        <div id="people-people" data-count="0">0</div>
+        <div id="people-worker" data-count="0">0</div>
+        <div id="people-warrior" data-count="0">0</div>
+        <div id="people-savant" data-count="0">0</div>
+        <div id="people-mage" data-count="0">0</div>
     </div>
-    <div id="harvest">
-        <div id="food" data-count="0"></div>
-        <div id="science" data-count="0"></div>
+    <div class="harvest">
+        <div id="harvest-title"></div>
+        <div id="harvest-food" data-count="0">0</div>
+        <div id="harvest-science" data-count="0">0</div>
     </div>
-    <div id="stock">
-
+    <div class="stock">
+        <div id="stock-title"></div>
+        <div id="stock-food" data-count="0">0</div>
+        <div id="stock-science" data-count="0">0</div>
+        <div class="stock-resources">
+            <div class="group">
+                <div id="stock-wood" data-count="0">0</div>
+                <div id="stock-animal" data-count="0">0</div>
+                <div id="stock-stone" data-count="0">0</div>
+                <div id="stock-metal" data-count="0">0</div>
+            </div>
+            <div class="group">
+                <div id="stock-clay" data-count="0">0</div>
+                <div id="stock-paper" data-count="0">0</div>
+                <div id="stock-medic" data-count="0">0</div>
+                <div id="stock-gem" data-count="0">0</div>
+            </div>
+        </div>
     </div>
 </div>
 <div id="map-zone">

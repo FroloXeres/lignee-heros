@@ -90,16 +90,6 @@ class view_ligneeheros_ligneeheros extends game_view
         /*********** Place your code below:  ************/
         $this->populateMapBlock();
 
-        // Current state
-//        $currentState = $this->game->getCurrentState();
-//        $this->tpl['TURN']   = $currentState['turn'];
-//        $this->tpl['PEOPLE'] = $currentState[CurrentStateService::GLB_PEOPLE_CNT];
-//        $this->tpl['WORKER'] = $currentState[CurrentStateService::GLB_WORKER_CNT];
-//        $this->tpl['WARRIOR'] = $currentState[CurrentStateService::GLB_WARRIOR_CNT];
-//        $this->tpl['SAVANT'] = $currentState[CurrentStateService::GLB_SAVANT_CNT];
-//        $this->tpl['MAGE'] = $currentState[CurrentStateService::GLB_MAGE_CNT];
-
-
         /*
         // Examples: set the value of some element defined in your tpl file like this: {MY_VARIABLE_ELEMENT}
 

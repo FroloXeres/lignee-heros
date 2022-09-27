@@ -48,6 +48,93 @@
 
 /********* You can start writing your CSS below this line: **********/
 
+/********* Cartridge **********/
+#cartridge {
+    font-weight: bold;
+    width: 50%;
+    margin: 0 auto;
+    background: url('img/card-sprites.png') 99% 8% no-repeat;
+    background-size: 710% 145%;
+    padding: 0.5em 1em;
+}
+#turn {
+    text-align: center;
+    font-size: 1.5em;
+}
+#cartridge > div {
+    line-height: 1.8em;
+}
+#cartridge .people {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+}
+#people-people, #people-worker, #people-warrior, #people-savant, #people-mage,
+#harvest-food, #harvest-science,
+#stock-wood, #stock-animal, #stock-gem, #stock-paper, #stock-metal, #stock-stone, #stock-clay, #stock-medic {
+    content: attr(data-count);
+}
+#people-worker::before, #people-warrior::before, #people-savant::before, #people-mage::before,
+#harvest-food::before, #harvest-science::before,
+#stock-food::before, #stock-science::before,
+#stock-wood::before, #stock-animal::before, #stock-gem::before, #stock-paper::before,
+#stock-metal::before, #stock-stone::before, #stock-clay::before, #stock-medic::before  {
+    display: block;
+    content: '';
+    background: url("img/icons.svg") 0 0 no-repeat;
+    background-size: 990% 600%;
+    height: 1.5em;
+    aspect-ratio: 1;
+    margin-right: .5em;
+}
+#people-worker::before {background-position: 11.2% 0%;}
+#people-warrior::before {background-position: 0% 0%;}
+#people-savant::before {background-position: 33.6% 0%;}
+#people-mage::before {background-position: 22.13% 0%;}
+
+#cartridge .harvest {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    flex-wrap: wrap;
+}
+#harvest-food::before {background-position: 89.5% 20%;}
+#harvest-science::before {background-position: 100.8% 20%;}
+
+#cartridge .stock {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    flex-wrap: wrap;
+}
+#cartridge .stock-resources .group {
+    display: flex;
+    align-items: center;
+    flex-grow: 1;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+#cartridge .people > div,
+#cartridge .harvest > div,
+#cartridge .stock > div:not(.stock-resources),
+#cartridge .stock-resources .group > div {
+    display: flex;
+    align-items: center;
+    min-width: 4em;
+}
+#stock-food::before {background-position: 44.8% 100%;}
+#stock-science::before {background-position: 56% 100%;}
+
+#stock-wood::before {background-position: 0% 60%;}
+#stock-animal::before {background-position: 11.2% 60%;}
+#stock-stone::before {background-position: 56% 60%;}
+#stock-metal::before {background-position: 44.6% 60%;}
+#stock-clay::before {background-position: 67.45% 60%;}
+#stock-paper::before {background-position: 33.6% 60%;}
+#stock-medic::before {background-position: 78.4% 60%;}
+#stock-gem::before {background-position: 22.4% 60%;}
+
 /********* Cards **********/
 #deck-zone {
     text-align: center;

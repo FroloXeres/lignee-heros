@@ -262,9 +262,16 @@ class ligneeheros extends Table
 
     function getCurrentState(): array
     {
-        $states = ['turn' => 0];
+        $states = [
+            'title' => [
+                'turn'    => clienttranslate('Turn'),
+                'people'  => clienttranslate('People:'),
+                'harvest' => clienttranslate('Harvest:'),
+                'stock'   => clienttranslate('Stock:')
+            ]
+        ];
 
-        foreach (array_keys(CurrentStateService::CURRENT_STATES) as $stateName) {
+        foreach (array_keys(CurrentStateService::CURRENT_STATES) as $i => $stateName) {
             $states[$stateName] = (int) $this->getGameStateValue($stateName);
         }
 
