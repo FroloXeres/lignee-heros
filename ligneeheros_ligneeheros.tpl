@@ -35,6 +35,17 @@
         </div>
     </div>
 </div>
+<div id="cards-zone">
+    <div id="invention">
+        <div id="invention-deck"></div>
+        <div id="invention-visible"></div>
+        <div id="invention-hand"></div>
+    </div>
+    <div id="spell">
+        <div id="spell-deck"></div>
+        <div id="spell-hand"></div>
+    </div>
+</div>
 <div id="map-zone">
     <ul class="map-hex-grid">
         <!-- BEGIN MAP_TILES -->
@@ -46,10 +57,6 @@
             </li>
         <!-- END MAP_TILES -->
     </ul>
-</div>
-<div id="city-zone">
-    <!-- <div class="icon cube warrior"></div> -->
-    City
 </div>
 <script type="text/javascript">
     // Javascript HTML templates

@@ -97,6 +97,7 @@ function (dojo, declare) {
             this.$gemStock = document.querySelector('#stock-gem');
 
             this.updateCartridge();
+            this.initCards();
         },
 
         setupGameData: function(gamedatas)
@@ -140,6 +141,25 @@ function (dojo, declare) {
                 dojo.query('#tile-' + tile.id + ' .map-hex-content')
                     .addClass('tile_reveal tile_' + tileTerrain.code);
             });
+        },
+
+        initCards: function()
+        {
+
+            this.$invention = {
+                $deck: {
+                    $dom: document.querySelector('#invention-deck'),
+                    cards: []
+                },
+                $visible: {
+                    $dom: document.querySelector('#invention-visible'),
+                    cards: []
+                },
+                $hand: {
+                    $dom: document.querySelector('#invention-hand'),
+                    cards: []
+                }
+            };
         },
 
         updateCartridge: function()

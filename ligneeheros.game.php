@@ -255,6 +255,10 @@ class ligneeheros extends Table
         // Game states
         $result['currentState'] = $this->getCurrentState();
 
+        // Cards
+        $result['cards'] = $this->cards;
+        $result['cards'] = $this->cards;
+
         // TODO: Gather all information about current game situation (visible by player $current_player_id).
 
         return $result;

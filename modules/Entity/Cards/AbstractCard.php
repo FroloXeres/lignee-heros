@@ -14,6 +14,7 @@ abstract class AbstractCard
 
     public const LOCATION_DEFAULT = 'deck';
     public const LOCATION_HAND    = 'hand';
+    public const LOCATION_VISIBLE = 'visible';
     public const LOCATION_DISCARD = 'discard';
     public const LOCATION_HIDDEN  = 'hidden';
     public const LOCATION_REMOVED = 'removed';
