@@ -2,7 +2,7 @@
 
 namespace LdH\Entity\Cards;
 
-class Deck implements \Iterator
+class Deck implements \Iterator, \JsonSerializable
 {
     public const TYPE_EXPLORE_DISEASE = 'explore_disease';
     public const TYPE_EXPLORE_FIGHT   = 'explore_fight';
@@ -21,7 +21,10 @@ class Deck implements \Iterator
 
     /** @var AbstractCard[] */
     protected array $cards   = [];
-    protected int   $current = 0;
+    protected ?int  $current = null;
+
+    /** @var int[] */
+    protected array $copies = [];
 
     /**
      * @param string $type
@@ -67,19 +70,13 @@ class Deck implements \Iterator
      */
     public function addCard(AbstractCard $card, int $count = 1): Deck
     {
-        for ($i = 0; $i < $count; $i++) {
-            $this->cards[] = $card;
-        }
+        if ($this->current === null) {$this->current = 0;}
+        else $this->current++;
+
+        $this->cards[$this->current]  = $card;
+        $this->copies[$this->current] = $count;
 
         return $this;
-    }
-
-    /**
-     * @param AbstractCard[] $cards
-     */
-    public function setCards(array $cards): void
-    {
-        $this->cards = $cards;
     }
 
     /**
@@ -162,17 +159,23 @@ class Deck implements \Iterator
         return $this;
     }
 
+    public function jsonSerialize(): array
+    {
+        return $this->getBgaDeckData();
+    }
+
     /**
      * @return array
      */
-    public function toArray(): array
+    public function getBgaDeckData(): array
     {
-        return array_map(
-            function($card) {
-                return $card->toArray();
-            },
-            $this->cards
-        );
+        $cards = [];
+        for ($i = 0; $i <= $this->current; $i++) {
+            $card        = $this->cards[$i]->toArray();
+            $card['nbr'] = $this->copies[$i];
+            $cards[]     = $card;
+        }
+        return $cards;
     }
 
     // Implement Traversable
@@ -193,7 +196,7 @@ class Deck implements \Iterator
 
     public function valid()
     {
-        return $this->current < count($this->cards);
+        return $this->current && $this->current < count($this->cards);
     }
 
     public function rewind()

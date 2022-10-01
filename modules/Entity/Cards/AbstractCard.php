@@ -24,6 +24,7 @@ abstract class AbstractCard
     protected ?int   $type_arg;
     protected string $location     = self::LOCATION_DEFAULT;
     protected ?int   $location_arg;
+    protected ?int   $nbr;
 
     protected string  $name        = '';
     protected string  $description = '';
@@ -169,33 +170,48 @@ abstract class AbstractCard
         return $this;
     }
 
+    public const TPL_ID        = 'id';
+    public const TPL_DECK      = 'deck';
+    public const TPL_LARGE     = 'large';
+    public const TPL_ICON      = 'icon';
+    public const TPL_COST      = 'cost';
+    public const TPL_NAME      = 'name';
+    public const TPL_TYPE_ICON = 'typeIcon';
+    public const TPL_TYPE      = 'type';
+    public const TPL_NEED_1    = 'need1';
+    public const TPL_NEED_2    = 'need2';
+    public const TPL_GAIN      = 'gain';
+    public const TPL_TEXT_BOLD = 'textBold';
+    public const TPL_TEXT      = 'text';
+    public const TPL_ARTIST    = 'artist';
+
+    public const TPL_MEEPLE_POWER    = 'meeplePower';
+    public const TPL_OBJECTIVE       = 'objective';
+    public const TPL_OBJECTIVE_BONUS = 'objectiveBonus';
+    public const TPL_LEAD_TYPE       = 'leadType';
+    public const TPL_LEAD_POWER      = 'leadPower';
+
+    public const BGA_TYPE         = 'type';
+    public const BGA_TYPE_ARG     = 'type_arg';
+    public const BGA_LOCATION     = 'location';
+    public const BGA_LOCATION_ARG = 'location_arg';
+    public const BGA_NBR          = 'nbr';
+
     /**
      * Return data for Card module
      *
      * @return array
      */
-    abstract public function toArray(): array;
-
-    public const TPL_ID        = 'ID';
-    public const TPL_DECK      = 'DECK';
-    public const TPL_LARGE     = 'LARGE';
-    public const TPL_ICON      = 'ICON';
-    public const TPL_COST      = 'COST';
-    public const TPL_NAME      = 'NAME';
-    public const TPL_TYPE_ICON = 'TYPE_ICON';
-    public const TPL_TYPE      = 'TYPE';
-    public const TPL_NEED_1    = 'NEED_1';
-    public const TPL_NEED_2    = 'NEED_2';
-    public const TPL_GAIN      = 'GAIN';
-    public const TPL_TEXT_BOLD = 'TEXT_BOLD';
-    public const TPL_TEXT      = 'TEXT';
-    public const TPL_ARTIST    = 'ARTIST';
-
-    public const TPL_MEEPLE_POWER    = 'MEEPLE_POWER';
-    public const TPL_OBJECTIVE       = 'OBJECTIVE';
-    public const TPL_OBJECTIVE_BONUS = 'OBJECTIVE_BONUS';
-    public const TPL_LEAD_TYPE       = 'LEAD_TYPE';
-    public const TPL_LEAD_POWER      = 'LEAD_POWER';
+    public function toArray(): array
+    {
+        return [
+            self::BGA_TYPE         => $this->getType(),
+            self::BGA_TYPE_ARG     => $this->getTypeArg(),
+            self::BGA_LOCATION     => $this->getLocation(),
+            self::BGA_LOCATION_ARG => $this->getLocationArg(),
+            self::BGA_NBR          => 1
+        ];
+    }
 
     /**
      * Return data for Card template build
@@ -224,7 +240,7 @@ abstract class AbstractCard
             self::TPL_MEEPLE_POWER    => null,
             self::TPL_OBJECTIVE       => null,
             self::TPL_OBJECTIVE_BONUS => null,
-            self::TPL_LEAD_POWER      => null
+            self::TPL_LEAD_POWER      => null,
         ];
     }
 }

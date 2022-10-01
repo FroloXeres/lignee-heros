@@ -33,7 +33,11 @@ use LdH\Entity\Cards\AbstractCard;
 
 class ligneeheros extends Table
 {
+    /** @var \Deck[] */
     public array $decks = [];
+
+    /** @var Deck[] */
+    public array $cards = [];
 
     /**
      * @var StateService|null
@@ -95,10 +99,12 @@ class ligneeheros extends Table
      */
     protected function initDecks()
     {
+        /** @var Deck $deck */
         foreach ($this->cards as $deck) {
-            /** @var Deck $deck */
-            $this->decks[$deck->getType()] = self::getNew( "module.common.deck" );
-            $this->decks[$deck->getType()]->init($deck->getType());
+            /** @var \Deck $bgaDeck */
+            $bgaDeck = self::getNew( "module.common.deck" );
+            $bgaDeck->init($deck->getType());
+            $this->decks[$deck->getType()] = $bgaDeck;
         }
     }
 
@@ -210,7 +216,7 @@ class ligneeheros extends Table
                 /** @var Deck $ldhDeck */
                 $ldhDeck = $this->cards[$type];
 
-                $deck->createCards($ldhDeck->toArray(), AbstractCard::LOCATION_DEFAULT);
+                $deck->createCards($ldhDeck->getBgaDeckData(), AbstractCard::LOCATION_DEFAULT);
 
                 if (!$ldhDeck->isPublic()) {
                     $deck->shuffle(AbstractCard::LOCATION_DEFAULT);
@@ -256,7 +262,6 @@ class ligneeheros extends Table
         $result['currentState'] = $this->getCurrentState();
 
         // Cards
-        $result['cards'] = $this->cards;
         $result['cards'] = $this->cards;
 
         // TODO: Gather all information about current game situation (visible by player $current_player_id).
