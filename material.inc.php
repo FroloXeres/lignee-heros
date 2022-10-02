@@ -183,14 +183,11 @@ $invention = (new Deck(Deck::TYPE_INVENTION))
     ->setName(clienttranslate('Invention cards'))
     ->setIsPublic(true);
 $exploreFight = (new Deck(Deck::TYPE_EXPLORE_FIGHT))
-    ->setName(clienttranslate('Explore : Fight cards'))
-    ->setIsPublic(true);
+    ->setName(clienttranslate('Explore : Fight cards'));
 $exploreOther = (new Deck(Deck::TYPE_EXPLORE_OTHER))
-    ->setName(clienttranslate('Explore : Other cards'))
-    ->setIsPublic(true);
+    ->setName(clienttranslate('Explore : Other cards'));
 $exploreDisease = (new Deck(Deck::TYPE_EXPLORE_DISEASE))
-    ->setName(clienttranslate('Explore : Disease cards'))
-    ->setIsPublic(true);
+    ->setName(clienttranslate('Explore : Disease cards'));
 $this->cards = [
     $lineage->getType()        => $lineage,
     $objective->getType()      => $objective,

@@ -2,7 +2,7 @@
 
 namespace LdH\Entity\Cards;
 
-abstract class AbstractCard
+abstract class AbstractCard implements CardInterface
 {
     public const TYPE_DISEASE     = 'disease';
     public const TYPE_FIGHT     = 'fight';
@@ -12,12 +12,12 @@ abstract class AbstractCard
     public const TYPE_OBJECTIVE = 'objective';
     public const TYPE_LINEAGE   = 'lineage';
 
-    public const LOCATION_DEFAULT = 'deck';
-    public const LOCATION_HAND    = 'hand';
-    public const LOCATION_VISIBLE = 'visible';
-    public const LOCATION_DISCARD = 'discard';
-    public const LOCATION_HIDDEN  = 'hidden';
-    public const LOCATION_REMOVED = 'removed';
+    public const LOCATION_DEFAULT  = 'deck';
+    public const LOCATION_HAND     = 'hand';
+    public const LOCATION_ON_TABLE = 'onTable';
+    public const LOCATION_DISCARD  = 'discard';
+    public const LOCATION_HIDDEN   = 'hidden';
+    public const LOCATION_REMOVED  = 'removed';
 
     protected string $code         = '';
     protected string $type;

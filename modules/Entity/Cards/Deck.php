@@ -2,7 +2,7 @@
 
 namespace LdH\Entity\Cards;
 
-class Deck implements \Iterator, \JsonSerializable
+class Deck implements \Iterator
 {
     public const TYPE_EXPLORE_DISEASE = 'explore_disease';
     public const TYPE_EXPLORE_FIGHT   = 'explore_fight';
@@ -159,9 +159,12 @@ class Deck implements \Iterator, \JsonSerializable
         return $this;
     }
 
-    public function jsonSerialize(): array
+    public function cardsDataByCode(): array
     {
-        return $this->getBgaDeckData();
+        return array_combine(
+            array_map(function(AbstractCard $card) {return $card->getCode();}, $this->getCards()),
+            array_map(function(AbstractCard $card) {return $card->toTpl($this);}, $this->getCards())
+        );
     }
 
     /**
@@ -176,6 +179,38 @@ class Deck implements \Iterator, \JsonSerializable
             $cards[]     = $card;
         }
         return $cards;
+    }
+
+    /**
+     * Get public location list for this card type
+     *
+     * @return string[]
+     */
+    public function getPublicLocations(): array
+    {
+        switch ($this->type) {
+            case AbstractCard::TYPE_INVENTION:
+                return [
+                    AbstractCard::LOCATION_DEFAULT,
+                    AbstractCard::LOCATION_ON_TABLE,
+                    AbstractCard::LOCATION_HAND
+                ];
+            case AbstractCard::TYPE_MAGIC:
+                return [
+                    AbstractCard::LOCATION_DEFAULT,
+                    AbstractCard::LOCATION_HAND
+                ];
+            case AbstractCard::TYPE_LINEAGE:
+            case AbstractCard::TYPE_OBJECTIVE:
+            case AbstractCard::TYPE_DISEASE:
+            case AbstractCard::TYPE_FIGHT:
+            case AbstractCard::TYPE_OTHER:
+                return [
+                    AbstractCard::LOCATION_DEFAULT
+                ];
+            default:
+                return [];
+        }
     }
 
     // Implement Traversable

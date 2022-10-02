@@ -27,9 +27,11 @@ use LdH\Service\StateCompilerPass;
 use LdH\Repository\MapRepository;
 use LdH\Service\CurrentStateService;
 use LdH\Service\MapService;
+use LdH\Service\CardService;
 use LdH\Service\StateService;
 use LdH\Entity\Cards\Deck;
 use LdH\Entity\Cards\AbstractCard;
+use LdH\State\ChooseLineageState;
 
 class ligneeheros extends Table
 {
@@ -39,10 +41,8 @@ class ligneeheros extends Table
     /** @var Deck[] */
     public array $cards = [];
 
-    /**
-     * @var StateService|null
-     */
     public ?StateService $stateService = null;
+    public ?CardService  $cardService  = null;
 
     /**
      * @var callable[]
@@ -96,10 +96,12 @@ class ligneeheros extends Table
      * Create decks from card list available in material.inc.php
      *
      * @return void
+     * @throws Exception
      */
     protected function initDecks()
     {
-        /** @var Deck $deck */
+        $this->cardService = $this->getService(CardService::class);
+
         foreach ($this->cards as $deck) {
             /** @var \Deck $bgaDeck */
             $bgaDeck = self::getNew( "module.common.deck" );
@@ -240,7 +242,7 @@ class ligneeheros extends Table
     {
         $result = array();
 
-        $current_player_id = self::getCurrentPlayerId();    // !! We must only return informations visible by this player !!
+        $currentPlayerId = self::getCurrentPlayerId();    // !! We must only return informations visible by this player !!
 
         // Get information about players
         // Note: you can retrieve some extra field you added for "player" table in "dbmodel.sql" if you need it.
@@ -262,7 +264,8 @@ class ligneeheros extends Table
         $result['currentState'] = $this->getCurrentState();
 
         // Cards
-        $result['cards'] = $this->cards;
+        $currentStateId = $this->gamestate->state_id();
+        $result['cards'] = $this->cardService->getPublicCards($this->decks, $this->cards, $currentStateId, $currentPlayerId);
 
         // TODO: Gather all information about current game situation (visible by player $current_player_id).
 
@@ -507,6 +510,14 @@ class ligneeheros extends Table
     public function getStateService():? StateService
     {
         return $this->stateService;
+    }
+
+    /**
+     * @return CardService|null
+     */
+    public function getCardService():? CardService
+    {
+        return $this->cardService;
     }
 
     /**
