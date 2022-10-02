@@ -36,6 +36,7 @@
     </div>
 </div>
 <div id="cards-zone">
+    <div id="floating-cards"></div>
     <div id="invention">
         <div id="invention-deck"></div>
         <div id="invention-visible"></div>

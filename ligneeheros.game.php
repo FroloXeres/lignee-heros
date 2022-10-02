@@ -264,8 +264,9 @@ class ligneeheros extends Table
         $result['currentState'] = $this->getCurrentState();
 
         // Cards
-        $currentStateId = $this->gamestate->state_id();
+        $currentStateId  = $this->gamestate->state_id();
         $result['cards'] = $this->cardService->getPublicCards($this->decks, $this->cards, $currentStateId, $currentPlayerId);
+        $result['decks'] = $this->cardService->getPublicDecks($this->cards);
 
         // TODO: Gather all information about current game situation (visible by player $current_player_id).
 

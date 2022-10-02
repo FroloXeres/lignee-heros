@@ -70,6 +70,8 @@ function (dojo, declare) {
         setupGameState: function(gamedatas)
         {
             this.currentState = gamedatas.currentState;
+            this.decks        = gamedatas.decks;
+            this.cards        = gamedatas.cards;
 
             this.$turn   = document.querySelector('#turn');
 
@@ -122,9 +124,9 @@ function (dojo, declare) {
 
         setupMap: function()
         {
-            var _self       = this;
-            var tileTerrain = {};
-            var tileContent = null;
+            let _self       = this;
+            let tileTerrain = {};
+            let tileContent = null;
             _self.map.forEach(function(tile) {
                 tileTerrain = _self.terrains[tile.terrain];
                 tileContent = _self.format_block('jstpl_tile', {
@@ -145,21 +147,47 @@ function (dojo, declare) {
 
         initCards: function()
         {
-
-            this.$invention = {
-                $deck: {
-                    $dom: document.querySelector('#invention-deck'),
-                    cards: []
-                },
-                $visible: {
-                    $dom: document.querySelector('#invention-visible'),
-                    cards: []
-                },
-                $hand: {
-                    $dom: document.querySelector('#invention-hand'),
-                    cards: []
+            for (let type in this.cards) {
+                if (this.cards.hasOwnProperty(type)) {
+                    this.initLocation(this.cards[type], type);
                 }
-            };
+            }
+        },
+        initLocation: function(cardLocation, type)
+        {
+            for (let location in cardLocation) {
+                if (cardLocation.hasOwnProperty(location)) {
+                    this.initCardStore(cardLocation[location], type, location);
+                }
+            }
+        },
+        initCardStore: function(cards, type, location)
+        {
+            if (cards.length) {
+                let visibleDeck = ['invention', 'spell'].includes(type);
+                let domQuery    = visibleDeck ? type+'-'+location : 'floating-cards';
+                if (location === 'deck' && visibleDeck) {
+                    this.createDeck(type, domQuery, cards.length);
+                } else {
+                    this.createCardsInLocation(cards, type, domQuery);
+                }
+            }
+        },
+        createDeck: function(type, domQuery, count)
+        {
+            let deck        = this.decks[type];
+            let deckContent = this.format_block('jstpl_card_verso', {
+                large: deck.large ? 'large' : '',
+                canDraw: deck.canDraw ? 'inactive' : '',
+                type: type,
+                name: deck.name,
+                count: count
+            });
+            dojo.place(deckContent, domQuery);
+        },
+        createCardsInLocation: function(cards, type, domQuery)
+        {
+            dojo.query('#'+domQuery).innerHTML += '<div>'+type+' cards here</div>';
         },
 
         updateCartridge: function()

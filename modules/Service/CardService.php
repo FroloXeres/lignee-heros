@@ -7,6 +7,16 @@ use LdH\Entity\Cards\Deck;
 
 class CardService
 {
+    public function getPublicDecks(array $bgaDecks): array
+    {
+        return array_combine(
+            array_keys($bgaDecks),
+            array_map(function(Deck $bgaDeck) {
+                return $bgaDeck->getPublicData();
+            }, $bgaDecks)
+        );
+    }
+
     /**
      * @param \Deck[] $bgaDeck
      * @param Deck[]  $ldhDeck

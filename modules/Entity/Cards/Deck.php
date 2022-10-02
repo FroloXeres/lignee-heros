@@ -159,6 +159,15 @@ class Deck implements \Iterator
         return $this;
     }
 
+    public function getPublicData(): array
+    {
+        return [
+            'name'    => $this->getName(),
+            'large'   => $this->isLarge(),
+            'canDraw' => $this->canDraw()
+        ];
+    }
+
     public function cardsDataByCode(): array
     {
         return array_combine(
