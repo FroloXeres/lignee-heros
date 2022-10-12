@@ -4,6 +4,9 @@ namespace LdH\Service;
 
 use LdH\Entity\Cards\AbstractCard;
 use LdH\Entity\Cards\Deck;
+use LdH\State\ChooseLineageState;
+use LdH\State\DrawObjectiveState;
+use LdH\State\GameInitState;
 
 class CardService
 {
@@ -47,7 +50,7 @@ class CardService
         $bgaCardsData = [];
         $ldhCardsData = $ldhDeck->cardsDataByCode();
 
-        foreach ($bgaDeck->getCardsInLocation($location) as $i => $bgaCardData) {
+        foreach ($bgaDeck->getCardsInLocation($location) as $bgaCardData) {
             $codeType    = $ldhDeck->getType() . '_' . $bgaCardData['type'];
             $codeTypeArg = $ldhDeck->getType() . '_' . $bgaCardData['type_arg'];
 
@@ -68,10 +71,22 @@ class CardService
     {
         switch ($deckType) {
             case AbstractCard::TYPE_INVENTION:
+            case AbstractCard::TYPE_MAGIC:
+                // To update
+                return $stateId > ChooseLineageState::ID;
+            case AbstractCard::TYPE_LINEAGE:
+                // $stateId === ChooseLineageState::ID
+                return $stateId === GameInitState::ID;
             case AbstractCard::TYPE_OBJECTIVE:
-                break;
+                // Needed ?
+                return $stateId === DrawObjectiveState::ID;
+            case AbstractCard::TYPE_OTHER:
+            case AbstractCard::TYPE_FIGHT:
+            case AbstractCard::TYPE_DISEASE:
+                // To update
+                return $stateId === 0;
         }
 
-        return true;
+        return false;
     }
 }

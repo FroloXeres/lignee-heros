@@ -150,6 +150,37 @@
 #stock-medic::before {background-position: 78.4% 60%;}
 #stock-gem::before {background-position: 22.4% 60%;}
 
+/********* Card zones **********/
+#cards-zone > div {
+    padding-left: 1em;
+    margin-top: 1em;
+    margin-bottom: 1em;
+    display: flex;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+}
+#cards-zone #floating-cards {
+    justify-content: center;
+}
+#floating-cards:empty {display: none;}
+#cards-zone .card {
+    display: inline-block;
+    width: 15%;
+    margin-bottom: 1em;
+}
+#cards-zone .card.large {
+    width: 22%;
+}
+#cards-zone .card.onTable {
+
+}
+#cards-zone .card.hand {
+
+}
+#cards-zone .card:not(:last-child) {
+    margin-right: 1em;
+}
+
 /********* Cards **********/
 #deck-zone {
     text-align: center;
@@ -404,37 +435,37 @@
     grid-gap: 4% 1%;
     height: 18.6%;
 }
-.card.lineage .power {
+.card.lineage .ldh-power {
     grid-area: power;
     display: flex;
     align-items: center;
     position: relative;
     overflow-y: auto;
 }
-.card.lineage .power::before {
+.card.lineage .ldh-power::before {
     content: "";
     background: url('img/icons.png') 0 0 no-repeat;
     background-size: 1100% 600%;
     height: 60%;
     aspect-ratio: 1;
 }
-.card.lineage.lineage_elven_mage .power::before {background-position: 40% 80.1%;}
-.card.lineage.lineage_elven_savant .power::before {background-position: 50% 80%;}
-.card.lineage.lineage_nani_warrior .power::before {background-position: 90% 80%;}
-.card.lineage.lineage_nani_savant .power::before {background-position: 80% 80%;}
-.card.lineage.lineage_humani_mage .power::before {background-position: 60% 80%;}
-.card.lineage.lineage_humani_worker .power::before {background-position: 70% 80%;}
-.card.lineage.lineage_ork_warrior .power::before {background-position: 30% 80%;}
-.card.lineage.lineage_ork_worker .power::before {background-position: 20% 80%;}
+.card.lineage.lineage_elven_mage .ldh-power::before {background-position: 40% 80.1%;}
+.card.lineage.lineage_elven_savant .ldh-power::before {background-position: 50% 80%;}
+.card.lineage.lineage_nani_warrior .ldh-power::before {background-position: 90% 80%;}
+.card.lineage.lineage_nani_savant .ldh-power::before {background-position: 80% 80%;}
+.card.lineage.lineage_humani_mage .ldh-power::before {background-position: 60% 80%;}
+.card.lineage.lineage_humani_worker .ldh-power::before {background-position: 70% 80%;}
+.card.lineage.lineage_ork_warrior .ldh-power::before {background-position: 30% 80%;}
+.card.lineage.lineage_ork_worker .ldh-power::before {background-position: 20% 80%;}
 
-.card.lineage .objective {
+.card.lineage .ldh-objective {
     grid-area: objective;
     display: flex;
     align-items: center;
     overflow-y: auto;
     position: relative;
 }
-.card.lineage .objective::before {
+.card.lineage .ldh-objective::before {
     content: "";
     background: url('img/icons.png') 50% 40% no-repeat;
     background-size: 1100% 600%;
@@ -442,7 +473,7 @@
     height: 65%;
     aspect-ratio: 1;
 }
-.card.lineage .bonus {
+.card.lineage .ldh-bonus {
     grid-area: bonus;
     display: flex;
     flex-direction: column;
@@ -452,7 +483,7 @@
     overflow-y: auto;
     position: relative;
 }
-.card.lineage .bonus::before {
+.card.lineage .ldh-bonus::before {
     position: absolute;
     content: "\f05d";
     font-family: "FontAwesome";
@@ -461,14 +492,14 @@
     left: -10%;
     z-index: 2;
 }
-.card.lineage .leading {
+.card.lineage .ldh-leading {
     height: 9.8%;
     margin: 2% 0 1%;
     display: flex;
     align-items: center;
     overflow-y: auto;
 }
-.card.lineage .leading::before {
+.card.lineage .ldh-leading::before {
     content: "";
     background: url('img/icons.png') 70% 0 no-repeat;
     background-size: 1100% 600%;
@@ -476,7 +507,7 @@
     height: 70%;
     margin-right: 2%;
 }
-.card.lineage .leading span {
+.card.lineage .ldh-leading span {
     display: block;
     background: url('img/icons.png') 0 0 no-repeat;
     background-size: 1100% 600%;
@@ -484,8 +515,8 @@
     height: 40%;
     margin-right: 2%;
 }
-.card.lineage .leading.end_turn span {background-position: 80% 40%;}
-.card.lineage .leading.fight span {background-position: 40% 20%;}
+.card.lineage .ldh-leading.end_turn span {background-position: 80% 40%;}
+.card.lineage .ldh-leading.fight span {background-position: 40% 20%;}
 
 .card .graph {
     height: 32.25%;
@@ -607,88 +638,88 @@
 /******** Icons *********/
 .icon {
     display: inline-block;
-    width: 32px;
-    height: 32px;
-    background: url("img/icons.png") 0 0 no-repeat;
-    background-size: 1100% 600%;
+    background: url("img/icons.svg") 0 0 no-repeat;
+    background-size: 990% 600%;
+    height: 90%;
+    aspect-ratio: 1;
 }
 .icon.large {
-    width: 64px;
-    height: 64px;
+    width: 36px;
+    height: 36px;
 }
 .icon.small {
     width: 16px;
     height: 16px;
 }
 .icon.cube.warrior {background-position: 0 0;}
-.icon.cube.worker {background-position: 10% 0;}
-.icon.cube.mage {background-position: 20% 0;}
-.icon.cube.savant {background-position: 30% 0;}
-.icon.cube.all {background-position: 40% 0;}
-.icon.cube.monster {background-position: 50% 0;}
+.icon.cube.worker {background-position: 11.2% 0;}
+.icon.cube.mage {background-position: 22.4% 0;}
+.icon.cube.savant {background-position: 33.6% 0;}
+.icon.cube.all {background-position: 44.8% 0;}
+.icon.cube.monster {background-position: 56% 0;}
 
-.icon.cube.elven_mage {background-position: 40% 80.1%;}
-.icon.cube.elven_savant {background-position: 50% 80%;}
-.icon.cube.nani_warrior {background-position: 90% 80%;}
-.icon.cube.nani_savant {background-position: 80% 80%;}
-.icon.cube.humani_mage {background-position: 60% 80%;}
-.icon.cube.humani_worker {background-position: 70% 80%;}
-.icon.cube.ork_warrior {background-position: 30% 80%;}
-.icon.cube.ork_worker {background-position: 20% 80%;}
+.icon.cube.elven_mage {background-position: 44.8% 80%;}
+.icon.cube.elven_savant {background-position: 56% 80%;}
+.icon.cube.nani_warrior {background-position: 100.8% 80%;}
+.icon.cube.nani_savant {background-position: 89.5% 80%;}
+.icon.cube.humani_mage {background-position: 67.25% 80%;}
+.icon.cube.humani_worker {background-position: 78.4% 80%;}
+.icon.cube.ork_warrior {background-position: 33.6% 80%;}
+.icon.cube.ork_worker {background-position: 22.4% 80%;}
 
 .icon.cube.warrior.moved {background-position: 0 20%;}
-.icon.cube.worker.moved {background-position: 10% 20%;}
-.icon.cube.mage.moved {background-position: 20% 20%;}
-.icon.cube.savant.moved {background-position: 30% 20%;}
+.icon.cube.worker.moved {background-position: 11.2% 20%;}
+.icon.cube.mage.moved {background-position: 22.4% 20%;}
+.icon.cube.savant.moved {background-position: 33.6% 20%;}
 
 .icon.cube.warrior.acted {background-position: 0 40%;}
-.icon.cube.worker.acted {background-position: 10% 40%;}
-.icon.cube.mage.acted {background-position: 20% 40%;}
-.icon.cube.savant.acted {background-position: 30% 40%;}
+.icon.cube.worker.acted {background-position: 11.2% 40%;}
+.icon.cube.mage.acted {background-position: 22.4% 40%;}
+.icon.cube.savant.acted {background-position: 33.6% 40%;}
 
-.icon.cube.explore {background-position: 40% 40%;}
-.icon.cube.objective {background-position: 50% 40%;}
-.icon.cube.spell {background-position: 60% 40%;}
-.icon.cube.invention {background-position: 70% 40%;}
-.icon.cube.end_turn {background-position: 80% 40%;}
+.icon.cube.explore {background-position: 44.8% 40%;}
+.icon.cube.objective {background-position: 56% 40%;}
+.icon.cube.spell {background-position: 67.25% 40%;}
+.icon.cube.invention {background-position: 78.4% 40%;}
+.icon.cube.end_turn {background-position: 89.5% 40%;}
 
-.icon.cube.fight {background-position: 40% 20%;}
-.icon.cube.other {background-position: 50% 20%;}
-.icon.cube.disease {background-position: 60% 20%;}
-.icon.cube.nature {background-position: 70% 20%;}
-.icon.cube.healing {background-position: 40% 20%;}
-.icon.cube.foresight {background-position: 40% 20%;}
-.icon.cube.enchant {background-position: 40% 20%;}
+.icon.cube.fight {background-position: 44.8% 20%;}
+.icon.cube.other {background-position: 56% 20%;}
+.icon.cube.disease {background-position: 67.25% 20%;}
+.icon.cube.nature {background-position: 78.4% 20%;}
+.icon.cube.healing {background-position: 44.8% 20%;}
+.icon.cube.foresight {background-position: 44.8% 20%;}
+.icon.cube.enchant {background-position: 44.8% 20%;}
 
-.icon.cube.city {background-position: 60% 0;}
+.icon.cube.city {background-position: 67.25% 0;}
 .icon.cube.lineage {background-position: 100.8% 40%;}
-.icon.cube.lead {background-position: 70% 0;}
-.icon.cube.generate {background-position: 80% 0;}
-.icon.cube.turn {background-position: 100% 0;}
+.icon.cube.lead {background-position: 78.4% 0;}
+.icon.cube.generate {background-position: 89.5% 0;}
+.icon.cube.turn {background-position: 100.8% 0;}
 
-.icon.cube.food {background-position: 80% 20%;}
-.icon.cube.science {background-position: 100% 20%;}
-.icon.cube.wood {background-position: 0% 100%;}
-.icon.cube.gem {background-position: 20% 100%;}
-.icon.cube.paper {background-position: 30% 100%;}
-.icon.cube.metal {background-position: 40% 100%;}
-.icon.cube.stone {background-position: 50% 100%;}
-.icon.cube.animal {background-position: 10% 100%;}
-.icon.cube.clay {background-position: 60% 100%;}
-.icon.cube.medic {background-position: 60% 100%;}
+.icon.cube.food {background-position: 89.5% 20%;}
+.icon.cube.science {background-position: 100.8% 20%;}
+.icon.cube.wood {background-position: 0% 60%;}
+.icon.cube.gem {background-position: 22.4% 60%;}
+.icon.cube.paper {background-position: 33.6% 60%;}
+.icon.cube.metal {background-position: 44.8% 60%;}
+.icon.cube.stone {background-position: 56% 60%;}
+.icon.cube.animal {background-position: 11.2% 60%;}
+.icon.cube.clay {background-position: 67.25% 60%;}
+.icon.cube.medic {background-position: 78.4% 60%;}
 
-.icon.cube.food_stock {background-position: 40% 100%;}
-.icon.cube.science_stock {background-position: 50% 100%;}
-.icon.cube.growth {background-position: 80% 100%;}
-.icon.cube.power {background-position: 100% 100%;}
+.icon.cube.food_stock {background-position: 44.8% 100%;}
+.icon.cube.science_stock {background-position: 56% 100%;}
+.icon.cube.growth {background-position: 89.5% 60%;}
+.icon.cube.power {background-position: 100.8% 60%;}
 .icon.cube.defense_city {background-position: 0% 80%;}
-.icon.cube.defense_warrior {background-position: 10% 80%;}
+.icon.cube.defense_warrior {background-position: 11.2% 80%;}
 
-.icon.cube.draw {background-position: 30% 100%;}
-.icon.cube.undraw {background-position: 60% 100%;}
+.icon.cube.draw {background-position: 33.6% 100%;}
+.icon.cube.undraw {background-position: 67.25% 100%;}
 .icon.cube.dice_fight {background-position: 0% 100%;}
-.icon.cube.dice_growth {background-position: 10% 100%;}
-.icon.cube.dice_explore {background-position: 20% 100%;}
+.icon.cube.dice_growth {background-position: 11.2% 100%;}
+.icon.cube.dice_explore {background-position: 22.4% 100%;}
 
 /********* MAP **********/
 #map-zone {

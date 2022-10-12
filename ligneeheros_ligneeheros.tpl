@@ -37,15 +37,8 @@
 </div>
 <div id="cards-zone">
     <div id="floating-cards"></div>
-    <div id="invention">
-        <div id="invention-deck"></div>
-        <div id="invention-visible"></div>
-        <div id="invention-hand"></div>
-    </div>
-    <div id="spell">
-        <div id="spell-deck"></div>
-        <div id="spell-hand"></div>
-    </div>
+    <div id="invention"></div>
+    <div id="spell"></div>
 </div>
 <div id="map-zone">
     <ul class="map-hex-grid">
@@ -84,7 +77,7 @@
     ;
 
     var jstpl_card_recto =
-       '<div class="card recto ${deck} ${id}">\
+       '<div class="card recto ${deck} ${large} ${id} ${location}">\
             <div class="content">\
                 <div class="inner">\
                     <div class="header">\
@@ -96,11 +89,11 @@
                     <div class="needs text">${need1}${need2}</div>\
                     <div class="text gain">${gain}</div>\
                     <div class="ldh_meeple">\
-                        <div class="text power">${meeplePower}</div>\
-                        <div class="text objective">${objective}</div>\
-                        <div class="text bonus">${objectiveBonus}</div>\
+                        <div class="text ldh-power">${meeplePower}</div>\
+                        <div class="text ldh-objective">${objective}</div>\
+                        <div class="text ldh-bonus">${objectiveBonus}</div>\
                     </div>\
-                    <div class="text leading ${leadType}"><span></span>${leadPower}</div>\
+                    <div class="text ldh-leading ${leadType}"><span></span>${leadPower}</div>\
                     <div class="text info">\
                         <div class="bold">${textBold}</div>\
                         <div>${text}</div>\

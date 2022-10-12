@@ -165,11 +165,11 @@ function (dojo, declare) {
         {
             if (cards.length) {
                 let visibleDeck = ['invention', 'spell'].includes(type);
-                let domQuery    = visibleDeck ? type+'-'+location : 'floating-cards';
+                let domQuery    = visibleDeck ? type : 'floating-cards';
                 if (location === 'deck' && visibleDeck) {
                     this.createDeck(type, domQuery, cards.length);
                 } else {
-                    this.createCardsInLocation(cards, type, domQuery);
+                    this.createCardsInLocation(cards, type, location, domQuery);
                 }
             }
         },
@@ -185,9 +185,13 @@ function (dojo, declare) {
             });
             dojo.place(deckContent, domQuery);
         },
-        createCardsInLocation: function(cards, type, domQuery)
+        createCardsInLocation: function(cards, type, location, domQuery)
         {
-            dojo.query('#'+domQuery).innerHTML += '<div>'+type+' cards here</div>';
+            let _self = this;
+            cards.forEach(function(card) {
+                let cardContent = _self.format_block('jstpl_card_recto', _self.replaceIconsInObject(card));
+                dojo.place(cardContent, domQuery);
+            });
         },
 
         updateCartridge: function()
@@ -238,6 +242,22 @@ function (dojo, declare) {
             this.$paperStock.dataset.count = this.currentState.paperStock;
             this.$medicStock.dataset.count = this.currentState.medicStock;
             this.$gemStock.dataset.count = this.currentState.gemStock;
+        },
+
+        replaceIconsInObject: function(cardObject)
+        {
+            const regex = /\[([a-z_]+)\]/ig;
+
+            for (let attr in cardObject) {
+                if (cardObject.hasOwnProperty(attr)) {
+                    let value = cardObject[attr];
+                    if (typeof value === 'string' || value instanceof String) {
+                        cardObject[attr] = value.replaceAll(regex, '<div class="icon cube $1"></div>');
+                    }
+                }
+            }
+
+            return cardObject;
         },
 
         ///////////////////////////////////////////////////
