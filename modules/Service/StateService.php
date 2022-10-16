@@ -55,7 +55,7 @@ class StateService
         $callables = [];
 
         foreach ($this->states as $state) {
-            $callables['st' . ucfirst($state->getName())] = $state->getStateArgMethod($game);
+            $callables['st' . ucfirst($state->getName())] = $state->getStateActionMethod($game);
         }
 
         return  $callables;

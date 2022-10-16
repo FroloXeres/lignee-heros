@@ -2,6 +2,7 @@
 
 namespace LdH\Repository;
 
+use LdH\Entity\Map\City;
 use LdH\Entity\Map\Tile;
 
 class MapRepository
@@ -43,5 +44,16 @@ class MapRepository
     public static function getMapQry(bool $onlyRevealed = false): string
     {
         return 'SELECT * FROM `map`' . ($onlyRevealed? ' WHERE `tile_revealed` = 1' : '');
+    }
+
+    /**
+     * @return string
+     */
+    public static function updateCity(City $city): string
+    {
+       return sprintf(
+            'UPDATE `map` SET `tile_terrain` = "%s" WHERE tile_x = 0 AND tile_y = 0',
+            $city->getCode()
+        );
     }
 }

@@ -2,9 +2,11 @@
 
 namespace LdH\State;
 
+use LdH\Entity\Cards\AbstractCard;
+
 class ChooseLineageState extends AbstractState
 {
-    public const ID = 3;
+    public const ID = 4;
 
     public const ACTION_SELECT_LINEAGE = 'SelectLineage';
 
@@ -16,13 +18,15 @@ class ChooseLineageState extends AbstractState
     public function __construct()
     {
         $this->name              = 'ChooseLineage';
-        $this->type              = self::TYPE_MULTI_ACTIVE;
+        $this->type              = self::TYPE_PRIVATE;
         $this->description       = clienttranslate("Choose lineage you will play with.");
         $this->descriptionMyTurn = clienttranslate("Everyone have to choose the lineage they will play with.");
         $this->action            = 'st' . $this->name;
         $this->args              = 'arg' . $this->name;
         $this->possibleActions   = [self::ACTION_SELECT_LINEAGE];
-        $this->transitions       = ["" => DrawObjectiveState::ID];
+        $this->transitions       = [
+            "" => DrawObjectiveState::ID
+        ];
     }
 
     public function getActionMethods(\APP_GameAction $gameAction): ?array
@@ -39,7 +43,7 @@ class ChooseLineageState extends AbstractState
         return function () use ($game) {
             // Send lineage cards
             return [
-                'data' => 'Content'
+                'lineage' => $game->cards[AbstractCard::TYPE_LINEAGE],
             ];
         };
     }
@@ -49,9 +53,8 @@ class ChooseLineageState extends AbstractState
         return function () use ($game) {
             $game::checkAction($this->getName());
 
-            // Draw 1 objective
+            // User enter this state and will choose Lineage
 
-            $game->gamestate->nextState("");
         };
     }
 }

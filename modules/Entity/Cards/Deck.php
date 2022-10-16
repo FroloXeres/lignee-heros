@@ -26,6 +26,9 @@ class Deck implements \Iterator
     /** @var int[] */
     protected array $copies = [];
 
+    /** @var \Deck */
+    protected $bgaDeck = null;
+
     /**
      * @param string $type
      */
@@ -52,6 +55,22 @@ class Deck implements \Iterator
         $this->type = $type;
 
         return $this;
+    }
+
+    /**
+     * @return \Deck|null
+     */
+    public function getBgaDeck()
+    {
+        return $this->bgaDeck;
+    }
+
+    /**
+     * @param \Deck|null $bgaDeck
+     */
+    public function setBgaDeck($bgaDeck): void
+    {
+        $this->bgaDeck = $bgaDeck;
     }
 
     /**
@@ -220,6 +239,32 @@ class Deck implements \Iterator
             default:
                 return [];
         }
+    }
+
+
+
+    /**
+     * @param int[] $typeArgs
+     *
+     * @return int[]
+    */
+    public function getFirstCardIdsByTypeArg(array $typeArgs): array
+    {
+
+
+        return [];
+    }
+
+    /**
+     * @param string[] $typeArgs
+     *
+     * @return int[]
+     */
+    public function getFirstCardIdsByType(array $typeArgs): array
+    {
+
+
+        return [];
     }
 
     // Implement Traversable

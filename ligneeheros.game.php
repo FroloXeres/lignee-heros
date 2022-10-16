@@ -20,6 +20,7 @@ require_once( APP_GAMEMODULE_PATH.'module/table/table.game.php' );
 require_once('vendor/autoload.php');
 
 use Symfony\Component\Config\FileLocator;
+use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use LdH\Service\StateCompilerPass;
@@ -31,15 +32,23 @@ use LdH\Service\CardService;
 use LdH\Service\StateService;
 use LdH\Entity\Cards\Deck;
 use LdH\Entity\Cards\AbstractCard;
-use LdH\State\ChooseLineageState;
+use LdH\Entity\Map\Resource;
+use LdH\Entity\Map\Terrain;
+use LdH\Entity\Meeple;
 
-class ligneeheros extends Table
+class ligneeheros extends \Table
 {
-    /** @var \Deck[] */
-    public array $decks = [];
-
     /** @var Deck[] */
     public array $cards = [];
+
+    /** @var Terrain[]  */
+    public array $terrains = [];
+
+    /** @var Resource[]  */
+    public array $resources = [];
+
+    /** @var Meeple[]  */
+    public array $meeples = [];
 
     public ?StateService $stateService = null;
     public ?CardService  $cardService  = null;
@@ -53,6 +62,8 @@ class ligneeheros extends Table
      * @var callable[]
      */
     protected array $stateActionMethods = [];
+
+    private Container $container;
 
 	function __construct( )
 	{
@@ -106,7 +117,9 @@ class ligneeheros extends Table
             /** @var \Deck $bgaDeck */
             $bgaDeck = self::getNew( "module.common.deck" );
             $bgaDeck->init($deck->getType());
-            $this->decks[$deck->getType()] = $bgaDeck;
+            $deck->setBgaDeck($bgaDeck);
+
+            //$this->cardService->updateLdhDeckFromBgaDeck($deck);
         }
     }
 
@@ -213,26 +226,26 @@ class ligneeheros extends Table
         }
 
         // Init cards
-        if (!empty($this->decks)) {
-            foreach ($this->decks as $type => $deck) {
-                /** @var Deck $ldhDeck */
-                $ldhDeck = $this->cards[$type];
+        if (!empty($this->cards)) {
+            foreach ($this->cards as $deck) {
+                $bgaDeck = $deck->getBgaDeck();
 
-                $deck->createCards($ldhDeck->getBgaDeckData(), AbstractCard::LOCATION_DEFAULT);
+                $bgaDeck->createCards($deck->getBgaDeckData(), AbstractCard::LOCATION_DEFAULT);
 
-                if (!$ldhDeck->isPublic()) {
-                    $deck->shuffle(AbstractCard::LOCATION_DEFAULT);
+                if (!$deck->isPublic()) {
+                    $bgaDeck->shuffle(AbstractCard::LOCATION_DEFAULT);
                 }
             }
         }
 
         // Init units
+
     }
 
     /*
         getAllDatas:
 
-        Gather all informations about current game situation (visible by the current player).
+        Gather all information about current game situation (visible by the current player).
 
         The method is called each time the game interface is displayed to a player, ie:
         _ when the game starts
@@ -242,7 +255,7 @@ class ligneeheros extends Table
     {
         $result = array();
 
-        $currentPlayerId = self::getCurrentPlayerId();    // !! We must only return informations visible by this player !!
+        $currentPlayerId = self::getCurrentPlayerId();    // !! We must only return information visible by this player !!
 
         // Get information about players
         // Note: you can retrieve some extra field you added for "player" table in "dbmodel.sql" if you need it.
@@ -265,7 +278,7 @@ class ligneeheros extends Table
 
         // Cards
         $currentStateId  = $this->gamestate->state_id();
-        $result['cards'] = $this->cardService->getPublicCards($this->decks, $this->cards, $currentStateId, $currentPlayerId);
+        $result['cards'] = $this->cardService->getPublicCards($this->cards, $currentStateId, $currentPlayerId);
         $result['decks'] = $this->cardService->getPublicDecks($this->cards);
 
         // TODO: Gather all information about current game situation (visible by player $current_player_id).
@@ -400,7 +413,7 @@ class ligneeheros extends Table
      *
      * @return void
      */
-    function __call(string $name, array $arguments) {
+    function __call(string $name, array $arguments = []) {
         if (array_key_exists($name, $this->stateArgMethods)) {
             call_user_func_array($this->stateArgMethods[$name], $arguments);
         }
@@ -511,14 +524,6 @@ class ligneeheros extends Table
     public function getStateService():? StateService
     {
         return $this->stateService;
-    }
-
-    /**
-     * @return CardService|null
-     */
-    public function getCardService():? CardService
-    {
-        return $this->cardService;
     }
 
     /**

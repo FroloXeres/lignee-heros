@@ -92,7 +92,8 @@ CREATE TABLE IF NOT EXISTS `map` (
     `tile_far` tinyint(1) unsigned NOT NULL DEFAULT 0,
     `tile_terrain` VARCHAR(30) DEFAULT NULL,
     `tile_variant` VARCHAR(30) DEFAULT NULL,
-    PRIMARY KEY (`tile_id`)
+    PRIMARY KEY (`tile_id`),
+    UNIQUE Key `key_map_coords`(`tile_x`, `tile_y`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ;
 
 -- Example 2: add a custom field to the standard "player" table

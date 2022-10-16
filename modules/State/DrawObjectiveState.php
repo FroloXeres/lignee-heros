@@ -4,7 +4,7 @@ namespace LdH\State;
 
 class DrawObjectiveState extends AbstractState
 {
-    public const ID = 4;
+    public const ID = 5;
 
     public static function getId(): int
     {

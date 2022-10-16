@@ -4,31 +4,54 @@ namespace LdH\Service;
 
 use LdH\Entity\Cards\AbstractCard;
 use LdH\Entity\Cards\Deck;
-use LdH\State\ChooseLineageState;
+use LdH\State\MultiChooseLineageState;
 use LdH\State\DrawObjectiveState;
 use LdH\State\GameInitState;
 
 class CardService
 {
-    public function getPublicDecks(array $bgaDecks): array
+    public function updateLdhDeckFromBgaDeck(Deck $ldhDeck)
+    {
+        $bgaDeck = $ldhDeck->getBgaDeck();
+        $cardIds = [];
+
+        foreach ([AbstractCard::LOCATION_DEFAULT, AbstractCard::LOCATION_ON_TABLE, AbstractCard::LOCATION_HAND] as $location) {
+            $cards = $bgaDeck->getCardsInLocation($location);
+            foreach ($cards as $cardData) {
+                $key = sprintf('%s-%s', $cardData['type'], $cardData['type_arg']);
+
+                if (array_key_exists($key, $cardData)) {
+                    $cardIds[$key][] = $cardData['id'];
+                } else {
+                    $cardIds[$key] = [$cardData['id']];
+                }
+            }
+        }
+
+        foreach ($ldhDeck->getCards() as $card) {
+            $key = sprintf('%s-%s', $card->getType(), $card->getTypeArg());
+            $card->setIds($cardIds[$key] ?? []);
+        }
+    }
+
+    public function getPublicDecks(array $decks): array
     {
         return array_combine(
-            array_keys($bgaDecks),
-            array_map(function(Deck $bgaDeck) {
-                return $bgaDeck->getPublicData();
-            }, $bgaDecks)
+            array_keys($decks),
+            array_map(function(Deck $deck) {
+                return $deck->getPublicData();
+            }, $decks)
         );
     }
 
     /**
-     * @param \Deck[] $bgaDeck
      * @param Deck[]  $ldhDeck
      * @param int     $stateId
      * @param int     $currentPlayerId
      *
      * @return array<string, array>
      */
-    public function getPublicCards(array $bgaDeck, array $ldhDeck, int $stateId, int $currentPlayerId): array
+    public function getPublicCards(array $ldhDeck, int $stateId, int $currentPlayerId): array
     {
         $cards = [];
 
@@ -37,7 +60,7 @@ class CardService
                 $cards[$type] = [];
 
                 foreach ($deck->getPublicLocations() as $location) {
-                    $cards[$type][$location] = $this->preparePublicData($bgaDeck[$type], $deck, $location);
+                    $cards[$type][$location] = $this->preparePublicData($deck, $location);
                 }
             }
         }
@@ -45,12 +68,12 @@ class CardService
         return $cards;
     }
 
-    private function preparePublicData(\Deck $bgaDeck, Deck $ldhDeck, string $location): array
+    private function preparePublicData(Deck $ldhDeck, string $location): array
     {
         $bgaCardsData = [];
         $ldhCardsData = $ldhDeck->cardsDataByCode();
 
-        foreach ($bgaDeck->getCardsInLocation($location) as $bgaCardData) {
+        foreach ($ldhDeck->getBgaDeck()->getCardsInLocation($location) as $bgaCardData) {
             $codeType    = $ldhDeck->getType() . '_' . $bgaCardData['type'];
             $codeTypeArg = $ldhDeck->getType() . '_' . $bgaCardData['type_arg'];
 
@@ -73,7 +96,7 @@ class CardService
             case AbstractCard::TYPE_INVENTION:
             case AbstractCard::TYPE_MAGIC:
                 // To update
-                return $stateId > ChooseLineageState::ID;
+                return $stateId > MultiChooseLineageState::ID;
             case AbstractCard::TYPE_LINEAGE:
                 // $stateId === ChooseLineageState::ID
                 return $stateId === GameInitState::ID;
