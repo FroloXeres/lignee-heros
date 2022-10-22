@@ -43,10 +43,10 @@
 <div id="map-zone">
     <ul class="map-hex-grid">
         <!-- BEGIN MAP_TILES -->
-            <li id="tile-{ID}" data-coord="{COORD}" class="map-hex-item">
+            <li id="tile-{TILE_ID}" data-coord="{COORD}" class="map-hex-item">
                 <div class="map-hex-content {CLASS}">
                     <div class="map-dist-bg"><label data-dist="{HOW_FAR}"></label></div>
-                    <div class="map-content" id="tile-content-{ID}"></div>
+                    <div class="map-content" id="tile-content-{TILE_ID}"></div>
                 </div>
             </li>
         <!-- END MAP_TILES -->

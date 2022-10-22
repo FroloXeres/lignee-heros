@@ -75,8 +75,7 @@ class CardService
                 // To update
                 return $stateId > ChooseLineageState::ID;
             case AbstractCard::TYPE_LINEAGE:
-                // $stateId === ChooseLineageState::ID
-                return $stateId === GameInitState::ID;
+                return $stateId === ChooseLineageState::ID;
             case AbstractCard::TYPE_OBJECTIVE:
                 // Needed ?
                 return $stateId === DrawObjectiveState::ID;

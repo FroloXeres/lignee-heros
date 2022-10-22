@@ -2,11 +2,16 @@
 
 namespace LdH\State;
 
+use LdH\Entity\Cards\AbstractCard;
+use LdH\Entity\Cards\Deck;
+
 class ChooseLineageState extends AbstractState
 {
     public const ID = 3;
 
-    public const ACTION_SELECT_LINEAGE = 'SelectLineage';
+    public const NAME = 'ChooseLineage';
+    public const ACTION_SELECT_LINEAGE = 'selectLineage';
+    public const TRANSITION_NEXT = 'next';
 
     public static function getId(): int
     {
@@ -15,21 +20,38 @@ class ChooseLineageState extends AbstractState
 
     public function __construct()
     {
-        $this->name              = 'ChooseLineage';
+        $this->name              = self::NAME;
         $this->type              = self::TYPE_MULTI_ACTIVE;
-        $this->description       = clienttranslate("Choose lineage you will play with.");
-        $this->descriptionMyTurn = clienttranslate("Everyone have to choose the lineage they will play with.");
+        $this->description       = clienttranslate("Everyone have to choose the lineage they will play with.");
+        $this->descriptionMyTurn = clienttranslate("Choose lineage you will play with.");
         $this->action            = 'st' . $this->name;
         $this->args              = 'arg' . $this->name;
         $this->possibleActions   = [self::ACTION_SELECT_LINEAGE];
-        $this->transitions       = ["" => DrawObjectiveState::ID];
+        $this->transitions       = [self::TRANSITION_NEXT => DrawObjectiveState::ID];
     }
 
-    public function getActionMethods(\APP_GameAction $gameAction): ?array
+    public function getActionCleanMethods(\APP_GameAction $gameAction): ?array
     {
         return [
-            $this->name => function () use ($gameAction) {
+            self::ACTION_SELECT_LINEAGE => function ($args) use ($gameAction) {
+                // If all player choose Lineage, next step...
+                // Clean args to send to Action method
 
+
+                // Call game action method
+                //$gameAction->game->{self::ACTION_SELECT_LINEAGE}();
+            }
+        ];
+    }
+
+
+    public function getActionMethods(\Table $game): ?array
+    {
+        return [
+            self::ACTION_SELECT_LINEAGE => function ($args) use ($game) {
+                // If all player choose Lineage, next step...
+
+                $game->gamestate->setAllPlayersNonMultiactive(ChooseLineageState::TRANSITION_NEXT);
             }
         ];
     }
@@ -37,9 +59,13 @@ class ChooseLineageState extends AbstractState
     public function getStateArgMethod(\Table $game): ?callable
     {
         return function () use ($game) {
-            // Send lineage cards
+            /** @var Deck $lineageDeck */
+            $lineageDeck = $game->cards[AbstractCard::TYPE_LINEAGE];
+            $cards = $lineageDeck->getCards();
+
             return [
-                'data' => 'Content'
+                'i18n' => ['lineageChoice'],
+                'lineageChoice' => clienttranslate('Please choose 1 lineage among the '.count($cards))
             ];
         };
     }
@@ -47,11 +73,7 @@ class ChooseLineageState extends AbstractState
     public function getStateActionMethod(\Table $game): ?callable
     {
         return function () use ($game) {
-            $game::checkAction($this->getName());
-
-            // Draw 1 objective
-
-            $game->gamestate->nextState("");
+            $game->gamestate->setAllPlayersMultiactive();
         };
     }
 }

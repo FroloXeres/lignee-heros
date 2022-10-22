@@ -23,13 +23,9 @@ define([
 function (dojo, declare) {
     return declare("bgagame.ligneeheros", ebg.core.gamegui, {
         constructor: function(){
-            console.log('ligneeheros constructor');
-
             this.map       = [];
             this.resources = [];
             this.terrains  = [];
-            // this.myGlobalValue = 0;
-
         },
         
         /*
@@ -44,11 +40,11 @@ function (dojo, declare) {
             
             "gamedatas" argument contains all datas retrieved by your "getAllDatas" PHP method.
         */
-        
         setup: function( gamedatas )
         {
+            // Don't forget to use Mobile config: https://en.doc.boardgamearena.com/Your_game_mobile_version
             console.log( gamedatas );
-            
+
             // Setting up player boards
             for( var player_id in gamedatas.players )
             {
@@ -63,8 +59,6 @@ function (dojo, declare) {
 
             // Setup game notifications to handle (see "setupNotifications" method below)
             this.setupNotifications();
-
-            console.log( "Ending game setup" );
         },
 
         setupGameState: function(gamedatas)
@@ -326,16 +320,16 @@ function (dojo, declare) {
                       
             if( this.isCurrentPlayerActive() )
             {            
-                switch( stateName )
-                {
-/*               
-                 Example:
- 
+                switch( stateName ) {
+                    case 'gameInit' :
+                        this.addActionButton( 'action1', _('Action1'), 'onAction1' );
+                        break;
+/*
                  case 'myGameState':
                     
                     // Add 3 action buttons in the action status bar:
                     
-                    this.addActionButton( 'button_1_id', _('Button 1 label'), 'onMyMethodToCall1' ); 
+                    this.addActionButton( 'button_1_id', _('Button 1 label'), 'onMyMethodToCall1' );
                     this.addActionButton( 'button_2_id', _('Button 2 label'), 'onMyMethodToCall2' ); 
                     this.addActionButton( 'button_3_id', _('Button 3 label'), 'onMyMethodToCall3' ); 
                     break;
@@ -368,7 +362,10 @@ function (dojo, declare) {
             _ make a call to the game server
         
         */
-        
+        onAction1: function()  {
+            console.log('Action1');
+        },
+
         /* Example:
         
         onMyMethodToCall1: function( evt )

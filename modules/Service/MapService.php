@@ -2,6 +2,7 @@
 
 namespace LdH\Service;
 
+use LdH\Entity\Map\City;
 use LdH\Entity\Map\Terrain;
 use LdH\Entity\Map\Tile;
 

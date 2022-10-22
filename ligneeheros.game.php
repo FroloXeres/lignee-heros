@@ -20,6 +20,7 @@ require_once( APP_GAMEMODULE_PATH.'module/table/table.game.php' );
 require_once('vendor/autoload.php');
 
 use Symfony\Component\Config\FileLocator;
+use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use LdH\Service\StateCompilerPass;
@@ -31,7 +32,9 @@ use LdH\Service\CardService;
 use LdH\Service\StateService;
 use LdH\Entity\Cards\Deck;
 use LdH\Entity\Cards\AbstractCard;
-use LdH\State\ChooseLineageState;
+use LdH\Entity\Map\Resource;
+use LdH\Entity\Map\Terrain;
+use LdH\Entity\Meeple;
 
 class ligneeheros extends Table
 {
@@ -40,6 +43,15 @@ class ligneeheros extends Table
 
     /** @var Deck[] */
     public array $cards = [];
+
+    /** @var Terrain[]  */
+    public array $terrains = [];
+
+    /** @var Resource[]  */
+    public array $resources = [];
+
+    /** @var Meeple[]  */
+    public array $meeples = [];
 
     public ?StateService $stateService = null;
     public ?CardService  $cardService  = null;
@@ -53,6 +65,13 @@ class ligneeheros extends Table
      * @var callable[]
      */
     protected array $stateActionMethods = [];
+
+    /**
+     * @var callable[]
+     */
+    protected array $actionMethods = [];
+
+    private Container $container;
 
 	function __construct( )
 	{
@@ -106,6 +125,8 @@ class ligneeheros extends Table
             /** @var \Deck $bgaDeck */
             $bgaDeck = self::getNew( "module.common.deck" );
             $bgaDeck->init($deck->getType());
+
+            $deck->setBgaDeck($bgaDeck);
             $this->decks[$deck->getType()] = $bgaDeck;
         }
     }
@@ -123,6 +144,7 @@ class ligneeheros extends Table
         // Fill available methods
         $this->stateArgMethods    = $this->getStateService()->getStateArgMethods($this);
         $this->stateActionMethods = $this->getStateService()->getStateActionMethods($this);
+        $this->actionMethods      = $this->getStateService()->getActionMethods($this);
     }
 
     protected function getGameName( )
@@ -232,7 +254,7 @@ class ligneeheros extends Table
     /*
         getAllDatas:
 
-        Gather all informations about current game situation (visible by the current player).
+        Gather all information about current game situation (visible by the current player).
 
         The method is called each time the game interface is displayed to a player, ie:
         _ when the game starts
@@ -242,7 +264,7 @@ class ligneeheros extends Table
     {
         $result = array();
 
-        $currentPlayerId = self::getCurrentPlayerId();    // !! We must only return informations visible by this player !!
+        $currentPlayerId = self::getCurrentPlayerId();    // !! We must only return information visible by this player !!
 
         // Get information about players
         // Note: you can retrieve some extra field you added for "player" table in "dbmodel.sql" if you need it.
@@ -400,13 +422,17 @@ class ligneeheros extends Table
      *
      * @return void
      */
-    function __call(string $name, array $arguments) {
+    function __call(string $name, array $arguments = []) {
         if (array_key_exists($name, $this->stateArgMethods)) {
             call_user_func_array($this->stateArgMethods[$name], $arguments);
         }
 
         if (array_key_exists($name, $this->stateActionMethods)) {
             call_user_func_array($this->stateActionMethods[$name], $arguments);
+        }
+
+        if (array_key_exists($name, $this->actionMethods)) {
+            call_user_func_array($this->actionMethods[$name], $arguments);
         }
     }
 
@@ -505,20 +531,18 @@ class ligneeheros extends Table
 //
     }
 
+    public function getDeck(string $type):? Deck
+    {
+        return array_key_exists($type, $this->cards) ?
+            $this->cards[$type] : null;
+    }
+
     /**
      * @return StateService|null
      */
     public function getStateService():? StateService
     {
         return $this->stateService;
-    }
-
-    /**
-     * @return CardService|null
-     */
-    public function getCardService():? CardService
-    {
-        return $this->cardService;
     }
 
     /**

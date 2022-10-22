@@ -88,11 +88,24 @@ abstract class AbstractState implements StateInterface
     public function getDescription(): string {return $this->description;}
 
     /**
-     * @param \APP_GameAction $game
+     * @param \APP_GameAction $gameAction
      *
      * @return callable[]|null
      */
-    abstract public function getActionMethods(\APP_GameAction $gameAction):? array;
+    public function getActionCleanMethods(\APP_GameAction $gameAction): ?array
+    {
+        return [];
+    }
+
+    /**
+     * @param \Table $game
+     *
+     * @return callable[]|null
+     */
+    public function getActionMethods(\Table $game): ?array
+    {
+        return [];
+    }
 
     /**
      * @param \Table $game

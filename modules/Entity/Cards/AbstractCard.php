@@ -19,6 +19,8 @@ abstract class AbstractCard implements CardInterface
     public const LOCATION_HIDDEN   = 'hidden';
     public const LOCATION_REMOVED  = 'removed';
 
+    /** @var int[]  */
+    protected ?array $ids          = [];
     protected string $code         = '';
     protected string $type;
     protected ?int   $type_arg;
@@ -29,6 +31,22 @@ abstract class AbstractCard implements CardInterface
     protected string  $name        = '';
     protected string  $description = '';
     protected string  $artist      = '';
+
+    /**
+     * @return int[]
+     */
+    public function getIds(): array
+    {
+        return $this->ids;
+    }
+
+    /**
+     * @param int[] $ids
+     */
+    public function setIds(array $ids): void
+    {
+        $this->ids = $ids;
+    }
 
     /**
      * @return string

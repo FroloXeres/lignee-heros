@@ -36,7 +36,7 @@
       {
           parent::__construct();
 
-          $this->actionMethods = $this->game->getStateService()->getActionMethods($this);
+          $this->actionMethods = $this->game->getStateService()->getCleanActionMethods($this);
       }
 
     // Constructor: please do not modify
@@ -65,10 +65,6 @@
             self::setAjaxMode();
 
             // Find a way to list args
-            $arguments = [
-                // self::getArg( "myArgument1", AT_posint, true ),
-                // self::getArg( "myArgument2", AT_posint, true )
-            ];
             call_user_func_array($this->actionMethods[$name], $arguments);
 
             self::ajaxResponse();

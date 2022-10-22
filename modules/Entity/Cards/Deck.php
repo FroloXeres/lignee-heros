@@ -2,6 +2,8 @@
 
 namespace LdH\Entity\Cards;
 
+use LdH\Repository\CardRepository;
+
 class Deck implements \Iterator
 {
     public const TYPE_EXPLORE_DISEASE = 'explore_disease';
@@ -25,6 +27,9 @@ class Deck implements \Iterator
 
     /** @var int[] */
     protected array $copies = [];
+
+    /** @var \Deck */
+    protected $bgaDeck = null;
 
     /**
      * @param string $type
@@ -52,6 +57,22 @@ class Deck implements \Iterator
         $this->type = $type;
 
         return $this;
+    }
+
+    /**
+     * @return \Deck|null
+     */
+    public function getBgaDeck()
+    {
+        return $this->bgaDeck;
+    }
+
+    /**
+     * @param \Deck|null $bgaDeck
+     */
+    public function setBgaDeck($bgaDeck): void
+    {
+        $this->bgaDeck = $bgaDeck;
     }
 
     /**
@@ -157,6 +178,23 @@ class Deck implements \Iterator
         $this->name = $name;
 
         return $this;
+    }
+
+    /**
+     * @param \Table $game
+     * @param AbstractCard[] $cards
+     */
+    public function drawCards(\Table $game, array $cards): void
+    {
+        /*
+        $cardIds = $game::getCollectionFromDB(
+            CardRepository::getCardIdsInLocationQry($this->getType(), $cards)
+        );
+        $this->getBgaDeck()->moveCards(
+            array_keys($cardIds),
+            AbstractCard::LOCATION_HAND
+        );
+        */
     }
 
     public function getPublicData(): array

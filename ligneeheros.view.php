@@ -52,7 +52,7 @@ class view_ligneeheros_ligneeheros extends game_view
         foreach ($tiles as $tile) {
             /** @var Tile $tile */
             $params = [
-                'ID'         => $tile->getId(),
+                'TILE_ID'         => $tile->getId(),
                 'COORD'      => $tile->getX() . '_' . $tile->getY(),
                 'CLASS'      => MapService::getClass($tile),
                 'HOW_FAR'    => MapService::getDistanceToDisplay($tile),
