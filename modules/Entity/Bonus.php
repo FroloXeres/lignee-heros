@@ -2,7 +2,7 @@
 
 namespace LdH\Entity;
 
-class Bonus
+class Bonus implements \JsonSerializable
 {
     public const FOOD            = 'food';            // More food produced by meeple/terrain
     public const FOOD_FOUND      = 'food_found';      // Food put into stock
@@ -125,6 +125,16 @@ class Bonus
         return $this;
     }
 
+    public function jsonSerialize(): array
+    {
+        return [
+            'code' => $this->code,
+            'type' => $this->type,
+            'description' => $this->description,
+            'count' => $this->count
+        ];
+    }
+
     /**
      * @return string
      */
@@ -133,33 +143,41 @@ class Bonus
         if ($this->description) return $this->description;
         // Else
         $preOp     = '';
-        $operation = '+';
+        $operation = $this->getType() === Bonus::BONUS_MULTIPLY? 'x' : '+';
 
         switch ($this->code) {
-            case self::DISTANT_POWER:
-                $icon = '[power][move]';
-                break;
             case self::POWER:
             case self::DEFENSE_CITY:
             case self::DEFENSE_WARRIOR:
             case self::GROWTH:
             case self::MOVE:
-                $icon = '['.$this->code.']';
+                $icon = '['.$this->getCode().']';
                 break;
             case self::BIRTH:
-                $icon = '['.$this->type.']';
+                $icon = '['.$this->getType().']';
+                break;
+            case self::DISTANT_POWER:
+                $icon = '[power][move]';
                 break;
             case self::STOCK:
                 $icon = '[food_stock]';
                 break;
             case self::FOOD:
-                $icon = '[worker][end_turn][food]';
+                $icon = sprintf(
+                    '%s[%s] : [food]',
+                    $this->getType()? '' : '[end_turn] ',
+                    $this->getType() === Meeple::WARRIOR? 'warrior' : 'worker'
+                );
                 break;
             case self::FOOD_FOUND:
                 $icon = '[food]';
                 break;
             case self::SCIENCE:
-                $icon = '[savant][end_turn][science]';
+                $icon = sprintf(
+                    '%s[%s] : [science]',
+                    $this->getType()? '' : '[end_turn] ',
+                    $this->getType() === Meeple::WARRIOR? 'warrior' : 'savant'
+                );
                 break;
             case self::SCIENCE_FOUND:
                 $icon = '[science]';
@@ -169,18 +187,33 @@ class Bonus
                 $operation = $this->count > 1? 'x' : '';
                 break;
             case self::DRAW_CARD:
-                $icon = '[draw]['.$this->type.']';
+                $icon      = '[draw]['.$this->getType().']';
                 $operation = '';
                 break;
             case self::CONVERTER:
                 $preOp = ' + ';
             case self::CONVERT:
                 $operation = '';
-                $icon      = '[all][end_turn]['.$this->type.']';
+                $count     = $this->getCount() > 1? 'x'.$this->getCount() : '';
+                $icon      = sprintf(
+                    '[all]%s[end_turn]['.$this->getType().']%s',
+                    $count,
+                    $count
+                );
                 break;
             case self::DISEASE:
                 $operation = '';
-                $icon = '[healing][disease] ' . $this->type;
+                $icon      = '[healing][disease] ' . $this->getType();
+                break;
+            case self::SPELL_RECAST:
+                $operation = '';
+                $preOp     = $this->count;
+                $icon      = ' [mage] : +1 [spell]';
+                break;
+            case self::MEEPLE_POWER_UP:
+                $operation = '';
+                $preOp     = $this->count;
+                $icon      = ' [warrior] + [ork_warrior] : [power] +1';
                 break;
             default:
                 $icon = '[none]';
@@ -191,7 +224,7 @@ class Bonus
             $preOp,
             $icon,
             $this->count >= 0? $operation : '',
-            ($operation === '+' || $this->count > 1)? $this->count : ''
+            ($operation === '+' || ($operation && $this->count > 1))? $this->count : ''
         );
     }
 }

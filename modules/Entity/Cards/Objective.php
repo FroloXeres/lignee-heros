@@ -183,11 +183,11 @@ class Objective extends AbstractCard
     /**
      * Return data for Card template build
      *
-     * @param string $deck
+     * @param Deck $deck
      *
      * @return array
      */
-    public function toTpl(string $deck): array
+    public function toTpl(Deck $deck): array
     {
         $tpl = parent::toTpl($deck);
 
@@ -209,13 +209,17 @@ class Objective extends AbstractCard
             case self::NEED_SUB_MAGE: return Meeple::MAGE;
             case self::NEED_SUB_SAVANT: return Meeple::SAVANT;
             case self::NEED_SUB_NATURE: return Spell::TYPE_NATURE;
-            case self::NEED_SUB_FIGHT: return Spell::TYPE_FIGHT;
+            case self::NEED_SUB_FIGHT: return Spell::TYPE_COMBAT;
             case self::NEED_SUB_SCIENCE: return Bonus::SCIENCE;
             case self::NEED_SUB_FOOD: return Bonus::FOOD;
-            case self::NEED_SUB_FAR_I:
-            case self::NEED_SUB_FAR_III:
-                return 'tile';
-
+            case self::NEED_SUB_FAR_I: return 'I';
+            case self::NEED_SUB_FAR_III: return 'III';
+            case self::NEED_SUB_TOWER: return 'tower';
+            case self::NEED_SUB_RUINS: return 'ruins';
+            case self::NEED_SUB_LAIR: return 'lair';
+            case self::NEED_SUB_RESOURCE_ONE: return 'resource';
+            case self::NEED_SUB_RESOURCE_ALL: return 'resources';
+            case self::NEED_SUB_NO_WOUND: return 'no_wound';
             default: return '';
         }
     }
@@ -228,17 +232,25 @@ class Objective extends AbstractCard
         $txt = [];
 
         switch ($this->getNeed()) {
+            case self::NEED_HARVEST:
+                $txt[] = '[end_turn]';
             case self::NEED_UNITS:
-                $txt[] = '['.self::getSubNeedAsText($this->getSubNeed()).']';
                 break;
-            case self::NEED_SPELL:
-                $txt[] = '[spell]';
+            case self::NEED_SPELL: $txt[] = '[spell]'; break;
+            case self::NEED_INVENTION: $txt[] = '[invention]'; break;
+            case self::NEED_WIN_FIGHT: $txt[] = '[fight]'; break;
+            case self::NEED_SURVIVE: $txt[] = '[turn]'; break;
+            case self::NEED_EXPLORE: $txt[] = '[tile]'; break;
+            default:
+                $txt[] = '[none]';
+                break;
+        }
 
-                if ($this->getSubNeed()) {
-                    $txt[] = '['.$this->getSubNeed().']';
-                }
-                break;
-            default: break;
+        if ($this->getSubNeed()) {
+            $txt[] = '['.self::getSubNeedAsText($this->getSubNeed()).']';
+        }
+        if ($this->getNeedCount() > 1) {
+            $txt[] = 'x' . $this->getNeedCount();
         }
 
         return join(' ', $txt);

@@ -4,7 +4,7 @@
 namespace LdH\Entity\Map;
 
 
-class Tile {
+class Tile implements \JsonSerializable {
     protected ?int     $id       = null;
     protected int      $x        = 0;
     protected int      $y        = 0;
@@ -133,5 +133,16 @@ class Tile {
     public function setTerrain(?Terrain $terrain): void
     {
         $this->terrain = $terrain;
+    }
+
+    public function jsonSerialize(): array
+    {
+        return [
+            'id'      => $this->id,
+            'x'       => $this->x,
+            'y'       => $this->y,
+            'howFar'  => $this->howFar,
+            'terrain' => $this->terrain ? $this->terrain->getCode() : ''
+        ];
     }
 }

@@ -177,9 +177,11 @@ $objective = (new Deck(Deck::TYPE_OBJECTIVE))
     ->setName(clienttranslate('Objective cards'))
     ->setIsPublic(true);
 $magic = (new Deck(Deck::TYPE_MAGIC))
-    ->setName(clienttranslate('Sepll cards'));
+    ->setName(clienttranslate('Sepll cards'))
+    ->setIsPublic(true);
 $invention = (new Deck(Deck::TYPE_INVENTION))
-    ->setName(clienttranslate('Invention cards'));
+    ->setName(clienttranslate('Invention cards'))
+    ->setIsPublic(true);
 $exploreFight = (new Deck(Deck::TYPE_EXPLORE_FIGHT))
     ->setName(clienttranslate('Explore : Fight cards'));
 $exploreOther = (new Deck(Deck::TYPE_EXPLORE_OTHER))
@@ -199,48 +201,48 @@ $this->cards = [
 //      Objective
 // -------------------
 $objElvenMage = (new Objective(Objective::ELVEN_MAGE, true))
-    ->setName("-")
+    ->setName("Fal'san'in's objective")
     ->setDescription(clienttranslate("Have at least 10 Mage"))
     ->setNeed(Objective::NEED_UNITS)
     ->setNeedCount(10)
     ->setSubNeed(Objective::NEED_SUB_MAGE);
 $objElvenSavant = (new Objective(Objective::ELVEN_SAVANT, true))
-    ->setName("-")
+    ->setName(clienttranslate("Reth'los's objective"))
     ->setDescription(clienttranslate("Harvest at least 20 Science in one turn"))
     ->setNeed(Objective::NEED_HARVEST)
     ->setNeedCount(20)
     ->setSubNeed(Objective::NEED_SUB_SCIENCE);
 $objNaniWarrior = (new Objective(Objective::NANI_WARRIOR, true))
-    ->setName("-")
+    ->setName(clienttranslate("Khazhan's objective"))
     ->setDescription(clienttranslate("Discover at least 5 military inventions"))
     ->setNeed(Objective::NEED_INVENTION)
     ->setNeedCount(5)
     ->setSubNeed(Objective::NEED_SUB_FIGHT);
 $objNaniSavant = (new Objective(Objective::NANI_SAVANT, true))
-    ->setName("-")
+    ->setName(clienttranslate("Agrindorn's objective"))
     ->setDescription(clienttranslate("Have at least 10 Savant"))
     ->setNeed(Objective::NEED_UNITS)
     ->setNeedCount(10)
     ->setSubNeed(Objective::NEED_SUB_SAVANT);
 $objHumaniWorker = (new Objective(Objective::HUMANI_WORKER, true))
-    ->setName("-")
+    ->setName(clienttranslate("Mournmorning's objective"))
     ->setDescription(clienttranslate("Master at least 3 nature spells"))
     ->setNeed(Objective::NEED_SPELL)
     ->setNeedCount(5)
     ->setSubNeed(Objective::NEED_SUB_NATURE);
 $objHumaniMage = (new Objective(Objective::HUMANI_MAGE, true))
-    ->setName("-")
+    ->setName(clienttranslate("Mightmaster's objective"))
     ->setDescription(clienttranslate("Master at least 10 spells"))
     ->setNeed(Objective::NEED_SPELL)
     ->setNeedCount(10);
 $objOrkWarrior = (new Objective(Objective::ORK_WARRIOR, true))
-    ->setName("-")
+    ->setName(clienttranslate("Gorzog's objective"))
     ->setDescription(clienttranslate("Have at least 20 Warriors"))
     ->setNeed(Objective::NEED_UNITS)
     ->setNeedCount(20)
     ->setSubNeed(Objective::NEED_SUB_WARRIOR);
 $objOrkWorker = (new Objective(Objective::ORK_WORKER, true))
-    ->setName("-")
+    ->setName(clienttranslate("Dahkrum's objective"))
     ->setDescription(clienttranslate("Have at least 30 Workers"))
     ->setNeed(Objective::NEED_UNITS)
     ->setNeedCount(30)
@@ -250,7 +252,7 @@ $objective
     ->addCard($objElvenSavant)
     ->addCard($objNaniWarrior)
     ->addCard($objNaniSavant)
-    ->addCard($objHumaniMage)
+    ->addCard($objHumaniWorker)
     ->addCard($objHumaniMage)
     ->addCard($objOrkWarrior)
     ->addCard($objOrkWorker)
@@ -369,9 +371,9 @@ $lineage
         ->setName("Fal'san'in")
         ->setDescription(clienttranslate("Fal'San'In born awakened to magic for generations. Also, they look ageless."))
         ->setMeeple($elvenMage)
-        ->setMeeplePower((new Bonus(3, Bonus::CONVERTER, Meeple::ELVEN_MAGE))->setDescription(clienttranslate("Can teach magic to 3 units")))
+        ->setMeeplePower((new Bonus(3, Bonus::CONVERTER, Meeple::MAGE)))
         ->setObjective($objElvenMage)
-        ->setObjectiveBonus((new Bonus(1, Bonus::CONVERTER, Meeple::ELVEN_MAGE))->setDescription(clienttranslate("1 unit more")))
+        ->setObjectiveBonus((new Bonus(1, Bonus::CONVERTER, Meeple::MAGE))->setDescription(clienttranslate("1 unit more")))
         ->setLeadingBonus(new Bonus(1, Bonus::BIRTH, $mage->getCode()))
         ->setArtist('Kevins Darnis')
     )
@@ -379,7 +381,7 @@ $lineage
         ->setName("Reth'los")
         ->setDescription(clienttranslate("The Reth'los are often cited for their inventions and their legendary ingenuity! Are they blessed by the gods?"))
         ->setMeeple($elvenSavant)
-        ->setMeeplePower((new Bonus(1, Bonus::SCIENCE))->setDescription(clienttranslate("Produce 1 science more")))
+        ->setMeeplePower((new Bonus(1, Bonus::SCIENCE))) // ->setDescription(clienttranslate("Produce 1 science more"))
         ->setObjective($objElvenSavant)
         ->setObjectiveBonus((new Bonus(1, Bonus::SCIENCE))->setDescription(clienttranslate("1 science more")))
         ->setLeadingBonus(new Bonus(1, Bonus::BIRTH, $savant->getCode()))
@@ -430,9 +432,9 @@ $lineage
         ->setName("Gorzog")
         ->setDescription(clienttranslate("\"When I'll grow up, I'll be as strong as a Gorzog!\" Quote from a young elven from Esperys."))
         ->setMeeple($orkWarrior)
-        ->setMeeplePower((new Bonus(1, Bonus::POWER))->setDescription(clienttranslate("Power +1")))
+        ->setMeeplePower(new Bonus(1, Bonus::POWER))
         ->setObjective($objOrkWarrior)
-        ->setObjectiveBonus((new Bonus(1, Bonus::POWER))->setDescription(clienttranslate("Power +1")))
+        ->setObjectiveBonus(new Bonus(1, Bonus::POWER))
         ->setLeadingType(Lineage::LEADING_TYPE_FIGHT)
         ->setLeadingBonus(new Bonus(5, Bonus::MEEPLE_POWER_UP))
         ->setArtist('Kevins Darnis')
@@ -443,7 +445,7 @@ $lineage
         ->setMeeple($orkWorker)
         ->setMeeplePower((new Bonus(1, Bonus::FOOD))->setDescription(clienttranslate("Produce 1 food more")))
         ->setObjective($objOrkWorker)
-        ->setObjectiveBonus((new Bonus(1, Bonus::FOOD))->setDescription(clienttranslate("1 food more")))
+        ->setObjectiveBonus((new Bonus(1, Bonus::FOOD))->setDescription(clienttranslate("+1 [food]")))
         ->setLeadingBonus(new Bonus(1, Bonus::FOOD, $warrior->getCode()))
         ->setArtist('Kevins Darnis')
     );
@@ -1276,22 +1278,22 @@ $this->cards[$exploreOther->getType()] = $exploreOther;
  *          Fill terrains parts
  * ------------------------------------- */
 
-$townHumanis = new City(clienttranslate('Espérys'), Terrain::TOWN_HUMANIS, true, true, [$clay]);
+$townHumanis = new City(clienttranslate('Espérys'), Terrain::TOWN_HUMANIS, 5, true, [$clay]);
 $townHumanis
     ->addUnit($worker)->addUnit($mage)
     ->addInvention($pottery)->addInvention($irrigation)
 ;
-$townElven   = new City(clienttranslate("Gala\'ar"), Terrain::TOWN_ELVEN, true, true, [$clay, $medic]);
+$townElven   = new City(clienttranslate("Gala\'ar"), Terrain::TOWN_ELVEN, 5, true, [$clay, $medic]);
 $townElven
     ->addUnit($mage)->addUnit($savant)
     ->addInvention($writing)->addInvention($herbalism)
 ;
-$townNani    = new City(clienttranslate('Nundurahl'), Terrain::TOWN_NANI, true, true, [$stone, $metal]);
+$townNani    = new City(clienttranslate('Nundurahl'), Terrain::TOWN_NANI, 5, true, [$stone, $metal]);
 $townNani
     ->addUnit($worker)->addUnit($warrior)
     ->addInvention($metallurgy)->addInvention($gemCutting)
 ;
-$townOrk     = new City(clienttranslate('Arakh Dhul'), Terrain::TOWN_ORK, true, true, [$wood, $metal]);
+$townOrk     = new City(clienttranslate('Arakh Dhul'), Terrain::TOWN_ORK, 5, true, [$wood, $metal]);
 $townOrk
     ->addUnit($warrior)->addUnit($warrior)
     ->addInvention($metallurgy)->addInvention($fence)

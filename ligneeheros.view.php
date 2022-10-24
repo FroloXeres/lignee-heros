@@ -27,8 +27,11 @@
 require_once( APP_BASE_PATH."view/common/game.view.php" );
 
 use LdH\Repository\MapRepository;
+use LdH\Service\CurrentStateService;
+use LdH\Service\StateService;
 use LdH\Service\MapService;
 use LdH\Entity\Cards\Deck;
+use LdH\Entity\Map\Tile;
 
 class view_ligneeheros_ligneeheros extends game_view
 {
@@ -43,26 +46,27 @@ class view_ligneeheros_ligneeheros extends game_view
         $this->page->begin_block('ligneeheros_ligneeheros', 'MAP_TILES');
 
         // Load Map from Db
-        $tiles = MapService::buildMapFromDb(
-            self::getCollectionFromDb(MapRepository::getMapQry()),
-            $this->game->terrains
-        );
+        $tiles = MapService::buildMapFromDb(self::getCollectionFromDb(MapRepository::getMapQry()));
 
         // Prepare HTML/CSS map
         foreach ($tiles as $tile) {
-            $this->page->insert_block('MAP_TILES', [
-                'ID'      => $tile->getId(),
-                'COORD'   => $tile->getX() . '_' . $tile->getY(),
-                'CLASS'   => MapService::getClass($tile),
-                'HOW_FAR' => MapService::getDistanceToDisplay($tile)
-            ]);
+            /** @var Tile $tile */
+            $params = [
+                'TILE_ID'         => $tile->getId(),
+                'COORD'      => $tile->getX() . '_' . $tile->getY(),
+                'CLASS'      => MapService::getClass($tile),
+                'HOW_FAR'    => MapService::getDistanceToDisplay($tile),
+            ];
+
+            $this->page->insert_block('MAP_TILES', $params);
         }
     }
 
+    /**
+     * @deprecated
+     */
     function createDecks() {
         $this->page->begin_block('ligneeheros_ligneeheros', 'DECKS');
-        $this->page->begin_block('ligneeheros_ligneeheros', 'CARDS');
-
         foreach ($this->game->decks as $type => $deck) {
             /** @var Deck $ldhDeck */
             $ldhDeck = $this->game->cards[$type];
@@ -74,12 +78,6 @@ class view_ligneeheros_ligneeheros extends game_view
                 'CAN_DRAW' => $ldhDeck->canDraw()? '' : 'inactive',
                 'COUNT'    => count($ldhDeck->getCards())
             ]);
-
-            if ($ldhDeck->isPublic()) {
-                foreach ($ldhDeck as $card) {
-                    $this->page->insert_block('CARDS', $card->toTpl($type));
-                }
-            }
         }
     }
 
@@ -92,11 +90,7 @@ class view_ligneeheros_ligneeheros extends game_view
         /*********** Place your code below:  ************/
         $this->populateMapBlock();
 
-        // Create cards if needed
-        $this->createDecks();
-
         /*
-        
         // Examples: set the value of some element defined in your tpl file like this: {MY_VARIABLE_ELEMENT}
 
         // Display a specific number / string

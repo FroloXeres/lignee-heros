@@ -248,27 +248,13 @@ class Invention extends AbstractCard
     }
 
     /**
-     * Return data for Card module
-     *
-     * @return array
-     */
-    public function toArray(): array
-    {
-        return [
-            'type'     => $this->getType(),
-            'type_arg' => $this->getTypeArg(),
-            'nbr'      => 1
-        ];
-    }
-
-    /**
      * Return data for Card template build
      *
-     * @param string $deck
+     * @param Deck $deck
      *
      * @return array
      */
-    public function toTpl(string $deck): array
+    public function toTpl(Deck $deck): array
     {
         $tpl = parent::toTpl($deck);
 

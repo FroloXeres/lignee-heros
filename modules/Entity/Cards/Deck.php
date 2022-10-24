@@ -2,6 +2,8 @@
 
 namespace LdH\Entity\Cards;
 
+use LdH\Repository\CardRepository;
+
 class Deck implements \Iterator
 {
     public const TYPE_EXPLORE_DISEASE = 'explore_disease';
@@ -21,7 +23,13 @@ class Deck implements \Iterator
 
     /** @var AbstractCard[] */
     protected array $cards   = [];
-    protected int   $current = 0;
+    protected ?int  $current = null;
+
+    /** @var int[] */
+    protected array $copies = [];
+
+    /** @var \Deck */
+    protected $bgaDeck = null;
 
     /**
      * @param string $type
@@ -52,6 +60,22 @@ class Deck implements \Iterator
     }
 
     /**
+     * @return \Deck|null
+     */
+    public function getBgaDeck()
+    {
+        return $this->bgaDeck;
+    }
+
+    /**
+     * @param \Deck|null $bgaDeck
+     */
+    public function setBgaDeck($bgaDeck): void
+    {
+        $this->bgaDeck = $bgaDeck;
+    }
+
+    /**
      * @return AbstractCard[]
      */
     public function getCards(): array
@@ -67,19 +91,13 @@ class Deck implements \Iterator
      */
     public function addCard(AbstractCard $card, int $count = 1): Deck
     {
-        for ($i = 0; $i < $count; $i++) {
-            $this->cards[] = $card;
-        }
+        if ($this->current === null) {$this->current = 0;}
+        else $this->current++;
+
+        $this->cards[$this->current]  = $card;
+        $this->copies[$this->current] = $count;
 
         return $this;
-    }
-
-    /**
-     * @param AbstractCard[] $cards
-     */
-    public function setCards(array $cards): void
-    {
-        $this->cards = $cards;
     }
 
     /**
@@ -163,16 +181,83 @@ class Deck implements \Iterator
     }
 
     /**
+     * @param \Table $game
+     * @param AbstractCard[] $cards
+     */
+    public function drawCards(\Table $game, array $cards): void
+    {
+        /*
+        $cardIds = $game::getCollectionFromDB(
+            CardRepository::getCardIdsInLocationQry($this->getType(), $cards)
+        );
+        $this->getBgaDeck()->moveCards(
+            array_keys($cardIds),
+            AbstractCard::LOCATION_HAND
+        );
+        */
+    }
+
+    public function getPublicData(): array
+    {
+        return [
+            'name'    => $this->getName(),
+            'large'   => $this->isLarge(),
+            'canDraw' => $this->canDraw()
+        ];
+    }
+
+    public function cardsDataByCode(): array
+    {
+        return array_combine(
+            array_map(function(AbstractCard $card) {return $card->getCode();}, $this->getCards()),
+            array_map(function(AbstractCard $card) {return $card->toTpl($this);}, $this->getCards())
+        );
+    }
+
+    /**
      * @return array
      */
-    public function toArray(): array
+    public function getBgaDeckData(): array
     {
-        return array_map(
-            function($card) {
-                return $card->toArray();
-            },
-            $this->cards
-        );
+        $cards = [];
+        for ($i = 0; $i <= $this->current; $i++) {
+            $card        = $this->cards[$i]->toArray();
+            $card['nbr'] = $this->copies[$i];
+            $cards[]     = $card;
+        }
+        return $cards;
+    }
+
+    /**
+     * Get public location list for this card type
+     *
+     * @return string[]
+     */
+    public function getPublicLocations(): array
+    {
+        switch ($this->type) {
+            case AbstractCard::TYPE_INVENTION:
+                return [
+                    AbstractCard::LOCATION_DEFAULT,
+                    AbstractCard::LOCATION_ON_TABLE,
+                    AbstractCard::LOCATION_HAND
+                ];
+            case AbstractCard::TYPE_MAGIC:
+                return [
+                    AbstractCard::LOCATION_DEFAULT,
+                    AbstractCard::LOCATION_HAND
+                ];
+            case AbstractCard::TYPE_LINEAGE:
+            case AbstractCard::TYPE_OBJECTIVE:
+            case AbstractCard::TYPE_DISEASE:
+            case AbstractCard::TYPE_FIGHT:
+            case AbstractCard::TYPE_OTHER:
+                return [
+                    AbstractCard::LOCATION_DEFAULT
+                ];
+            default:
+                return [];
+        }
     }
 
     // Implement Traversable
@@ -193,7 +278,7 @@ class Deck implements \Iterator
 
     public function valid()
     {
-        return $this->current < count($this->cards);
+        return $this->current && $this->current < count($this->cards);
     }
 
     public function rewind()

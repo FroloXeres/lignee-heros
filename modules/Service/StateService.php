@@ -6,17 +6,6 @@ use LdH\State\StateInterface;
 
 class StateService
 {
-    public const GLB_TURN_LFT    = 'turnLeft';
-    public const GLB_PEOPLE_CNT  = 'peopleCount';
-    public const GLB_FOOD_PRD    = 'foodProduction';
-    public const GLB_FOOD_STK    = 'foodStock';
-    public const GLB_SCIENCE_PRD = 'scienceProduction';
-    public const GLB_SCIENCE_STK = 'scienceStock';
-    public const GLB_LIFE        = 'life';
-    public const GLB_WAR_PWR     = 'warriorPower';
-    public const GLB_WAR_DFS     = 'warriorDefense';
-    public const GLB_CTY_DFS     = 'cityDefense';
-
     /**
      * @var StateInterface[]
      */
@@ -50,7 +39,7 @@ class StateService
         $callables = [];
 
         foreach ($this->states as $state) {
-            $callables['arg' . ucfirst($state->getName())] = $state->getStateArgMethod($game);
+            $callables['arg' . $state->getName()] = $state->getStateArgMethod($game);
         }
 
         return  $callables;
@@ -66,7 +55,25 @@ class StateService
         $callables = [];
 
         foreach ($this->states as $state) {
-            $callables['st' . ucfirst($state->getName())] = $state->getStateArgMethod($game);
+            $callables['st' . $state->getName()] = $state->getStateActionMethod($game);
+        }
+
+        return  $callables;
+    }
+
+    /**
+     * @param \Table $game
+     *
+     * @return callable[]
+     */
+    public function getActionMethods(\Table $game): array
+    {
+        $callables = [];
+
+        foreach ($this->states as $state) {
+            foreach ($state->getActionMethods($game) as $methodName => $actionMethod) {
+                $callables[$methodName] = $actionMethod;
+            }
         }
 
         return  $callables;
@@ -77,12 +84,12 @@ class StateService
      *
      * @return callable[]
      */
-    public function getActionMethods(\APP_GameAction $gameAction): array
+    public function getCleanActionMethods(\APP_GameAction $gameAction): array
     {
         $callables = [];
 
         foreach ($this->states as $state) {
-            foreach ($state->getActionMethods($gameAction) as $methodName => $actionMethod) {
+            foreach ($state->getActionCleanMethods($gameAction) as $methodName => $actionMethod) {
                 $callables[$methodName] = $actionMethod;
             }
         }

@@ -5,6 +5,7 @@ namespace LdH\State;
 class DrawObjectiveState extends AbstractState
 {
     public const ID = 4;
+    public const NAME = 'DrawObjective';
 
     public static function getId(): int
     {
@@ -13,7 +14,7 @@ class DrawObjectiveState extends AbstractState
 
     public function __construct()
     {
-        $this->name              = 'DrawObjective';
+        $this->name              = self::NAME;
         $this->type              = self::TYPE_GAME;
         $this->description       = clienttranslate("Game is drawing an objective for you.");
         $this->action            = 'st' . $this->name;
@@ -21,7 +22,7 @@ class DrawObjectiveState extends AbstractState
         $this->transitions       = ["" => StateInterface::STATE_END_ID];
     }
 
-    public function getActionMethods(\APP_GameAction $gameAction): ?array
+    public function getActionMethods(\Table $game): ?array
     {
         return [];
     }
@@ -39,7 +40,7 @@ class DrawObjectiveState extends AbstractState
     public function getStateActionMethod(\Table $game): ?callable
     {
         return function () use ($game) {
-            $game::checkAction($this->getName());
+            $game->checkAction(self::NAME);
 
             // Draw on objective by player (notify)
 

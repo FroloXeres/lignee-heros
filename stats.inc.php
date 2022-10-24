@@ -15,6 +15,8 @@
  *
  */
 
+use LdH\Service\StatService;
+
 /*
     In this file, you are describing game statistics, that will be displayed at the end of the
     game.
@@ -51,11 +53,11 @@ $stats_type = array(
 
     // Statistics global to table
     "table" => array(
-
-        "turns_number" => array("id"=> 10,
-                    "name" => totranslate("Number of turns"),
-                    "type" => "int" ),
-
+        "turns_number" => array(
+            "id"   => 10,
+            "name" => totranslate("Number of turns"),
+            "type" => "int"
+        ),
 /*
         Examples:
 
@@ -72,11 +74,13 @@ $stats_type = array(
     
     // Statistics existing for each player
     "player" => array(
+        "turns_number" => array(
+            "id"=> 10,
+            "name" => totranslate("Number of turns"),
+            "type" => "int"
+        ),
 
-        "turns_number" => array("id"=> 10,
-                    "name" => totranslate("Number of turns"),
-                    "type" => "int" ),
-    
+
 /*
         Examples:    
         

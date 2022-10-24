@@ -46,7 +46,15 @@ class Terrain implements \JsonSerializable
     protected string $code      = '';
     protected int    $food      = 0;
     protected bool   $science   = false;
+
+    /**
+     * @var Resource[]
+     */
     protected array  $resources = [];
+
+    /**
+     * @var Bonus[]
+     */
     protected array  $bonuses   = [];
 
     public function __construct(string $name, string $code, int $food = 0, bool $science = false, ?array $resources = [])
@@ -136,7 +144,7 @@ class Terrain implements \JsonSerializable
     }
 
     /**
-     * @return array
+     * @return Resource[]
      */
     public function getResources(): array
     {
@@ -187,8 +195,8 @@ class Terrain implements \JsonSerializable
             'name'      => $this->getName(),
             'food'      => $this->getFood(),
             'science'   => $this->hasScience(),
-            'resources' => json_encode($this->getResources()),
-            'bonuses'   => json_encode($this->getBonuses())
+            'resources' => array_keys($this->getResources()),
+            'bonuses'   => $this->getBonuses()
         ];
     }
 }

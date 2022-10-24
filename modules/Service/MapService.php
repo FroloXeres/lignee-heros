@@ -2,6 +2,7 @@
 
 namespace LdH\Service;
 
+use LdH\Entity\Map\City;
 use LdH\Entity\Map\Terrain;
 use LdH\Entity\Map\Tile;
 
@@ -75,7 +76,8 @@ class MapService
      */
     public static function buildMapFromDb(array $dbLines, array $terrains = []): array
     {
-        $tiles = [];
+        $tiles       = [];
+        $fillTerrain = !empty($terrains);
 
         foreach ($dbLines as $id => $line) {
             $tile = new Tile(
@@ -86,7 +88,10 @@ class MapService
                 $line['tile_disabled'] === '1',
                 $line['tile_revealed'] === '1'
             );
-            $tile->setTerrain($terrains[$line['tile_terrain']]?? null);
+
+            if ($fillTerrain) {
+                $tile->setTerrain($terrains[$line['tile_terrain']]?? null);
+            }
 
             $tiles[] = $tile;
         }
@@ -104,10 +109,8 @@ class MapService
     public static function getClass(Tile $tile): string
     {
         return sprintf(
-            'tile%s%s%s',
-            $tile->isFlip()? ' tile_reveal' : '',
-            $tile->isDisabled()? ' tile_disabled' : '',
-            ($tile->isFlip() && $tile->getTerrain() instanceof Terrain)? ' tile_' . $tile->getTerrain()->getCode() : ''
+            'tile%s',
+            $tile->isDisabled()? ' tile_disabled' : ''
         );
     }
 
@@ -123,16 +126,6 @@ class MapService
         $howFar = [0 => '', 1 => 'I', 2 => 'II', 3 => 'III', 4 => 'IV', 5 => 'V'];
 
         return $howFar[$tile->getHowFar()]?? '';
-    }
-
-    /**
-     * @param array $map
-     *
-     * @return array
-     */
-    public static function getMapForAjax(array $map): array
-    {
-        return $map;
     }
 
     /**

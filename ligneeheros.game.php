@@ -20,24 +20,41 @@ require_once( APP_GAMEMODULE_PATH.'module/table/table.game.php' );
 require_once('vendor/autoload.php');
 
 use Symfony\Component\Config\FileLocator;
+use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use LdH\Service\StateCompilerPass;
 
 use LdH\Repository\MapRepository;
+use LdH\Service\CurrentStateService;
 use LdH\Service\MapService;
+use LdH\Service\CardService;
 use LdH\Service\StateService;
 use LdH\Entity\Cards\Deck;
 use LdH\Entity\Cards\AbstractCard;
+use LdH\Entity\Map\Resource;
+use LdH\Entity\Map\Terrain;
+use LdH\Entity\Meeple;
 
 class ligneeheros extends Table
 {
+    /** @var \Deck[] */
     public array $decks = [];
 
-    /**
-     * @var StateService|null
-     */
+    /** @var Deck[] */
+    public array $cards = [];
+
+    /** @var Terrain[]  */
+    public array $terrains = [];
+
+    /** @var Resource[]  */
+    public array $resources = [];
+
+    /** @var Meeple[]  */
+    public array $meeples = [];
+
     public ?StateService $stateService = null;
+    public ?CardService  $cardService  = null;
 
     /**
      * @var callable[]
@@ -49,6 +66,13 @@ class ligneeheros extends Table
      */
     protected array $stateActionMethods = [];
 
+    /**
+     * @var callable[]
+     */
+    protected array $actionMethods = [];
+
+    private Container $container;
+
 	function __construct( )
 	{
         // Your global variables labels:
@@ -59,18 +83,7 @@ class ligneeheros extends Table
         // Note: afterwards, you can get/set the global variables with getGameStateValue/setGameStateInitialValue/setGameStateValue
         parent::__construct();
 
-        self::initGameStateLabels( array(
-            StateService::GLB_TURN_LFT    => 10,
-            StateService::GLB_PEOPLE_CNT  => 11,
-            StateService::GLB_FOOD_PRD    => 12,
-            StateService::GLB_FOOD_STK    => 13,
-            StateService::GLB_SCIENCE_PRD => 14,
-            StateService::GLB_SCIENCE_STK => 15,
-            StateService::GLB_LIFE        => 16,
-            StateService::GLB_WAR_PWR     => 17,
-            StateService::GLB_WAR_DFS     => 18,
-            StateService::GLB_CTY_DFS     => 19
-        ) );
+        self::initGameStateLabels(CurrentStateService::CURRENT_STATES);
 
         // Use of Symfony DIC
         $this->initContainer();
@@ -102,13 +115,19 @@ class ligneeheros extends Table
      * Create decks from card list available in material.inc.php
      *
      * @return void
+     * @throws Exception
      */
     protected function initDecks()
     {
+        $this->cardService = $this->getService(CardService::class);
+
         foreach ($this->cards as $deck) {
-            /** @var Deck $deck */
-            $this->decks[$deck->getType()] = self::getNew( "module.common.deck" );
-            $this->decks[$deck->getType()]->init($deck->getType());
+            /** @var \Deck $bgaDeck */
+            $bgaDeck = self::getNew( "module.common.deck" );
+            $bgaDeck->init($deck->getType());
+
+            $deck->setBgaDeck($bgaDeck);
+            $this->decks[$deck->getType()] = $bgaDeck;
         }
     }
 
@@ -125,6 +144,7 @@ class ligneeheros extends Table
         // Fill available methods
         $this->stateArgMethods    = $this->getStateService()->getStateArgMethods($this);
         $this->stateActionMethods = $this->getStateService()->getStateActionMethods($this);
+        $this->actionMethods      = $this->getStateService()->getActionMethods($this);
     }
 
     protected function getGameName( )
@@ -164,38 +184,45 @@ class ligneeheros extends Table
 
         /************ Start the game initialization *****/
         $this->initTables();
-
-        // Init global values with their initial values
-        self::setGameStateInitialValue(StateService::GLB_TURN_LFT, 50);
-        self::setGameStateInitialValue(StateService::GLB_PEOPLE_CNT, 10);
-        self::setGameStateInitialValue(StateService::GLB_FOOD_PRD, 0);
-        self::setGameStateInitialValue(StateService::GLB_FOOD_STK, 0);
-        self::setGameStateInitialValue(StateService::GLB_SCIENCE_PRD, 0);
-        self::setGameStateInitialValue(StateService::GLB_SCIENCE_STK, 0);
-        self::setGameStateInitialValue(StateService::GLB_LIFE, 1);
-        self::setGameStateInitialValue(StateService::GLB_WAR_PWR, 1);
-        self::setGameStateInitialValue(StateService::GLB_WAR_DFS, 0);
-        self::setGameStateInitialValue(StateService::GLB_CTY_DFS, 1);
-
-        // Init game statistics
-        // (note: statistics used in this file must be defined in your stats.inc.php file)
-//        self::initStat( 'table', 'table_won', 0 );
-//        self::initStat( 'table', 'table_lost', 0 );
-//        self::initStat( 'table', 'table_lost_turn', 50 );
-//        self::initStat( 'player', 'player_lineage_elven_mage', 0 );
-//        self::initStat( 'player', 'player_lineage_elven_savant', 0 );
-//        self::initStat( 'player', 'player_lineage_humani_mage', 0 );
-//        self::initStat( 'player', 'player_lineage_humani_worker', 0 );
-//        self::initStat( 'player', 'player_lineage_nani_warrior', 0 );
-//        self::initStat( 'player', 'player_lineage_nani_savant', 0 );
-//        self::initStat( 'player', 'player_lineage_ork_worker', 0 );
-//        self::initStat( 'player', 'player_lineage_ork_warrior', 0 );
-//        self::initStat( 'player', 'player_finish_obj', 0 );
+        $this->initGlobalValues();
+        //$this->initStats();
 
         // Activate first player (which is in general a good idea :) )
         $this->activeNextPlayer();
 
         /************ End of the game initialization *****/
+    }
+
+    private function initGlobalValues()
+    {
+        // Init global values with their initial values
+        foreach (array_keys(CurrentStateService::CURRENT_STATES) as $stateName) {
+            $this->setGameStateInitialValue($stateName, 0);
+        }
+
+        $this->setGameStateValue(CurrentStateService::GLB_TURN_LFT, CurrentStateService::LAST_TURN);
+        $this->setGameStateValue(CurrentStateService::GLB_PEOPLE_CNT, CurrentStateService::START_PEOPLE);
+        $this->setGameStateValue(CurrentStateService::GLB_LIFE, 1);
+        $this->setGameStateValue(CurrentStateService::GLB_WAR_PWR, 1);
+        $this->setGameStateValue(CurrentStateService::GLB_CTY_DFS, 1);
+    }
+
+    private function initStats()
+    {
+        // Init game statistics
+        // (note: statistics used in this file must be defined in your stats.inc.php file)
+        $this->initStat( 'table', 'table_won', 0 );
+        $this->initStat( 'table', 'table_lost', 0 );
+        $this->initStat( 'table', 'table_lost_turn', CurrentStateService::LAST_TURN );
+        $this->initStat( 'player', 'player_lineage_elven_mage', 0 );
+        $this->initStat( 'player', 'player_lineage_elven_savant', 0 );
+        $this->initStat( 'player', 'player_lineage_humani_mage', 0 );
+        $this->initStat( 'player', 'player_lineage_humani_worker', 0 );
+        $this->initStat( 'player', 'player_lineage_nani_warrior', 0 );
+        $this->initStat( 'player', 'player_lineage_nani_savant', 0 );
+        $this->initStat( 'player', 'player_lineage_ork_worker', 0 );
+        $this->initStat( 'player', 'player_lineage_ork_warrior', 0 );
+        $this->initStat( 'player', 'player_finish_objective', 0 );
     }
 
     public function initTables()
@@ -213,7 +240,7 @@ class ligneeheros extends Table
                 /** @var Deck $ldhDeck */
                 $ldhDeck = $this->cards[$type];
 
-                $deck->createCards($ldhDeck->toArray(), AbstractCard::LOCATION_DEFAULT);
+                $deck->createCards($ldhDeck->getBgaDeckData(), AbstractCard::LOCATION_DEFAULT);
 
                 if (!$ldhDeck->isPublic()) {
                     $deck->shuffle(AbstractCard::LOCATION_DEFAULT);
@@ -227,7 +254,7 @@ class ligneeheros extends Table
     /*
         getAllDatas:
 
-        Gather all informations about current game situation (visible by the current player).
+        Gather all information about current game situation (visible by the current player).
 
         The method is called each time the game interface is displayed to a player, ie:
         _ when the game starts
@@ -237,7 +264,7 @@ class ligneeheros extends Table
     {
         $result = array();
 
-        $current_player_id = self::getCurrentPlayerId();    // !! We must only return informations visible by this player !!
+        $currentPlayerId = self::getCurrentPlayerId();    // !! We must only return information visible by this player !!
 
         // Get information about players
         // Note: you can retrieve some extra field you added for "player" table in "dbmodel.sql" if you need it.
@@ -245,19 +272,48 @@ class ligneeheros extends Table
         $result['players'] = self::getCollectionFromDb( $sql );
 
         // Send materials
-        $result['resources'] = json_encode($this->resources?? []);
-        $result['terrains']  = json_encode($this->terrains?? []);
+        $result['resources'] = $this->resources?? [];
+        $result['terrains']  = $this->terrains?? [];
 
-        // Send map details
+        // Send map details : Load Map from Db
+        $tiles = MapService::buildMapFromDb(
+            self::getCollectionFromDb(MapRepository::getMapQry(true)),
+            $this->terrains?? []
+        );
+        $result['map'] = $tiles;
 
+        // Game states
+        $result['currentState'] = $this->getCurrentState();
+
+        // Cards
+        $currentStateId  = $this->gamestate->state_id();
+        $result['cards'] = $this->cardService->getPublicCards($this->decks, $this->cards, $currentStateId, $currentPlayerId);
+        $result['decks'] = $this->cardService->getPublicDecks($this->cards);
 
         // TODO: Gather all information about current game situation (visible by player $current_player_id).
-        // Get Map from Db
-//        $savedMap = self::getCollectionFromDb(MapRepository::getMapQry());
-//        $this->tiles = MapService::buildMapFromDb($savedMap, $this->terrains, $this->variants);
-//        $result['map'] = MapService::getMapForAjax($this->tiles);
 
         return $result;
+    }
+
+    function getCurrentState(): array
+    {
+        $states = [
+            'title' => [
+                'turn'    => clienttranslate('Turn'),
+                'people'  => clienttranslate('People:'),
+                'harvest' => clienttranslate('Harvest:'),
+                'stock'   => clienttranslate('Stock:')
+            ]
+        ];
+
+        foreach (array_keys(CurrentStateService::CURRENT_STATES) as $i => $stateName) {
+            $states[$stateName] = (int) $this->getGameStateValue($stateName);
+        }
+
+        // Computed states
+        $states['turn'] = (CurrentStateService::LAST_TURN - $states[CurrentStateService::GLB_TURN_LFT] + 1);
+
+        return $states;
     }
 
     /*
@@ -272,7 +328,7 @@ class ligneeheros extends Table
     */
     function getGameProgression()
     {
-        $turnLeft = (int) $this->getGameStateValue('turnLeft');
+        $turnLeft = (int) $this->getGameStateValue(CurrentStateService::GLB_TURN_LFT);
 
         return (50 - $turnLeft) * 2;
     }
@@ -366,13 +422,17 @@ class ligneeheros extends Table
      *
      * @return void
      */
-    function __call(string $name, array $arguments) {
+    function __call(string $name, array $arguments = []) {
         if (array_key_exists($name, $this->stateArgMethods)) {
             call_user_func_array($this->stateArgMethods[$name], $arguments);
         }
 
         if (array_key_exists($name, $this->stateActionMethods)) {
             call_user_func_array($this->stateActionMethods[$name], $arguments);
+        }
+
+        if (array_key_exists($name, $this->actionMethods)) {
+            call_user_func_array($this->actionMethods[$name], $arguments);
         }
     }
 
@@ -469,6 +529,12 @@ class ligneeheros extends Table
 //        // Please add your future database scheme changes here
 //
 //
+    }
+
+    public function getDeck(string $type):? Deck
+    {
+        return array_key_exists($type, $this->cards) ?
+            $this->cards[$type] : null;
     }
 
     /**
