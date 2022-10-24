@@ -6,38 +6,36 @@ use LdH\Entity\Cards\AbstractCard;
 use LdH\Entity\Cards\Deck;
 use LdH\State\ChooseLineageState;
 use LdH\State\DrawObjectiveState;
-use LdH\State\GameInitState;
 
 class CardService
 {
-    public function getPublicDecks(array $bgaDecks): array
+    public function getPublicDecks(array $decks): array
     {
         return array_combine(
-            array_keys($bgaDecks),
-            array_map(function(Deck $bgaDeck) {
-                return $bgaDeck->getPublicData();
-            }, $bgaDecks)
+            array_keys($decks),
+            array_map(function(Deck $deck) {
+                return $deck->getPublicData();
+            }, $decks)
         );
     }
 
     /**
-     * @param \Deck[] $bgaDeck
-     * @param Deck[]  $ldhDeck
+     * @param Deck[]  $decks
      * @param int     $stateId
      * @param int     $currentPlayerId
      *
      * @return array<string, array>
      */
-    public function getPublicCards(array $bgaDeck, array $ldhDeck, int $stateId, int $currentPlayerId): array
+    public function getPublicCards(array $decks, int $stateId, int $currentPlayerId): array
     {
         $cards = [];
 
-        foreach ($ldhDeck as $type => $deck) {
+        foreach ($decks as $type => $deck) {
             if ($this->canSendDeckByStateAndPlayer($type, $stateId, $currentPlayerId)) {
                 $cards[$type] = [];
 
                 foreach ($deck->getPublicLocations() as $location) {
-                    $cards[$type][$location] = $this->preparePublicData($bgaDeck[$type], $deck, $location);
+                    $cards[$type][$location] = $this->preparePublicData($deck->getBgaDeck(), $deck, $location);
                 }
             }
         }

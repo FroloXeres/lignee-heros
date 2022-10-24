@@ -38,9 +38,6 @@ use LdH\Entity\Meeple;
 
 class ligneeheros extends Table
 {
-    /** @var \Deck[] */
-    public array $decks = [];
-
     /** @var Deck[] */
     public array $cards = [];
 
@@ -127,7 +124,6 @@ class ligneeheros extends Table
             $bgaDeck->init($deck->getType());
 
             $deck->setBgaDeck($bgaDeck);
-            $this->decks[$deck->getType()] = $bgaDeck;
         }
     }
 
@@ -235,15 +231,14 @@ class ligneeheros extends Table
         }
 
         // Init cards
-        if (!empty($this->decks)) {
-            foreach ($this->decks as $type => $deck) {
-                /** @var Deck $ldhDeck */
-                $ldhDeck = $this->cards[$type];
+        if (!empty($this->cards)) {
+            foreach ($this->cards as $deck) {
+                $bgaDeck = $deck->getBgaDeck();
+                $bgaDeck->createCards($deck->getBgaDeckData(), AbstractCard::LOCATION_DEFAULT);
 
-                $deck->createCards($ldhDeck->getBgaDeckData(), AbstractCard::LOCATION_DEFAULT);
 
-                if (!$ldhDeck->isPublic()) {
-                    $deck->shuffle(AbstractCard::LOCATION_DEFAULT);
+                if (!$deck->isPublic()) {
+                    $bgaDeck->shuffle(AbstractCard::LOCATION_DEFAULT);
                 }
             }
         }
@@ -287,7 +282,7 @@ class ligneeheros extends Table
 
         // Cards
         $currentStateId  = $this->gamestate->state_id();
-        $result['cards'] = $this->cardService->getPublicCards($this->decks, $this->cards, $currentStateId, $currentPlayerId);
+        $result['cards'] = $this->cardService->getPublicCards($this->cards, $currentStateId, $currentPlayerId);
         $result['decks'] = $this->cardService->getPublicDecks($this->cards);
 
         // TODO: Gather all information about current game situation (visible by player $current_player_id).

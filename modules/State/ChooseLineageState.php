@@ -23,7 +23,7 @@ class ChooseLineageState extends AbstractState
         $this->name              = self::NAME;
         $this->type              = self::TYPE_MULTI_ACTIVE;
         $this->description       = clienttranslate("Everyone have to choose the lineage they will play with.");
-        $this->descriptionMyTurn = clienttranslate("Choose lineage you will play with.");
+        $this->descriptionMyTurn = clienttranslate("Please, select your lineage");
         $this->action            = 'st' . $this->name;
         $this->args              = 'arg' . $this->name;
         $this->possibleActions   = [self::ACTION_SELECT_LINEAGE];

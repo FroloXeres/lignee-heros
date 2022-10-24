@@ -294,21 +294,14 @@ function (dojo, declare) {
             
             switch( stateName )
             {
-            
             /* Example:
-            
             case 'myGameState':
-            
                 // Hide the HTML block we are displaying only during this game state
                 dojo.style( 'my_html_block_id', 'display', 'none' );
-                
-                break;
-           */
-           
-           
-            case 'dummmy':
-                break;
-            }               
+                break; */
+                case 'dummmy':
+                    break;
+            }
         }, 
 
         // onUpdateActionButtons: in this method you can manage "action buttons" that are displayed in the
@@ -316,13 +309,11 @@ function (dojo, declare) {
         //        
         onUpdateActionButtons: function( stateName, args )
         {
-            console.log( 'onUpdateActionButtons: '+stateName );
-                      
             if( this.isCurrentPlayerActive() )
             {            
                 switch( stateName ) {
-                    case 'gameInit' :
-                        this.addActionButton( 'action1', _('Action1'), 'onAction1' );
+                    case 'ChooseLineage' :
+                        // this.addActionButton( 'chooseLineage', _('Choose selected lineage'), 'onSelectLineage' );
                         break;
 /*
                  case 'myGameState':
@@ -362,7 +353,8 @@ function (dojo, declare) {
             _ make a call to the game server
         
         */
-        onAction1: function()  {
+        onSelectLineage: function()  {
+
             console.log('Action1');
         },
 
