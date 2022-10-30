@@ -1291,7 +1291,7 @@ $townElven
 $townNani    = new City(clienttranslate('Nundurahl'), Terrain::TOWN_NANI, 5, true, [$stone, $metal]);
 $townNani
     ->addUnit($worker)->addUnit($warrior)
-    ->addInvention($metallurgy)->addInvention($gemCutting)
+    ->addInvention($metallurgy)->addInvention($stoneCutting)
 ;
 $townOrk     = new City(clienttranslate('Arakh Dhul'), Terrain::TOWN_ORK, 5, true, [$wood, $metal]);
 $townOrk

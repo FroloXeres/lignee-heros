@@ -2,6 +2,7 @@
 
 namespace LdH\Service;
 
+use LdH\Entity\Map\City;
 use LdH\Entity\Map\Terrain;
 use LdH\Entity\Map\Tile;
 use LdH\Repository\MapRepository;
@@ -15,6 +16,11 @@ class MapService
     public function __construct()
     {
         $this->mapRepository = new MapRepository();
+    }
+
+    public function updateCity(City $city)
+    {
+        $this->mapRepository->updateCity($city);
     }
 
     /**

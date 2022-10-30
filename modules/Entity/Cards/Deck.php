@@ -180,23 +180,6 @@ class Deck implements \Iterator
         return $this;
     }
 
-    /**
-     * @param \Table $game
-     * @param AbstractCard[] $cards
-     */
-    public function drawCards(\Table $game, array $cards): void
-    {
-        /*
-        $cardIds = $game::getCollectionFromDB(
-            CardRepository::getCardIdsInLocationQry($this->getType(), $cards)
-        );
-        $this->getBgaDeck()->moveCards(
-            array_keys($cardIds),
-            AbstractCard::LOCATION_HAND
-        );
-        */
-    }
-
     public function getPublicData(): array
     {
         return [

@@ -4,11 +4,61 @@ namespace LdH\Service;
 
 use LdH\Entity\Cards\AbstractCard;
 use LdH\Entity\Cards\Deck;
+use LdH\Repository\CardRepository;
 use LdH\State\ChooseLineageState;
 use LdH\State\DrawObjectiveState;
 
 class CardService
 {
+    protected CardRepository $cardRepository;
+
+    public function __construct()
+    {
+        $this->cardRepository = new CardRepository();
+    }
+
+    /**
+     * @param Deck           $deck
+     * @param AbstractCard[] $cards
+     */
+    public function drawCards(Deck $deck, array $cards): void
+    {
+        $cardIds = $this->cardRepository->getCardIds(
+            $deck->getType(),
+            array_map(function(AbstractCard $card) {return $card->getTypeArg();}, $cards),
+            AbstractCard::LOCATION_DEFAULT,
+            true
+        );
+
+        $deck->getBgaDeck()->moveCards(
+            array_keys($cardIds),
+            AbstractCard::LOCATION_HAND
+        );
+    }
+
+    protected function populateDeckWithIds(Deck $deck)
+    {
+        $cardIds = $this->cardRepository->getCardIds(
+            $deck->getType(),
+            array_map(function(AbstractCard $card) {return $card->getTypeArg();}, $deck->getCards())
+        );
+
+        $cardsIdsByTypeArg = [];
+        foreach ($cardIds as $cardId => $typeArg) {
+            if (array_key_exists($typeArg, $cardsIdsByTypeArg)) {
+                $cardsIdsByTypeArg[$typeArg][] = $cardId;
+            } else {
+                $cardsIdsByTypeArg[$typeArg] = [$cardId];
+            }
+        }
+
+        foreach ($deck->getCards() as $card) {
+            $card->setIds(
+                $cardsIdsByTypeArg[$card->getTypeArg()] ?? []
+            );
+        }
+    }
+
     public function getPublicDecks(array $decks): array
     {
         return array_combine(

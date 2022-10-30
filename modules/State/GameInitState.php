@@ -40,26 +40,24 @@ class GameInitState extends AbstractState
     {
         return function () {
             /** @var \ligneeheros $this */
-            $mapRepository = new MapRepository();
 
             // Choose random city (notify)
             $city = GameInitState::getRandomCity($this->terrains);
-            $mapRepository->updateCity($city);
+            $this->mapService->updateCity($city);
 
             // -> Draw city inventions (notify)
             /** @var Deck $inventions */
             $inventions = $this->getDeck(AbstractCard::TYPE_INVENTION);
-            $inventions->drawCards($this, $city->getInventions());
+            $this->cardService->drawCards($inventions, $city->getInventions());
+
+            // Draw 1st invention card of the deck (notify)
+            $inventions->getBgaDeck()->pickCardForLocation(AbstractCard::LOCATION_DEFAULT, AbstractCard::LOCATION_ON_TABLE);
 
             // -> Put city units on central tile (notify)
 
 
             // Put 8 Worker (- number of player) on central tile (notify)
 
-
-            // Draw 1st Spell card of the deck (notify)
-            $spells = $this->getDeck(AbstractCard::TYPE_MAGIC);
-            $spells->getBgaDeck()->pickCardForLocation(AbstractCard::LOCATION_DEFAULT, AbstractCard::LOCATION_ON_TABLE);
 
             // Notify players on next state (Notifications don't work on game start)
 
