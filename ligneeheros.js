@@ -16,11 +16,11 @@
  */
 
 define([
-    "dojo", "dojo/_base/declare",
+    "dojo", "dojo/on", "dojo/_base/declare",
     "ebg/core/gamegui",
     "ebg/counter"
 ],
-function (dojo, declare) {
+function (dojo, on, declare) {
     return declare("bgagame.ligneeheros", ebg.core.gamegui, {
         constructor: function(){
             this.map       = [];
@@ -63,9 +63,10 @@ function (dojo, declare) {
 
         setupGameState: function(gamedatas)
         {
-            this.currentState = gamedatas.currentState;
-            this.decks        = gamedatas.decks;
-            this.cards        = gamedatas.cards;
+            this.currentState  = gamedatas.currentState;
+            this.decks         = gamedatas.decks;
+            this.cards         = gamedatas.cards;
+            this.selectedCards = [];
 
             this.$turn   = document.querySelector('#turn');
 
@@ -94,6 +95,7 @@ function (dojo, declare) {
 
             this.updateCartridge();
             this.initCards();
+            this.initEvents()
         },
 
         setupGameData: function(gamedatas)
@@ -139,6 +141,16 @@ function (dojo, declare) {
             });
         },
 
+        getCard: function(type, location, id)
+        {
+            if (
+                this.cards[type] !== 'undefined' &&
+                this.cards[type][location] !== 'undefined'
+            ) {
+                return this.cards[type][location].find(card => card.id === id);
+            }
+            return {};
+        },
         initCards: function()
         {
             for (let type in this.cards) {
@@ -186,6 +198,40 @@ function (dojo, declare) {
                 let cardContent = _self.format_block('jstpl_card_recto', _self.replaceIconsInObject(card));
                 dojo.place(cardContent, domQuery);
             });
+        },
+
+        initEvents: function()
+        {
+            this.evts = {};
+            this.evts['onChooseLineage'] = on(dojo.query('#cards-zone'), 'click', this.onChooseLineage.bind(this));
+
+
+        },
+
+        removeEvent: function(key)
+        {
+            if (typeof this.evts[key] !== 'undefined') {
+                this.evts[key].remove();
+                delete this.evts[key];
+            }
+        },
+
+        onChooseLineage: function(event)
+        {
+            const card = event.target.closest('.card.lineage');
+            if (card === null) return;
+
+            dojo.query('#cards-zone .card').forEach((thisCard) => {thisCard.classList.remove('selected');});
+            card.classList.add('selected');
+
+            const id = card.getAttribute('data-id');
+            const selectedCard = this.getCard('lineage', 'deck', id);
+            this.selectedCards = [id];
+
+            dojo.query('#pagemaintitletext').text(_('You choose to play with lineage: ') + selectedCard.name);
+
+            dojo.query('#chooseLineage')[0].classList.remove('hidden');
+            dojo.query('#cancelChooseLineage')[0].classList.remove('hidden');
         },
 
         updateCartridge: function()
@@ -262,26 +308,14 @@ function (dojo, declare) {
         //
         onEnteringState: function( stateName, args )
         {
-            console.log( 'Entering state: '+stateName );
-            
             switch( stateName ) {
-            case 'GameInit' :
-                console.log('GameInit');
-                break;
             case 'ChooseLineage' :
-                console.log('ChooseLineage');
+                dojo.query('#chooseLineage')[0].classList.add('hidden');
+                dojo.query('#cancelChooseLineage')[0].classList.add('hidden');
                 break;
             case 'DrawObjective' :
                 console.log('DrawObjective');
                 break;
-            /* Example:
-            case 'myGameState':
-            
-                // Show some HTML block at this game state
-                dojo.style( 'my_html_block_id', 'display', 'block' );
-                
-                break;
-           */
             }
         },
 
@@ -290,17 +324,11 @@ function (dojo, declare) {
         //
         onLeavingState: function( stateName )
         {
-            console.log( 'Leaving state: '+stateName );
-            
-            switch( stateName )
-            {
-            /* Example:
-            case 'myGameState':
-                // Hide the HTML block we are displaying only during this game state
-                dojo.style( 'my_html_block_id', 'display', 'none' );
-                break; */
-                case 'dummmy':
-                    break;
+            switch( stateName ) {
+            case 'ChooseLineage':
+                dojo.query('#floating-cards .card.lineage').remove();
+                this.removeEvent('onChooseLineage');
+                break;
             }
         }, 
 
@@ -313,7 +341,8 @@ function (dojo, declare) {
             {            
                 switch( stateName ) {
                     case 'ChooseLineage' :
-                        // this.addActionButton( 'chooseLineage', _('Choose selected lineage'), 'onSelectLineage' );
+                        this.addActionButton( 'chooseLineage', _('Yes'), 'onSelectLineage' );
+                        this.addActionButton( 'cancelChooseLineage', _('No'), 'onUnselectLineage' );
                         break;
 /*
                  case 'myGameState':
@@ -334,10 +363,30 @@ function (dojo, declare) {
         
         /*
         
-            Here, you can defines some utility methods that you can use everywhere in your javascript
+            Here, you can define some utility methods that you can use everywhere in your javascript
             script.
         
         */
+        ajaxCallWrapper: function(action, args, onResponse, onError)
+        {
+            if (typeof  args === 'undefined' || typeof args.lock === 'undefined') {
+                args.lock = true;
+            }
+            if (typeof onResponse === 'undefined') {
+                onResponse = (result) => {console.log(result);};
+            }
+            if (typeof onError === 'undefined') {
+                onError = (error) => {console.log(error);};
+            }
+
+            this.ajaxcall(
+                '/' + this.game_name + '/' + this.game_name + '/' + action + '.html',
+                args,
+                this,
+                onResponse,
+                onError
+            );
+        },
 
 
         ///////////////////////////////////////////////////
@@ -354,8 +403,20 @@ function (dojo, declare) {
         
         */
         onSelectLineage: function()  {
+            if (this.selectedCards[0] !== 'undefined' && this.checkAction('selectLineage')) {
+                this.ajaxCallWrapper('selectLineage', {lineage: this.selectedCards[0]});
+            }
+        },
 
-            console.log('Action1');
+        onUnselectLineage: function() {
+            this.selectedCards = [];
+            dojo.query('#cards-zone .card').forEach((thisCard) => {
+                thisCard.classList.remove('selected');
+            });
+
+            dojo.query('#pagemaintitletext').text(_('Please, select your lineage'));
+            dojo.query('#chooseLineage')[0].classList.add('hidden');
+            dojo.query('#cancelChooseLineage')[0].classList.add('hidden');
         },
 
         /* Example:
@@ -408,7 +469,9 @@ function (dojo, declare) {
         setupNotifications: function()
         {
             console.log( 'notifications subscriptions setup' );
-            
+
+            dojo.subscribe( 'debug', this, "onDebug" );
+
             // TODO: here, associate your game notifications with local methods
             
             // Example 1: standard notification handling
@@ -422,6 +485,10 @@ function (dojo, declare) {
             // 
         },
 
+        onDebug: function(sentData)
+        {
+            console.log(sentData);
+        }
         // TODO: from this point and below, you can write your game notifications handling methods
 
         /*

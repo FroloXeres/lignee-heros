@@ -189,17 +189,14 @@
 
 .card.disabled {display: none;}
 .card.inactive {cursor: not-allowed;}
+.card.selected {
+    box-shadow: 10px 5px 5px #00008b82;
+}
 
 .deck-list .card {
     display: inline-block;
     width: 15%;
     max-width: 250px;
-}
-.deck-list .card.lineage {
-    display: none;
-}
-.deck-list .card.objective {
-    display: none;
 }
 .card.magic {}
 .card.end_turn {float: right;}
@@ -434,6 +431,9 @@
     grid-template-areas: "power bonus" "objective bonus";
     grid-gap: 4% 1%;
     height: 18.6%;
+}
+.card.lineage {
+    cursor: pointer;
 }
 .card.lineage .ldh-power {
     grid-area: power;
@@ -720,6 +720,9 @@
 .icon.cube.dice_fight {background-position: 0% 100%;}
 .icon.cube.dice_growth {background-position: 11.2% 100%;}
 .icon.cube.dice_explore {background-position: 22.4% 100%;}
+
+/********* Buttons **********/
+#page-title .action-button.hidden {display: none;}
 
 /********* MAP **********/
 #map-zone {

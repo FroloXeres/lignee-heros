@@ -4,8 +4,10 @@ namespace LdH\Repository;
 
 use LdH\Entity\Cards\AbstractCard;
 
-class CardRepository
+class CardRepository extends AbstractRepository
 {
+
+
     /**
      * @param string $type
      * @param AbstractCard[] $cards

@@ -38,6 +38,8 @@ use LdH\Entity\Meeple;
 
 class ligneeheros extends Table
 {
+    public $gamestate;
+
     /** @var Deck[] */
     public array $cards = [];
 
@@ -52,6 +54,7 @@ class ligneeheros extends Table
 
     public ?StateService $stateService = null;
     public ?CardService  $cardService  = null;
+    public ?MapService  $mapService  = null;
 
     /**
      * @var callable[]
@@ -106,6 +109,8 @@ class ligneeheros extends Table
 
         $this->container->addCompilerPass(new StateCompilerPass());
         $this->container->compile();
+
+        $this->mapService = $this->getService(MapService::class);
     }
 
     /**
@@ -138,9 +143,23 @@ class ligneeheros extends Table
         $this->stateService = $this->getService(StateService::class);
 
         // Fill available methods
-        $this->stateArgMethods    = $this->getStateService()->getStateArgMethods($this);
-        $this->stateActionMethods = $this->getStateService()->getStateActionMethods($this);
-        $this->actionMethods      = $this->getStateService()->getActionMethods($this);
+        foreach ($this->getStateService()->getStateArgMethods() as $name => $argMethod) {
+            if (is_callable($argMethod)) {
+                $this->stateArgMethods[$name] = $argMethod->bindTo($this, $this);
+            }
+        }
+
+        foreach ($this->getStateService()->getStateActionMethods($this) as $name => $stateActionMethod) {
+            if (is_callable($stateActionMethod)) {
+                $this->stateActionMethods[$name] = $stateActionMethod->bindTo($this, $this);
+            }
+        }
+
+        foreach ($this->getStateService()->getActionMethods() as $name => $actionMethod) {
+            if (is_callable($actionMethod)) {
+                $this->actionMethods[$name] = $actionMethod->bindTo($this, $this);
+            }
+        }
     }
 
     protected function getGameName( )
@@ -224,11 +243,7 @@ class ligneeheros extends Table
     public function initTables()
     {
         // Generate map
-        $this->tiles = MapService::generateMap(MapService::DEFAULT_RADIUS);
-        MapService::initMap($this->tiles, $this->terrains);
-        foreach (MapRepository::getSaveQueries($this->tiles) as $qry) {
-            self::DbQuery($qry);
-        }
+        $this->mapService->createInitialMap($this->terrains);
 
         // Init cards
         if (!empty($this->cards)) {
@@ -271,11 +286,7 @@ class ligneeheros extends Table
         $result['terrains']  = $this->terrains?? [];
 
         // Send map details : Load Map from Db
-        $tiles = MapService::buildMapFromDb(
-            self::getCollectionFromDb(MapRepository::getMapQry(true)),
-            $this->terrains?? []
-        );
-        $result['map'] = $tiles;
+        $result['map'] = $this->mapService->getMapTiles($this->terrains?? [], true);;
 
         // Game states
         $result['currentState'] = $this->getCurrentState();
@@ -301,7 +312,7 @@ class ligneeheros extends Table
             ]
         ];
 
-        foreach (array_keys(CurrentStateService::CURRENT_STATES) as $i => $stateName) {
+        foreach (array_keys(CurrentStateService::CURRENT_STATES) as $stateName) {
             $states[$stateName] = (int) $this->getGameStateValue($stateName);
         }
 

@@ -43,32 +43,24 @@ interface StateInterface
     public function getType(): string;
 
     /**
-     * @param \APP_GameAction $gameAction
-     *
-     * @return callable[]|null
+     * @return array<string, callable>|null
      */
-    public function getActionCleanMethods(\APP_GameAction $gameAction): ?array;
+    public function getActionCleanMethods(): array;
 
     /**
-     * @param \Table $game
-     *
-     * @return callable[]|null
+     * @return array<string, callable>|null
      */
-    public function getActionMethods(\Table $game): ?array;
+    public function getActionMethods(): array;
 
     /**
-     * @param \Table $game
-     *
      * @return callable|null
      */
-    public function getStateArgMethod(\Table $game): ?callable;
+    public function getStateArgMethod(): ?callable;
 
     /**
-     * @param \Table $game
-     *
      * @return callable|null
      */
-    public function getStateActionMethod(\Table $game): ?callable;
+    public function getStateActionMethod(): ?callable;
 
     /**
      * Generate associative array used by BGA to build Game State Machine

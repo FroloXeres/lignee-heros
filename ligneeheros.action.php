@@ -24,6 +24,9 @@
   
   class action_ligneeheros extends APP_GameAction
   {
+      /** @var \ligneeheros */
+      public $game;
+
       /**
        * @var callable[]
        */
@@ -36,7 +39,11 @@
       {
           parent::__construct();
 
-          $this->actionMethods = $this->game->getStateService()->getCleanActionMethods($this);
+          foreach ($this->game->getStateService()->getCleanActionMethods() as $name => $actionMethod) {
+              if (is_callable($actionMethod)) {
+                  $this->actionMethods[$name] = $actionMethod->bindTo($this, $this);
+              }
+          }
       }
 
     // Constructor: please do not modify
@@ -64,28 +71,9 @@
         if (array_key_exists($name, $this->actionMethods)) {
             self::setAjaxMode();
 
-            // Find a way to list args
             call_user_func_array($this->actionMethods[$name], $arguments);
 
             self::ajaxResponse();
         }
     }
-
-    /*
-    // Example:
-    public function myAction()
-    {
-        self::setAjaxMode();
-
-        // Retrieve arguments
-        // Note: these arguments correspond to what has been sent through the javascript "ajaxcall" method
-        $arg1 = self::getArg( "myArgument1", AT_posint, true );
-        $arg2 = self::getArg( "myArgument2", AT_posint, true );
-
-        // Then, call the appropriate method in your game logic, like "playCard" or "myAction"
-        $this->game->myAction( $arg1, $arg2 );
-
-        self::ajaxResponse( );
-    }
-    */
 }

@@ -260,6 +260,17 @@ class Deck implements \Iterator
         }
     }
 
+    public function getCardByCode(string $code): ?AbstractCard
+    {
+        foreach ($this->cards as $card) {
+            if ($card->getCode() === $code) {
+                return $card;
+            }
+        }
+
+        return null;
+    }
+
     // Implement Traversable
     public function current()
     {

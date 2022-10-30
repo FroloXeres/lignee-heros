@@ -2,10 +2,10 @@
 
 namespace LdH\State;
 
-class DrawObjectiveState extends AbstractState
+class DeadEndState extends AbstractState
 {
-    public const ID = 4;
-    public const NAME = 'DrawObjective';
+    public const ID = 98;
+    public const NAME = 'DeadEnd';
 
     public static function getId(): int
     {
@@ -15,31 +15,26 @@ class DrawObjectiveState extends AbstractState
     public function __construct()
     {
         $this->name              = self::NAME;
-        $this->type              = self::TYPE_GAME;
-        $this->description       = clienttranslate("Game is drawing an objective for you.");
+        $this->type              = self::TYPE_ACTIVE;
+        $this->description       = clienttranslate("Everyone is waiting...");
+        $this->descriptionMyTurn = clienttranslate("Nothing to do but wait");
         $this->action            = 'st' . $this->name;
         $this->args              = 'arg' . $this->name;
-        $this->transitions       = ["" => DeadEndState::ID];
+        $this->possibleActions   = ['wait'];
+        $this->transitions       = ["" => StateInterface::STATE_END_ID];
     }
 
     public function getStateArgMethod(): ?callable
     {
         return function () {
-            // Send objectives info
-            return [
-                'data' => 'Content'
-            ];
+            return [];
         };
     }
 
     public function getStateActionMethod(): ?callable
     {
         return function () {
-            // Draw on objective by player (notify)
-
-
-
-            $this->gamestate->nextState("");
+            // Do nothing
         };
     }
 }

@@ -30,16 +30,14 @@ class StateService
     }
 
     /**
-     * @param \Table $game
-     *
      * @return callable[]
      */
-    public function getStateArgMethods(\Table $game): array
+    public function getStateArgMethods(): array
     {
         $callables = [];
 
         foreach ($this->states as $state) {
-            $callables['arg' . $state->getName()] = $state->getStateArgMethod($game);
+            $callables['arg' . $state->getName()] = $state->getStateArgMethod();
         }
 
         return  $callables;
@@ -62,16 +60,14 @@ class StateService
     }
 
     /**
-     * @param \Table $game
-     *
      * @return callable[]
      */
-    public function getActionMethods(\Table $game): array
+    public function getActionMethods(): array
     {
         $callables = [];
 
         foreach ($this->states as $state) {
-            foreach ($state->getActionMethods($game) as $methodName => $actionMethod) {
+            foreach ($state->getActionMethods() as $methodName => $actionMethod) {
                 $callables[$methodName] = $actionMethod;
             }
         }
@@ -80,16 +76,14 @@ class StateService
     }
 
     /**
-     * @param \APP_GameAction $gameAction
-     *
-     * @return callable[]
+     * @return array<string, callable>
      */
-    public function getCleanActionMethods(\APP_GameAction $gameAction): array
+    public function getCleanActionMethods(): array
     {
         $callables = [];
 
         foreach ($this->states as $state) {
-            foreach ($state->getActionCleanMethods($gameAction) as $methodName => $actionMethod) {
+            foreach ($state->getActionCleanMethods() as $methodName => $actionMethod) {
                 $callables[$methodName] = $actionMethod;
             }
         }

@@ -9,6 +9,13 @@ services:
     LdH\Service\StateService:
         public: true
 
+    # Repositories
+    LdH\Repository\MapRepository:
+        public: true
+
+    LdH\Repository\CardRepository:
+        public: true
+
     # States
     LdH\State\AbstractState:
         public: true
@@ -22,5 +29,9 @@ services:
         tags: [ 'ldh.state' ]
 
     LdH\State\DrawObjectiveState:
+        public: true
+        tags: ['ldh.state']
+
+    LdH\State\DeadEndState:
         public: true
         tags: ['ldh.state']
