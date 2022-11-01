@@ -11,11 +11,20 @@ class MapService
 {
     public const DEFAULT_RADIUS = 3;
 
+    /** @var Terrain[] */
+    protected array         $terrains;
     protected MapRepository $mapRepository;
 
     public function __construct()
     {
         $this->mapRepository = new MapRepository();
+    }
+
+    public function setTerrains(array $terrains): self
+    {
+        $this->terrains = $terrains;
+
+        return $this;
     }
 
     public function updateCity(City $city)
@@ -47,6 +56,28 @@ class MapService
             $this->mapRepository->getMapTiles($onlyRevealed),
             $terrains
         );
+    }
+
+    public function getCentralTile(): Tile
+    {
+        return $this->buildFromData(
+            $this->mapRepository->getTileInfosByPosition(0, 0)
+        );
+    }
+
+    protected function buildFromData($data): Tile
+    {
+        return (new Tile(
+            (int) $data['tile_id'],
+            (int) $data['tile_x'],
+            (int) $data['tile_y'],
+            (int) $data['tile_far'],
+            $data['tile_disabled'] === '1',
+            $data['tile_revealed'] === '1'
+        ))
+        ->setTerrain($this->terrains[
+            $data['tile_terrain']
+        ]);
     }
 
     /**

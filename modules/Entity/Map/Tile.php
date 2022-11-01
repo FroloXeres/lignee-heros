@@ -31,12 +31,11 @@ class Tile implements \JsonSerializable {
         return $this->id;
     }
 
-    /**
-     * @param int|null $id
-     */
-    public function setId(?int $id): void
+    public function setId(?int $id): self
     {
         $this->id = $id;
+
+        return $this;
     }
 
     /**
@@ -47,12 +46,11 @@ class Tile implements \JsonSerializable {
         return $this->x;
     }
 
-    /**
-     * @param int $x
-     */
-    public function setX(int $x): void
+    public function setX(int $x): self
     {
         $this->x = $x;
+
+        return $this;
     }
 
     /**
@@ -63,12 +61,11 @@ class Tile implements \JsonSerializable {
         return $this->y;
     }
 
-    /**
-     * @param int $y
-     */
-    public function setY(int $y): void
+    public function setY(int $y): self
     {
         $this->y = $y;
+
+        return $this;
     }
 
     /**
@@ -79,12 +76,11 @@ class Tile implements \JsonSerializable {
         return $this->howFar;
     }
 
-    /**
-     * @param int $howFar
-     */
-    public function setHowFar(int $howFar): void
+    public function setHowFar(int $howFar): self
     {
         $this->howFar = $howFar;
+
+        return $this;
     }
 
     /**
@@ -95,12 +91,11 @@ class Tile implements \JsonSerializable {
         return $this->flip;
     }
 
-    /**
-     * @param bool $flip
-     */
-    public function setFlip(bool $flip): void
+    public function setFlip(bool $flip): self
     {
         $this->flip = $flip;
+
+        return $this;
     }
 
     /**
@@ -111,12 +106,11 @@ class Tile implements \JsonSerializable {
         return $this->disabled;
     }
 
-    /**
-     * @param bool $disabled
-     */
-    public function setDisabled(bool $disabled): void
+    public function setDisabled(bool $disabled): self
     {
         $this->disabled = $disabled;
+
+        return $this;
     }
 
     /**
@@ -127,12 +121,11 @@ class Tile implements \JsonSerializable {
         return $this->terrain;
     }
 
-    /**
-     * @param Terrain|null $terrain
-     */
-    public function setTerrain(?Terrain $terrain): void
+    public function setTerrain(?Terrain $terrain): self
     {
         $this->terrain = $terrain;
+
+        return $this;
     }
 
     public function jsonSerialize(): array

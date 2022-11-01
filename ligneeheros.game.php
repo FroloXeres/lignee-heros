@@ -25,7 +25,6 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use LdH\Service\StateCompilerPass;
 
-use LdH\Repository\MapRepository;
 use LdH\Service\CurrentStateService;
 use LdH\Service\MapService;
 use LdH\Service\CardService;
@@ -35,6 +34,7 @@ use LdH\Entity\Cards\AbstractCard;
 use LdH\Entity\Map\Resource;
 use LdH\Entity\Map\Terrain;
 use LdH\Entity\Meeple;
+use \LdH\Entity\PeopleService;
 
 class ligneeheros extends Table
 {
@@ -50,7 +50,9 @@ class ligneeheros extends Table
     public array $resources = [];
 
     /** @var Meeple[]  */
-    public array $meeples = [];
+    public array $meeples  = [];
+    public \Deck $bgaMeeple;
+    public ?PeopleService $people = null;
 
     public ?StateService $stateService = null;
     public ?CardService  $cardService  = null;
@@ -111,6 +113,7 @@ class ligneeheros extends Table
         $this->container->compile();
 
         $this->mapService = $this->getService(MapService::class);
+        $this->mapService->setTerrains($this->terrains);
     }
 
     /**
@@ -130,6 +133,9 @@ class ligneeheros extends Table
 
             $deck->setBgaDeck($bgaDeck);
         }
+
+        $this->bgaMeeple = self::getNew( "module.common.deck" );
+        $this->bgaMeeple->init(Meeple::BGA_TYPE);
     }
 
     /**
@@ -251,14 +257,11 @@ class ligneeheros extends Table
                 $bgaDeck = $deck->getBgaDeck();
                 $bgaDeck->createCards($deck->getBgaDeckData(), AbstractCard::LOCATION_DEFAULT);
 
-
                 if (!$deck->isPublic()) {
                     $bgaDeck->shuffle(AbstractCard::LOCATION_DEFAULT);
                 }
             }
         }
-
-        // Init units
     }
 
     /*
@@ -535,6 +538,19 @@ class ligneeheros extends Table
 //        // Please add your future database scheme changes here
 //
 //
+    }
+
+    public function getPeople(): PeopleService
+    {
+        if ($this->people === null) {
+            $this->people = new PeopleService();
+            $this->people->init(
+                $this->bgaMeeple,
+                $this->meeples
+            );
+        }
+
+        return $this->people;
     }
 
     public function getDeck(string $type):? Deck

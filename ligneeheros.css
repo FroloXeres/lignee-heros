@@ -69,7 +69,7 @@
     display: block;
     content: '';
     background: url("img/icons.svg") 100% 0% no-repeat;
-    background-size: 990% 600%;
+    background-size: 1100% 600%;
     height: 1em;
     aspect-ratio: 1;
     margin-right: .5em;
@@ -95,15 +95,15 @@
     display: block;
     content: '';
     background: url("img/icons.svg") 0 0 no-repeat;
-    background-size: 990% 600%;
+    background-size: 1100% 600%;
     height: 1.5em;
     aspect-ratio: 1;
     margin-right: .5em;
 }
-#people-worker::before {background-position: 11.2% 0%;}
+#people-worker::before {background-position: 10% 0%;}
 #people-warrior::before {background-position: 0% 0%;}
-#people-savant::before {background-position: 33.6% 0%;}
-#people-mage::before {background-position: 22.5% 0%;}
+#people-savant::before {background-position: 30% 0%;}
+#people-mage::before {background-position: 20% 0%;}
 
 #cartridge .harvest {
     display: flex;
@@ -111,8 +111,8 @@
     align-items: center;
     flex-wrap: wrap;
 }
-#harvest-food::before {background-position: 89.5% 20%;}
-#harvest-science::before {background-position: 100.8% 20%;}
+#harvest-food::before {background-position: 80% 20%;}
+#harvest-science::before {background-position: 90% 20%;}
 
 #cartridge .stock {
     display: flex;
@@ -138,17 +138,17 @@
     align-items: center;
     min-width: 4em;
 }
-#stock-food::before {background-position: 44.8% 100%;}
-#stock-science::before {background-position: 56% 100%;}
+#stock-food::before {background-position: 40% 100%;}
+#stock-science::before {background-position: 50% 100%;}
 
 #stock-wood::before {background-position: 0% 60%;}
-#stock-animal::before {background-position: 11.2% 60%;}
-#stock-stone::before {background-position: 56% 60%;}
-#stock-metal::before {background-position: 44.71% 60%;}
-#stock-clay::before {background-position: 67.45% 60%;}
-#stock-paper::before {background-position: 33.6% 60%;}
-#stock-medic::before {background-position: 78.4% 60%;}
-#stock-gem::before {background-position: 22.4% 60%;}
+#stock-animal::before {background-position: 10% 60%;}
+#stock-stone::before {background-position: 50% 60%;}
+#stock-metal::before {background-position: 40% 60%;}
+#stock-clay::before {background-position: 60% 60%;}
+#stock-paper::before {background-position: 30% 60%;}
+#stock-medic::before {background-position: 70% 60%;}
+#stock-gem::before {background-position: 20% 60%;}
 
 /********* Card zones **********/
 #cards-zone > div {
@@ -354,7 +354,7 @@
     content: "";
     height: 100%;
     aspect-ratio: 1;
-    background: url("img/icons.png") 0 0 no-repeat;
+    background: url("img/icons.svg") 0 0 no-repeat;
     background-size: 1100% 600%;
     margin-right: 2%;
 }
@@ -379,16 +379,17 @@
     height: 9.8%;
 
     display: flex;
-    flex-direction: column;
-    justify-content: center;
+    flex-direction: row;
+    justify-content: space-evenly;
     align-items: center;
+    padding-left: 15%;
 }
 .card .needs::before {
     content: "";
     position: absolute;
     width: 15%;
     height: 80%;
-    background: url(img/icons.png) 90% 0% no-repeat;
+    background: url(img/icons.svg) 90% 0% no-repeat;
     background-size: 1100% 600%;
     opacity: 0.2;
     left: 2.5%;
@@ -404,19 +405,20 @@
     height: 9.8%;
     margin-bottom: 1%;
     display: flex;
-    flex-direction: column;
-    justify-content: center;
+    flex-direction: row;
+    justify-content: space-evenly;
     align-items: center;
+    padding-left: 15%;
 }
 .card .gain::before {
     content: "";
     position: absolute;
     width: 15%;
     height: 80%;
-    background: url(img/icons.png) 50% 20% no-repeat;
+    background: url(img/icons.svg) 50% 20% no-repeat;
     background-size: 1100% 600%;
     opacity: 0.2;
-    left: 2.5%;
+    left: 5%;
     top: 10%;
 }
 .card .gain:empty {display: none}
@@ -444,12 +446,12 @@
 }
 .card.lineage .ldh-power::before {
     content: "";
-    background: url('img/icons.png') 0 0 no-repeat;
+    background: url('img/icons.svg') 0 0 no-repeat;
     background-size: 1100% 600%;
     height: 60%;
     aspect-ratio: 1;
 }
-.card.lineage.lineage_elven_mage .ldh-power::before {background-position: 40% 80.1%;}
+.card.lineage.lineage_elven_mage .ldh-power::before {background-position: 40% 80%;}
 .card.lineage.lineage_elven_savant .ldh-power::before {background-position: 50% 80%;}
 .card.lineage.lineage_nani_warrior .ldh-power::before {background-position: 90% 80%;}
 .card.lineage.lineage_nani_savant .ldh-power::before {background-position: 80% 80%;}
@@ -467,7 +469,7 @@
 }
 .card.lineage .ldh-objective::before {
     content: "";
-    background: url('img/icons.png') 50% 40% no-repeat;
+    background: url('img/icons.svg') 50% 40% no-repeat;
     background-size: 1100% 600%;
     margin-right: 2%;
     height: 65%;
@@ -501,7 +503,7 @@
 }
 .card.lineage .ldh-leading::before {
     content: "";
-    background: url('img/icons.png') 70% 0 no-repeat;
+    background: url('img/icons.svg') 70% 0 no-repeat;
     background-size: 1100% 600%;
     aspect-ratio: 1;
     height: 70%;
@@ -509,7 +511,7 @@
 }
 .card.lineage .ldh-leading span {
     display: block;
-    background: url('img/icons.png') 0 0 no-repeat;
+    background: url('img/icons.svg') 0 0 no-repeat;
     background-size: 1100% 600%;
     aspect-ratio: 1;
     height: 40%;
@@ -542,16 +544,18 @@
 .card .info {
     flex-grow: 1;
     font-style: italic;
-    font-size: .9em;
+    font-size: .8em;
     overflow-y: auto;
     margin-bottom: 1%;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    text-align: center;
+    text-align: left;
+    text-indent: 1em;
 }
 .card .info .bold {
     text-align: center;
+    font-weight: bold;
 }
 .card .info:empty {display: none}
 .card .footer {
@@ -639,7 +643,7 @@
 .icon {
     display: inline-block;
     background: url("img/icons.svg") 0 0 no-repeat;
-    background-size: 990% 600%;
+    background-size: 1100% 600%;
     height: 90%;
     aspect-ratio: 1;
 }
@@ -652,74 +656,74 @@
     height: 16px;
 }
 .icon.cube.warrior {background-position: 0 0;}
-.icon.cube.worker {background-position: 11.2% 0;}
-.icon.cube.mage {background-position: 22.4% 0;}
-.icon.cube.savant {background-position: 33.6% 0;}
-.icon.cube.all {background-position: 44.8% 0;}
-.icon.cube.monster {background-position: 56% 0;}
+.icon.cube.worker {background-position: 10% 0;}
+.icon.cube.mage {background-position: 20% 0;}
+.icon.cube.savant {background-position: 30% 0;}
+.icon.cube.all {background-position: 40% 0;}
+.icon.cube.monster {background-position: 50% 0;}
 
-.icon.cube.elven_mage {background-position: 44.8% 80%;}
-.icon.cube.elven_savant {background-position: 56% 80%;}
-.icon.cube.nani_warrior {background-position: 100.8% 80%;}
-.icon.cube.nani_savant {background-position: 89.5% 80%;}
-.icon.cube.humani_mage {background-position: 67.25% 80%;}
-.icon.cube.humani_worker {background-position: 78.4% 80%;}
-.icon.cube.ork_warrior {background-position: 33.6% 80%;}
-.icon.cube.ork_worker {background-position: 22.4% 80%;}
+.icon.cube.elven_mage {background-position: 40% 80%;}
+.icon.cube.elven_savant {background-position: 50% 80%;}
+.icon.cube.nani_warrior {background-position: 90% 80%;}
+.icon.cube.nani_savant {background-position: 80% 80%;}
+.icon.cube.humani_mage {background-position: 60% 80%;}
+.icon.cube.humani_worker {background-position: 70% 80%;}
+.icon.cube.ork_warrior {background-position: 30% 80%;}
+.icon.cube.ork_worker {background-position: 20% 80%;}
 
 .icon.cube.warrior.moved {background-position: 0 20%;}
-.icon.cube.worker.moved {background-position: 11.2% 20%;}
-.icon.cube.mage.moved {background-position: 22.4% 20%;}
-.icon.cube.savant.moved {background-position: 33.6% 20%;}
+.icon.cube.worker.moved {background-position: 10% 20%;}
+.icon.cube.mage.moved {background-position: 20% 20%;}
+.icon.cube.savant.moved {background-position: 30% 20%;}
 
 .icon.cube.warrior.acted {background-position: 0 40%;}
-.icon.cube.worker.acted {background-position: 11.2% 40%;}
-.icon.cube.mage.acted {background-position: 22.4% 40%;}
-.icon.cube.savant.acted {background-position: 33.6% 40%;}
+.icon.cube.worker.acted {background-position: 10% 40%;}
+.icon.cube.mage.acted {background-position: 20% 40%;}
+.icon.cube.savant.acted {background-position: 30% 40%;}
 
-.icon.cube.explore {background-position: 44.8% 40%;}
-.icon.cube.objective {background-position: 56% 40%;}
-.icon.cube.spell {background-position: 67.25% 40%;}
-.icon.cube.invention {background-position: 78.4% 40%;}
-.icon.cube.end_turn {background-position: 89.5% 40%;}
+.icon.cube.explore {background-position: 40% 40%;}
+.icon.cube.objective {background-position: 50% 40%;}
+.icon.cube.spell {background-position: 60% 40%;}
+.icon.cube.invention {background-position: 70% 40%;}
+.icon.cube.end_turn {background-position: 80% 40%;}
 
-.icon.cube.fight {background-position: 44.8% 20%;}
-.icon.cube.other {background-position: 56% 20%;}
-.icon.cube.disease {background-position: 67.25% 20%;}
-.icon.cube.nature {background-position: 78.4% 20%;}
-.icon.cube.healing {background-position: 44.8% 20%;}
-.icon.cube.foresight {background-position: 44.8% 20%;}
-.icon.cube.enchant {background-position: 44.8% 20%;}
+.icon.cube.fight {background-position: 40% 20%;}
+.icon.cube.other {background-position: 50% 20%;}
+.icon.cube.disease {background-position: 60% 20%;}
+.icon.cube.nature {background-position: 70% 20%;}
+.icon.cube.healing {background-position: 40% 20%;}
+.icon.cube.foresight {background-position: 40% 20%;}
+.icon.cube.enchant {background-position: 40% 20%;}
 
-.icon.cube.city {background-position: 67.25% 0;}
-.icon.cube.lineage {background-position: 100.8% 40%;}
-.icon.cube.lead {background-position: 78.4% 0;}
-.icon.cube.generate {background-position: 89.5% 0;}
-.icon.cube.turn {background-position: 100.8% 0;}
+.icon.cube.city {background-position: 60% 0;}
+.icon.cube.lineage {background-position: 90% 40%;}
+.icon.cube.lead {background-position: 70% 0;}
+.icon.cube.generate {background-position: 80% 0;}
+.icon.cube.turn {background-position: 90% 0;}
 
-.icon.cube.food {background-position: 89.5% 20%;}
-.icon.cube.science {background-position: 100.8% 20%;}
+.icon.cube.food {background-position: 80% 20%;}
+.icon.cube.science {background-position: 90% 20%;}
 .icon.cube.wood {background-position: 0% 60%;}
-.icon.cube.gem {background-position: 22.4% 60%;}
-.icon.cube.paper {background-position: 33.6% 60%;}
-.icon.cube.metal {background-position: 44.8% 60%;}
-.icon.cube.stone {background-position: 56% 60%;}
-.icon.cube.animal {background-position: 11.2% 60%;}
-.icon.cube.clay {background-position: 67.25% 60%;}
-.icon.cube.medic {background-position: 78.4% 60%;}
+.icon.cube.gem {background-position: 20% 60%;}
+.icon.cube.paper {background-position: 30% 60%;}
+.icon.cube.metal {background-position: 40% 60%;}
+.icon.cube.stone {background-position: 50% 60%;}
+.icon.cube.animal {background-position: 10% 60%;}
+.icon.cube.clay {background-position: 60% 60%;}
+.icon.cube.medic {background-position: 70% 60%;}
 
-.icon.cube.food_stock {background-position: 44.8% 100%;}
-.icon.cube.science_stock {background-position: 56% 100%;}
-.icon.cube.growth {background-position: 89.5% 60%;}
-.icon.cube.power {background-position: 100.8% 60%;}
+.icon.cube.food_stock {background-position: 40% 100%;}
+.icon.cube.science_stock {background-position: 50% 100%;}
+.icon.cube.growth {background-position: 80% 60%;}
+.icon.cube.power {background-position: 90% 60%;}
 .icon.cube.defense_city {background-position: 0% 80%;}
-.icon.cube.defense_warrior {background-position: 11.2% 80%;}
+.icon.cube.defense_warrior {background-position: 10% 80%;}
 
-.icon.cube.draw {background-position: 33.6% 100%;}
-.icon.cube.undraw {background-position: 67.25% 100%;}
+.icon.cube.draw {background-position: 30% 100%;}
+.icon.cube.undraw {background-position: 60% 100%;}
 .icon.cube.dice_fight {background-position: 0% 100%;}
-.icon.cube.dice_growth {background-position: 11.2% 100%;}
-.icon.cube.dice_explore {background-position: 22.4% 100%;}
+.icon.cube.dice_growth {background-position: 10% 100%;}
+.icon.cube.dice_explore {background-position: 20% 100%;}
 
 /********* Buttons **********/
 #page-title .action-button.hidden {display: none;}
@@ -823,8 +827,8 @@
 }
 .tile::before {
     content: "";
-    background: url("img/icons.svg") 45.4% 40% no-repeat;
-    background-size: 1200% 650%;
+    background: url("img/icons.svg") 40% 40% no-repeat;
+    background-size: 1100% 600%;
     width: 65%;
     aspect-ratio: 1;
 }
@@ -867,7 +871,7 @@
 .tile .resources.resources_2 .resource-3 {display: none}
 .tile .resource {
     background: url("img/icons.svg") 0 0 no-repeat #FFF;
-    background-size: 990% 600%;
+    background-size: 1100% 600%;
     height: 32.5%;
     aspect-ratio: 1;
     border: 1px solid #000;
@@ -876,16 +880,16 @@
 .tile .resources.resources_3 {margin-top: 4%;}
 .tile .resources.resources_3 .resource-2 {margin-left: 3%; margin-top: -15%;}
 
-.tile .resource.food {background-position: 89.5% 20%;}
-.tile .resource.science {background-position: 100.8% 20%;}
+.tile .resource.food {background-position: 80% 20%;}
+.tile .resource.science {background-position: 90% 20%;}
 .tile .resources .resource.wood {background-position: 0% 60%;}
-.tile .resources .resource.gem {background-position: 22.4% 60%;}
-.tile .resources .resource.paper {background-position: 33.6% 60%;}
-.tile .resources .resource.metal {background-position: 44.8% 60%;}
-.tile .resources .resource.stone {background-position: 56% 60%;}
-.tile .resources .resource.animal {background-position: 11.2% 60%;}
-.tile .resources .resource.clay {background-position: 67.25% 60%;}
-.tile .resources .resource.medic {background-position: 78.4% 60%;}
+.tile .resources .resource.gem {background-position: 20% 60%;}
+.tile .resources .resource.paper {background-position: 30% 60%;}
+.tile .resources .resource.metal {background-position: 40% 60%;}
+.tile .resources .resource.stone {background-position: 50% 60%;}
+.tile .resources .resource.animal {background-position: 10% 60%;}
+.tile .resources .resource.clay {background-position: 60% 60%;}
+.tile .resources .resource.medic {background-position: 70% 60%;}
 
 .tile.tile_reveal .name {
     font-weight: bold;

@@ -38,4 +38,22 @@ class CardRepository extends AbstractRepository
             )?? []
         );
     }
+
+    public function getCardTypeDataByLocation(string $type, string $location = null): array
+    {
+        return $this->selectAll(
+            sprintf('SELECT * FROM `%s`%s',
+                $type,
+                $location !== null ? sprintf(
+                    ' WHERE `card_location` = "%s"',
+                    $location
+                ) : ''
+            )
+        );
+    }
+
+    public function getPeopleData(): array
+    {
+        return $this->selectAll('SELECT * FROM `meeple` ORDER BY `card_type`, `card_location`');
+    }
 }

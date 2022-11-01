@@ -1,5 +1,8 @@
 # config/services.yaml
 services:
+    LdH\Service\PeopleService:
+        public: true
+
     LdH\Service\CardService:
         public: true
 

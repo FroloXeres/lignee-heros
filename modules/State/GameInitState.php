@@ -6,12 +6,20 @@ use LdH\Entity\Cards\AbstractCard;
 use LdH\Entity\Cards\Deck;
 use LdH\Entity\Map\City;
 use LdH\Entity\Map\Terrain;
-use LdH\Repository\MapRepository;
+use LdH\Entity\Meeple;
+use LdH\Entity\PeopleService;
+use LdH\Entity\Unit;
+use LdH\Service\CurrentStateService;
 
 class GameInitState extends AbstractState
 {
     public const ID = 2;
     public const NAME = 'GameInit';
+
+    public const NOTIFY_CITY_START         = 'cityStart';
+    public const NOTIFY_CITY_INVENTIONS    = 'cityInventions';
+    public const NOTIFY_CITY_UNITS         = 'cityUnits';
+    public const NOTIFY_INVENTION_REVEALED = 'inventionRevealed';
 
     public static function getId(): int
     {
@@ -53,11 +61,25 @@ class GameInitState extends AbstractState
             // Draw 1st invention card of the deck (notify)
             $inventions->getBgaDeck()->pickCardForLocation(AbstractCard::LOCATION_DEFAULT, AbstractCard::LOCATION_ON_TABLE);
 
-            // -> Put city units on central tile (notify)
+            $peopleService = $this->getPeople();
 
+            // -> Put city units on central tile (notify)
+            foreach ($city->getUnits() as $meeple) {
+                $peopleService->birth(
+                    $meeple->getCode(),
+                    Unit::LOCATION_MAP,
+                    PeopleService::CITY_ID
+                );
+            }
 
             // Put 8 Worker (- number of player) on central tile (notify)
-
+            $toAddCnt = CurrentStateService::START_PEOPLE - $this->getPlayersNumber() - count($city->getUnits());
+            $peopleService->birth(
+                Meeple::WORKER,
+                Unit::LOCATION_MAP,
+                PeopleService::CITY_ID,
+                $toAddCnt
+            );
 
             // Notify players on next state (Notifications don't work on game start)
 
