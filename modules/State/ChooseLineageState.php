@@ -86,57 +86,59 @@ class ChooseLineageState extends AbstractState
             /** @var \ligneeheros $this */
 
             // Notify for GameInit choices
-//            $tile = $this->mapService->getCentralTile();
-//
-//            /** @var City $city */
-//            $city = $tile->getTerrain();
-//
-//            $people = $this->getPeople();
-//
-//            $this->notifyAllPlayers(
-//                GameInitState::NOTIFY_CITY_START,
-//                clienttranslate('You live in ${city} city'),
-//                [
-//                    'i18n' => ['city'],
-//                    'city' => $city->getName()
-//                ]
-//            );
-//            $this->notifyAllPlayers(
-//                GameInitState::NOTIFY_CITY_INVENTIONS,
-//                clienttranslate('You already discovered two inventions: ${invention1} and ${invention2}'),
-//                [
-//                    'i18n' => ['invention1', 'invention2'],
-//                    'invention1' => $city->getInventions()[0]->getName(),
-//                    'invention2'=> $city->getInventions()[1]->getName()
-//                ]
-//            );
-//            $this->notifyAllPlayers(
-//                GameInitState::NOTIFY_CITY_UNITS,
-//                clienttranslate('${population} people lives in ${city}'),
-//                [
-//                    'i18n' => ['population', 'city'],
-//                    'population' => $people->getPopulationAsString(),
-//                    'city' => $city->getName()
-//                ]
-//            );
-//
-//            $revealed = []; // $this->cards[AbstractCard::TYPE_INVENTION];
-//            $this->notifyAllPlayers(
-//                GameInitState::NOTIFY_INVENTION_REVEALED,
-//                clienttranslate('You can research for invention: ${revealed}'),
-//                [
-//                    'i18n' => ['revealed'],
-//                    'revealed' => join(
-//                        ', ',
-//                        array_map(
-//                            function(AbstractCard $card) {
-//                                return $card->getName();
-//                            },
-//                            $revealed
-//                        )
-//                    )
-//                ]
-//            );
+            $tile = $this->mapService->getCentralTile();
+
+            /** @var City $city */
+            $city = $tile->getTerrain();
+
+            $people = $this->getPeople();
+
+            $this->notifyAllPlayers(
+                GameInitState::NOTIFY_CITY_START,
+                clienttranslate('You live in ${city}'),
+                [
+                    'i18n' => ['city'],
+                    'city' => $city->getName()
+                ]
+            );
+
+            $cityInventions = array_values($city->getInventions());
+            $this->notifyAllPlayers(
+                GameInitState::NOTIFY_CITY_INVENTIONS,
+                clienttranslate('You have discovered two inventions: ${invention1} and ${invention2}'),
+                [
+                    'i18n' => ['invention1', 'invention2'],
+                    'invention1' => $cityInventions[0]->getName(),
+                    'invention2'=> $cityInventions[1]->getName()
+                ]
+            );
+            $this->notifyAllPlayers(
+                GameInitState::NOTIFY_CITY_UNITS,
+                clienttranslate('${population} lives in ${city}'),
+                [
+                    'i18n' => ['population', 'city'],
+                    'population' => $people->getPopulationAsString(),
+                    'city' => $city->getName()
+                ]
+            );
+
+            $revealed = []; // $this->cards[AbstractCard::TYPE_INVENTION];
+            $this->notifyAllPlayers(
+                GameInitState::NOTIFY_INVENTION_REVEALED,
+                clienttranslate('You can research for invention: ${revealed}'),
+                [
+                    'i18n' => ['revealed'],
+                    'revealed' => join(
+                        ', ',
+                        array_map(
+                            function(AbstractCard $card) {
+                                return $card->getName();
+                            },
+                            $revealed
+                        )
+                    )
+                ]
+            );
 
             $this->gamestate->setAllPlayersMultiactive();
         };

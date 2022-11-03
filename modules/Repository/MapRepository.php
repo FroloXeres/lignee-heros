@@ -50,7 +50,7 @@ class MapRepository extends AbstractRepository
     public function getTileInfosByPosition(int $x = 0, int $y = 0): array
     {
         return $this->selectAsObject(
-            sprintf('SELECT * FROM `map` WHERE `map` WHERE `tile_x` = %s AND `tile_y` = %s', $x, $y)
+            sprintf('SELECT * FROM `map` WHERE `tile_x` = %s AND `tile_y` = %s', $x, $y)
         )[0];
     }
 }

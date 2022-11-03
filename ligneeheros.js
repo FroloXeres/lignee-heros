@@ -68,32 +68,7 @@ function (dojo, on, declare) {
             this.cards         = gamedatas.cards;
             this.selectedCards = [];
 
-            this.$turn   = document.querySelector('#turn');
-
-            this.$peopleTitle = document.querySelector('#people-title');
-            this.$peopleAll = document.querySelector('#people-people');
-            this.$peopleWorker = document.querySelector('#people-worker');
-            this.$peopleWarrior = document.querySelector('#people-warrior');
-            this.$peopleSavant = document.querySelector('#people-savant');
-            this.$peopleMage = document.querySelector('#people-mage');
-
-            this.$harvestTitle = document.querySelector('#harvest-title');
-            this.$foodHarvest = document.querySelector('#harvest-food');
-            this.$scienceHarvest = document.querySelector('#harvest-science');
-
-            this.$stockTitle = document.querySelector('#stock-title');
-            this.$foodStock = document.querySelector('#stock-food');
-            this.$scienceStock = document.querySelector('#stock-science');
-            this.$woodStock = document.querySelector('#stock-wood');
-            this.$animalStock = document.querySelector('#stock-animal');
-            this.$stoneStock = document.querySelector('#stock-stone');
-            this.$metalStock = document.querySelector('#stock-metal');
-            this.$clayStock = document.querySelector('#stock-clay');
-            this.$paperStock = document.querySelector('#stock-paper');
-            this.$medicStock = document.querySelector('#stock-medic');
-            this.$gemStock = document.querySelector('#stock-gem');
-
-            this.updateCartridge();
+            this.initCartridge();
             this.initCards();
             this.initEvents()
         },
@@ -203,7 +178,7 @@ function (dojo, on, declare) {
         initEvents: function()
         {
             this.evts = {};
-            this.evts['onChooseLineage'] = on(dojo.query('#cards-zone'), 'click', this.onChooseLineage.bind(this));
+            this.evts['onChooseLineage'] = on(dojo.query('#floating-cards'), 'click', this.onChooseLineage.bind(this));
 
 
         },
@@ -221,7 +196,7 @@ function (dojo, on, declare) {
             const card = event.target.closest('.card.lineage');
             if (card === null) return;
 
-            dojo.query('#cards-zone .card').forEach((thisCard) => {thisCard.classList.remove('selected');});
+            dojo.query('#floating-cards .card').forEach((thisCard) => {thisCard.classList.remove('selected');});
             card.classList.add('selected');
 
             const id = card.getAttribute('data-id');
@@ -234,6 +209,38 @@ function (dojo, on, declare) {
             dojo.query('#cancelChooseLineage')[0].classList.remove('hidden');
         },
 
+        initCartridge: function()
+        {
+            const cartridge = this.format_block('jstpl_cartridge', {turn: 1});
+            dojo.place(cartridge, 'player_boards', 'before');
+
+            this.$turn   = document.querySelector('#turn');
+
+            this.$peopleTitle = document.querySelector('#people-title');
+            this.$peopleAll = document.querySelector('#people-people');
+            this.$peopleWorker = document.querySelector('#people-worker');
+            this.$peopleWarrior = document.querySelector('#people-warrior');
+            this.$peopleSavant = document.querySelector('#people-savant');
+            this.$peopleMage = document.querySelector('#people-mage');
+
+            this.$harvestTitle = document.querySelector('#harvest-title');
+            this.$foodHarvest = document.querySelector('#harvest-food');
+            this.$scienceHarvest = document.querySelector('#harvest-science');
+
+            this.$stockTitle = document.querySelector('#stock-title');
+            this.$foodStock = document.querySelector('#stock-food');
+            this.$scienceStock = document.querySelector('#stock-science');
+            this.$woodStock = document.querySelector('#stock-wood');
+            this.$animalStock = document.querySelector('#stock-animal');
+            this.$stoneStock = document.querySelector('#stock-stone');
+            this.$metalStock = document.querySelector('#stock-metal');
+            this.$clayStock = document.querySelector('#stock-clay');
+            this.$paperStock = document.querySelector('#stock-paper');
+            this.$medicStock = document.querySelector('#stock-medic');
+            this.$gemStock = document.querySelector('#stock-gem');
+
+            this.updateCartridge();
+        },
         updateCartridge: function()
         {
             this.updateTurn();
@@ -287,11 +294,25 @@ function (dojo, on, declare) {
         replaceIconsInObject: function(cardObject)
         {
             const regex = /\[([a-z_]+)\]/ig;
+            const regexInvention = /\[invention\] \[([a-z_]+)\]/ig;
+            const regexSpell = /\[spell\] \[([a-z_]+)\]/ig;
 
             for (let attr in cardObject) {
                 if (cardObject.hasOwnProperty(attr)) {
                     let value = cardObject[attr];
                     if (typeof value === 'string' || value instanceof String) {
+                        cardObject[attr] = value.replaceAll(
+                            regexInvention,
+                            '<div class="double"><div class="icon cube invention"></div> (<div class="icon cube $1"></div>)</div>'
+                        );
+                        value = cardObject[attr];
+
+                        cardObject[attr] = value.replaceAll(
+                            regexSpell,
+                            '<div class="double"><div class="icon cube spell"></div> (<div class="icon cube $1"></div>)</div>'
+                        );
+                        value = cardObject[attr];
+
                         cardObject[attr] = value.replaceAll(regex, '<div class="icon cube $1"></div>');
                     }
                 }
@@ -410,7 +431,7 @@ function (dojo, on, declare) {
 
         onUnselectLineage: function() {
             this.selectedCards = [];
-            dojo.query('#cards-zone .card').forEach((thisCard) => {
+            dojo.query('#floating-cards .card').forEach((thisCard) => {
                 thisCard.classList.remove('selected');
             });
 

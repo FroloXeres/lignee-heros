@@ -164,9 +164,9 @@ class Bonus implements \JsonSerializable
                 break;
             case self::FOOD:
                 $icon = sprintf(
-                    '%s[%s] : [food]',
-                    $this->getType()? '' : '[end_turn] ',
-                    $this->getType() === Meeple::WARRIOR? 'warrior' : 'worker'
+                    '%s%s : [food]',
+                    $this->getType() ? '' : '[end_turn] ',
+                    in_array($this->getType(), [Meeple::WARRIOR, Meeple::WORKER]) ? '['.$this->getType().']' : ''
                 );
                 break;
             case self::FOOD_FOUND:

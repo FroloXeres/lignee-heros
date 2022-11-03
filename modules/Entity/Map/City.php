@@ -37,7 +37,7 @@ class City extends Terrain
     public function addUnit(Meeple $unit): City
     {
         if (count($this->units) < 2) {
-            $this->units[$unit->getCode()] = $unit;
+            $this->units[] = $unit;
         } else {
             throw new \Exception(sprintf('City %s cannot contains more than 2 units', $this->name));
         }

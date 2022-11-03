@@ -443,7 +443,7 @@ $lineage
         ->setName("Dahkrum")
         ->setDescription(clienttranslate("Working soil does not scare the Dahkrum. They produce the finest food you can ever eat."))
         ->setMeeple($orkWorker)
-        ->setMeeplePower((new Bonus(1, Bonus::FOOD))->setDescription(clienttranslate("Produce 1 food more")))
+        ->setMeeplePower((new Bonus(1, Bonus::FOOD, Meeple::ORK_WORKER)))
         ->setObjective($objOrkWorker)
         ->setObjectiveBonus((new Bonus(1, Bonus::FOOD))->setDescription(clienttranslate("+1 [food]")))
         ->setLeadingBonus(new Bonus(1, Bonus::FOOD, $warrior->getCode()))

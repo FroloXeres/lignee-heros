@@ -56,7 +56,9 @@ class PeopleService
     {
         $people = [];
         foreach ($this->byType as $type => $ids) {
-            $people[] = sprintf('%s %s', count($ids), $this->meeples[$type]->getName());
+            if (count($ids)) {
+                $people[] = sprintf('%s %s', count($ids), $this->meeples[$type]->getName());
+            }
         }
 
         return join(', ', $people);

@@ -1,42 +1,7 @@
 {OVERALL_GAME_HEADER}
 
-<div id="cartridge">
-    <h2 id="turn" data-turn="1">Turn 0</h2>
-    <div class="people">
-        <div id="people-title"></div>
-        <div id="people-people" data-count="0"></div>
-        <div id="people-worker" data-count="0"></div>
-        <div id="people-warrior" data-count="0"></div>
-        <div id="people-savant" data-count="0"></div>
-        <div id="people-mage" data-count="0"></div>
-    </div>
-    <div class="harvest">
-        <div id="harvest-title"></div>
-        <div id="harvest-food" data-count="0"></div>
-        <div id="harvest-science" data-count="0"></div>
-    </div>
-    <div class="stock">
-        <div id="stock-title"></div>
-        <div id="stock-food" data-count="0"></div>
-        <div id="stock-science" data-count="0"></div>
-        <div class="stock-resources">
-            <div class="group">
-                <div id="stock-wood" data-count="0"></div>
-                <div id="stock-animal" data-count="0"></div>
-                <div id="stock-stone" data-count="0"></div>
-                <div id="stock-metal" data-count="0"></div>
-            </div>
-            <div class="group">
-                <div id="stock-clay" data-count="0"></div>
-                <div id="stock-paper" data-count="0"></div>
-                <div id="stock-medic" data-count="0"></div>
-                <div id="stock-gem" data-count="0"></div>
-            </div>
-        </div>
-    </div>
-</div>
+<div id="floating-cards"></div>
 <div id="cards-zone">
-    <div id="floating-cards"></div>
     <div id="invention"></div>
     <div id="spell"></div>
 </div>
@@ -54,6 +19,46 @@
 </div>
 <script type="text/javascript">
     // Javascript HTML templates
+    var jstpl_cartridge =
+        '<div id="cartridge">\
+            <h2 id="turn" data-turn="1">Turn ${turn}</h2>\
+            <div class="people">\
+                <div id="people-title"></div>\
+                <div id="people-people" data-count="0"></div>\
+            </div>\
+            <div class="people-types">\
+                <div id="people-worker" data-count="0"></div>\
+                <div id="people-warrior" data-count="0"></div>\
+                <div id="people-savant" data-count="0"></div>\
+                <div id="people-mage" data-count="0"></div>\
+            </div>\
+            <div class="harvest">\
+                <div id="harvest-title"></div>\
+                <div id="harvest-food" data-count="0"></div>\
+                <div id="harvest-science" data-count="0"></div>\
+            </div>\
+            <div class="stock">\
+                <div id="stock-title"></div>\
+                <div id="stock-food" data-count="0"></div>\
+                <div id="stock-science" data-count="0"></div>\
+            </div>\
+            <div class="stock-resources">\
+                <div class="group">\
+                    <div id="stock-wood" data-count="0"></div>\
+                    <div id="stock-animal" data-count="0"></div>\
+                    <div id="stock-stone" data-count="0"></div>\
+                    <div id="stock-metal" data-count="0"></div>\
+                </div>\
+                <div class="group">\
+                    <div id="stock-clay" data-count="0"></div>\
+                    <div id="stock-paper" data-count="0"></div>\
+                    <div id="stock-medic" data-count="0"></div>\
+                    <div id="stock-gem" data-count="0"></div>\
+                </div>\
+            </div>\
+        </div>'
+    ;
+
     var jstpl_tile =
        '<div class="resources resources_${count}">\
             <div class="resource resource-1 ${resource1}"></div>\
