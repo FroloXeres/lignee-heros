@@ -262,12 +262,12 @@ class Invention extends AbstractCard
         $tpl[self::TPL_COST]      = $this->getScience();
         $tpl[self::TPL_TYPE_ICON] = $this->getType();
         $tpl[self::TPL_TYPE]      = self::getTypeName($this->getType());
-        $tpl[self::TPL_NEED_1]    = join(($this->or? ' / ' : ''), array_map(function(Meeple $unit) {
+        $tpl[self::TPL_NEED_1]    = join(($this->or ? ' / ' : ''), array_map(function(Meeple $unit) {
             return sprintf('[%s]', $unit->getCode());
         }, $this->getUnits()));
         $tpl[self::TPL_NEED_2]    =
-            ($this->getUnits()? ' ~ ' : '') .
-            join(($this->or? ' / ' : ''), array_map(function(Resource $resource) {
+            ($this->getUnits() && $this->getResources() ? ' ~ ' : '') .
+            join(($this->or ? ' / ' : ''), array_map(function(Resource $resource) {
                 return sprintf('[%s]', $resource->getCode());
             }, $this->getResources()))
         ;

@@ -515,8 +515,8 @@ $tools = (new Invention(Invention::TYPE_DEVELOPMENT, Invention::TOOLS))
     ->setScience(3)
     ->setResources([$stone, $metal])->setOr(true)
     ->addUnit($worker)
-    ->addGive(new Bonus(1, Bonus::FOOD))
-    ->addGive(new Bonus(2, Bonus::FOOD));
+    ->addGive(new Bonus(1, Bonus::FOOD, Meeple::WORKER))
+    ->addGive(new Bonus(2, Bonus::FOOD, Meeple::WORKER));
 $longBow = (new Invention(Invention::TYPE_FIGHT, Invention::LONG_BOW))
     ->setName(clienttranslate("Long bow"))
     ->setDescription(clienttranslate("Each nearby warrior add Power +1 to the fight."))
@@ -554,7 +554,7 @@ $irrigation = (new Invention(Invention::TYPE_DEVELOPMENT, Invention::IRRIGATION)
     ->setDescription(clienttranslate("Worker: Food +1."))
     ->setScience(5)
     ->addUnit($worker)
-    ->addGive(new Bonus(1, Bonus::FOOD));
+    ->addGive(new Bonus(1, Bonus::FOOD, Meeple::WORKER));
 $domestication = (new Invention(Invention::TYPE_DEVELOPMENT, Invention::DOMESTICATION))
     ->setName(clienttranslate("Domestication"))
     ->setDescription(clienttranslate("Unit move is increased by 1."))

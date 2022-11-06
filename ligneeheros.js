@@ -170,7 +170,10 @@ function (dojo, on, declare) {
         {
             let _self = this;
             cards.forEach(function(card) {
-                let cardContent = _self.format_block('jstpl_card_recto', _self.replaceIconsInObject(card));
+                let cardTpl = _self.replaceIconsInObject(card);
+                //cardTpl.iconDesign = dojo.query('#icons .design')[0].outerHTML;
+
+                let cardContent = _self.format_block('jstpl_card_recto', cardTpl);
                 dojo.place(cardContent, domQuery);
             });
         },
@@ -331,8 +334,12 @@ function (dojo, on, declare) {
         {
             switch( stateName ) {
             case 'ChooseLineage' :
-                dojo.query('#chooseLineage')[0].classList.add('hidden');
-                dojo.query('#cancelChooseLineage')[0].classList.add('hidden');
+                const chooseBtn = dojo.query('#chooseLineage');
+                const cancelBtn = dojo.query('#cancelChooseLineage');
+                if (chooseBtn.length && cancelBtn.length) {
+                    chooseBtn.forEach((elt) => elt.classList.add('hidden'));
+                    cancelBtn.forEach((elt) => elt.classList.add('hidden'));
+                }
                 break;
             case 'DrawObjective' :
                 console.log('DrawObjective');

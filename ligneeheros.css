@@ -55,8 +55,8 @@ html, body {
 /********* Cartridge **********/
 #cartridge {
     margin: 0 auto .5em;
-    background: url('img/card-sprites.png') 99% 8% no-repeat;
-    background-size: 710% 145%;
+    background: url('img/card-bg.jpg') 0 0 no-repeat;
+    background-size: 200% 100%;
     padding: 0.5em 1em;
     box-shadow: 0 3px 8px rgba(0,0,0,.3);
 }
@@ -263,6 +263,19 @@ html, body {
     background-size: 200% 100%;
     padding-top: 0;
 }
+.card.verso .content {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+}
+.card.lineage.verso .content::before {
+    content: "";
+    width: 95%;
+    height: 30%;
+    background: url("img/card-title.png") 0 5% no-repeat;
+    background-size: 100% 130%;
+}
 .card.verso .content .inner {
     position: relative;
     width: 90%;
@@ -273,6 +286,11 @@ html, body {
     border: 1px solid #c29253;
     border-radius: 50%;
     box-shadow: #c29253 0 0 2em;
+}
+.card.lineage.verso .content .inner {
+    width: 80%;
+    height: 65%;
+    margin: 0 auto;
 }
 .card.verso .content .inner > div {
     display: none;
@@ -286,16 +304,6 @@ html, body {
     flex-direction: column;
     justify-content: stretch;
     align-items: stretch;
-}
-.card.recto .content .inner::after {
-    content: "";
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    width: 11%;
-    height: 7%;
-    background: url("img/card-sprites.png") 90.3% 80% no-repeat;
-    background-size: 4200% 2100%;
 }
 .card .text {
     border: 1px solid #c29253;
@@ -340,6 +348,7 @@ html, body {
     width: 16%;
     border-radius: 50%;
     font-weight: bold;
+    font-size: .9em;
     margin-right: 1%;
     padding: 0;
 }
@@ -354,7 +363,7 @@ html, body {
 .card .type {
     text-align: left;
     font-size: .7em;
-    font-weight: bold;
+    font-style: italic;
     height: 4.5%;
     margin-bottom: 1%;
     display: flex;
@@ -392,7 +401,7 @@ html, body {
     flex-direction: row;
     justify-content: space-evenly;
     align-items: center;
-    padding-left: 15%;
+    padding-left: 17%;
 }
 .card .needs::before {
     content: "";
@@ -402,7 +411,7 @@ html, body {
     background: url(img/icons.svg) 90% 0% no-repeat;
     background-size: 1100% 600%;
     opacity: 0.2;
-    left: 2.5%;
+    left: 3%;
     top: 10%;
 }
 .card .needs:empty {display: none}
@@ -418,7 +427,7 @@ html, body {
     flex-direction: row;
     justify-content: space-evenly;
     align-items: center;
-    padding-left: 15%;
+    padding-left: 17%;
 }
 .card .gain::before {
     content: "";
@@ -428,7 +437,7 @@ html, body {
     background: url(img/icons.svg) 50% 20% no-repeat;
     background-size: 1100% 600%;
     opacity: 0.2;
-    left: 5%;
+    left: 2%;
     top: 10%;
 }
 .card .gain:empty {display: none}
@@ -604,7 +613,6 @@ html, body {
 }
 .card .info:empty {display: none}
 .card .footer {
-    padding-left: 12%;
     height: 7%;
     font-style: italic;
     display: flex;
@@ -613,20 +621,22 @@ html, body {
     justify-content: flex-start;
     margin-top: auto;
 }
-.card .footer::before {
-    position: absolute;
-    content: "";
-    background: url(img/card-sprites.png) 87% 78.3% no-repeat;
-    background-size: 5550% 2200%;
-    left: 1%;
-    bottom: 1%;
-    width: 11%;
-    height: 7%;
+.card .footer .artist {
+    flex-grow: 1;
+    text-align: left;
+}
+.card .footer .design, .card .footer .ldh {
+    width: 1.5em;
+    height: 1.5em;
+}
+.card .footer .ldh {
+    background: url("img/card-title.png") 6.5% 98% no-repeat;
+    background-size: 1000% 620%;
 }
 .card.verso .inner::before {
     position: absolute;
     content: "";
-    background: url(img/card-sprites.png) 0 0 no-repeat;
+    background: url(img/card-sprites.svg) 0 0 no-repeat;
     background-size: 700% 280%;
     width: 90%;
     aspect-ratio: 1;
@@ -634,51 +644,40 @@ html, body {
     left: 5%;
 }
 .card.verso.invention .inner::before {
-    background-size: 800% 280%;
-    background-position: 22.2% 89%;
-    top: 23%;
-}
-.card.verso.end_turn .inner::before {
-    background-position: 2% 88%;
-    background-size: 660% 280%;
-    top: 24%;
-    left: 6%;
-}
-.card.verso.explore .inner::before {
-    background-size: 630% 270%;
-    background-position: 26.35% 10%;
-    top: 23%;
+    background-size: 610% 240%;
+    background-position: 32.5% 100%;
+    top: 20%;
 }
 .card.verso.explore_fight .inner::before {
-    background-size: 880% 300%;
-    background-position: 61.3% 92%;
-    top: 26%;
+    background-size: 610% 240%;
+    background-position: 87.5% 100%;
+    top: 20%;
 }
 .card.verso.explore_other .inner::before {
-    background-size: 880% 300%;
-    background-position: 22.5% 15%;
-    top: 23%;
+    background-size: 610% 240%;
+    background-position: 32.3% 0;
+    top: 20%;
 }
 .card.verso.explore_disease .inner::before {
-    background-size: 820% 300%;
-    background-position: 61.35% 16.5%;
-    top: 21%;
+    background-size: 610% 240%;
+    background-position: 87.5% 0;
+    top: 15%;
 }
 .card.verso.spell .inner::before {
-    background-size: 880% 290%;
-    background-position: 41.8% 92%;
-    top: 26%;
+    background-size: 610% 240%;
+    background-position: 60% 100%;
+    top: 20%;
 }
 .card.verso.lineage .inner::before {
-    background-size: 590% 230%;
-    background-position: 0 5%;
+    background-size: 525% 200%;
+    background-position: 0 0;
     aspect-ratio: 0.9;
     top: 22%;
 }
 .card.verso.objective .inner::before {
-    background-position: 41.7% 13%;
-    background-size: 900% 300%;
-    top: 24%;
+    background-size: 640% 260%;
+    background-position: 60.3% 0;
+    top: 20%;
 }
 
 #city-zone {
@@ -686,6 +685,28 @@ html, body {
 }
 
 /******** Icons *********/
+svg.svg-icon {
+    width: 2.5em;
+    height: 2.5em;
+}
+#liquid {fill: #2f73b8;}
+#colorWarrior {fill: #ed0000;}
+#colorWhite {fill: #fff;}
+#lines {fill: #010101;}
+#wheat {fill: #d49616;}
+#unit.warrior #type polygon {fill: #ed0000;}
+#unit.worker #type polygon {fill: #179538;}
+#unit.savant #type polygon {fill: #234295;}
+#unit.mage #type polygon {fill: #f0d904;}
+#unit.monster #type polygon {fill: #222;}
+#unit #acted {display: none;}
+#unit #moved {display: none;}
+#unit.moved #moved {display: initial;}
+#unit.acted #acted {display: initial;}
+#stroke-rnd {
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
 .icon {
     display: inline-block;
     background: url("img/icons.svg") 0 0 no-repeat;
@@ -867,8 +888,8 @@ html, body {
 }
 
 .tile {
-    background: url('img/card-sprites.png') 99% 8% no-repeat;
-    background-size: 710% 145%;
+    background: url('img/card-bg.jpg') 0 0 no-repeat;
+    background-size: 200% 100%;
     cursor: not-allowed;
 }
 .tile::before {
