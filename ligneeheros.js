@@ -212,6 +212,34 @@ function (dojo, on, declare) {
             dojo.query('#cancelChooseLineage')[0].classList.remove('hidden');
         },
 
+        getIcon(iconId, addClass = '')
+        {
+            const $clone = document.querySelector('#icons svg#'+iconId).cloneNode(true);
+            if (addClass.length) {
+                $clone.classList.add(addClass);
+            }
+
+            return $clone;
+        },
+        getIconAsText(iconId)
+        {
+            console.log(iconId);
+            let addClass = '';
+            if (['worker', 'warrior', 'savant', 'mage', 'all', 'monster'].includes(iconId)) {
+                addClass = iconId;
+                iconId = 'unit';
+            }
+
+            const $icon = document.querySelector('#icons svg#'+iconId)
+            if ($icon !== null) {
+                const $clone = $icon.cloneNode(true);
+                if (addClass.length) {
+                    $clone.classList.add(addClass);
+                }
+                return $clone.outerHTML;
+            } else return '';
+        },
+
         initCartridge: function()
         {
             const cartridge = this.format_block('jstpl_cartridge', {turn: 1});
@@ -221,18 +249,28 @@ function (dojo, on, declare) {
 
             this.$peopleTitle = document.querySelector('#people-title');
             this.$peopleAll = document.querySelector('#people-people');
+
             this.$peopleWorker = document.querySelector('#people-worker');
             this.$peopleWarrior = document.querySelector('#people-warrior');
             this.$peopleSavant = document.querySelector('#people-savant');
             this.$peopleMage = document.querySelector('#people-mage');
+            dojo.place(this.getIcon('unit', 'worker'), this.$peopleWorker, 'first');
+            dojo.place(this.getIcon('unit', 'warrior'), this.$peopleWarrior, 'first');
+            dojo.place(this.getIcon('unit', 'savant'), this.$peopleSavant, 'first');
+            dojo.place(this.getIcon('unit', 'mage'), this.$peopleMage, 'first');
 
             this.$harvestTitle = document.querySelector('#harvest-title');
             this.$foodHarvest = document.querySelector('#harvest-food');
             this.$scienceHarvest = document.querySelector('#harvest-science');
+            dojo.place(this.getIcon('food'), this.$foodHarvest, 'first');
+            dojo.place(this.getIcon('science'), this.$scienceHarvest, 'first');
 
             this.$stockTitle = document.querySelector('#stock-title');
             this.$foodStock = document.querySelector('#stock-food');
             this.$scienceStock = document.querySelector('#stock-science');
+            dojo.place(this.getIcon('food-stock'), this.$foodStock, 'first');
+            dojo.place(this.getIcon('science-stock'), this.$scienceStock, 'first');
+
             this.$woodStock = document.querySelector('#stock-wood');
             this.$animalStock = document.querySelector('#stock-animal');
             this.$stoneStock = document.querySelector('#stock-stone');
@@ -241,6 +279,14 @@ function (dojo, on, declare) {
             this.$paperStock = document.querySelector('#stock-paper');
             this.$medicStock = document.querySelector('#stock-medic');
             this.$gemStock = document.querySelector('#stock-gem');
+            dojo.place(this.getIcon('wood'), this.$woodStock, 'first');
+            dojo.place(this.getIcon('animal'), this.$animalStock, 'first');
+            dojo.place(this.getIcon('stone'), this.$stoneStock, 'first');
+            dojo.place(this.getIcon('metal'), this.$metalStock, 'first');
+            dojo.place(this.getIcon('clay'), this.$clayStock, 'first');
+            dojo.place(this.getIcon('paper'), this.$paperStock, 'first');
+            dojo.place(this.getIcon('medic'), this.$medicStock, 'first');
+            dojo.place(this.getIcon('gem'), this.$gemStock, 'first');
 
             this.updateCartridge();
         },
@@ -304,6 +350,7 @@ function (dojo, on, declare) {
                 if (cardObject.hasOwnProperty(attr)) {
                     let value = cardObject[attr];
                     if (typeof value === 'string' || value instanceof String) {
+
                         cardObject[attr] = value.replaceAll(
                             regexInvention,
                             '<div class="double"><div class="icon cube invention"></div> (<div class="icon cube $1"></div>)</div>'
@@ -316,7 +363,10 @@ function (dojo, on, declare) {
                         );
                         value = cardObject[attr];
 
-                        cardObject[attr] = value.replaceAll(regex, '<div class="icon cube $1"></div>');
+                        [... value.matchAll(regex)].forEach((found) => {
+                            value = value.replace(found[0], this.getIconAsText(found[1]));
+                        });
+                        cardObject[attr] = value;
                     }
                 }
             }

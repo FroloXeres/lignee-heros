@@ -86,22 +86,7 @@ html, body {
     content: attr(data-count);
     font-weight: bold;
 }
-#people-worker::before, #people-warrior::before, #people-savant::before, #people-mage::before,
-#harvest-food::before, #harvest-science::before, #stock-food::before, #stock-science::before,
-#stock-wood::before, #stock-animal::before, #stock-gem::before, #stock-paper::before,
-#stock-metal::before, #stock-stone::before, #stock-clay::before, #stock-medic::before  {
-    display: block;
-    content: '';
-    background: url("img/icons.svg") 0 0 no-repeat;
-    background-size: 1100% 600%;
-    height: 1.5em;
-    aspect-ratio: 1;
-    margin-right: .5em;
-}
-#people-worker::before {background-position: 10% 0%;}
-#people-warrior::before {background-position: 0% 0%;}
-#people-savant::before {background-position: 30% 0%;}
-#people-mage::before {background-position: 20% 0%;}
+#cartridge svg {margin-right: .5em;}
 
 #cartridge .people {
     display: flex;
@@ -122,8 +107,6 @@ html, body {
 #cartridge .harvest > div:first-child, #cartridge .stock > div:first-child {
     width: 30%;
 }
-#harvest-food::before {background-position: 80% 20%;}
-#harvest-science::before {background-position: 90% 20%;}
 
 #cartridge .stock-resources .group {
     display: flex;
@@ -686,8 +669,8 @@ html, body {
 
 /******** Icons *********/
 svg.svg-icon {
-    width: 2.5em;
-    height: 2.5em;
+    width: 1.5em;
+    height: 1.5em;
 }
 #liquid {fill: #2f73b8;}
 #colorWarrior {fill: #ed0000;}
