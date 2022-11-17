@@ -201,7 +201,8 @@ class Lineage extends AbstractCard
     {
         $tpl = parent::toTpl($deck);
 
-        $tpl[self::TPL_ICON]            = $this->getMeeple()->getCode();
+        $tpl[self::TPL_ICON]            = 'lineage';
+        $tpl[self::TPL_MEEPLE]          = $this->getMeeple()->getCode();
         $tpl[self::TPL_MEEPLE_POWER]    = (string) $this->getMeeplePower();
         $tpl[self::TPL_OBJECTIVE]       = (string) $this->getObjective();
         $tpl[self::TPL_OBJECTIVE_BONUS] = (string) $this->getObjectiveBonus();

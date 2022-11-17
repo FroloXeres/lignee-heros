@@ -171,9 +171,18 @@ function (dojo, on, declare) {
             let _self = this;
             cards.forEach(function(card) {
                 let cardTpl = _self.replaceIconsInObject(card);
-                //cardTpl.iconDesign = dojo.query('#icons .design')[0].outerHTML;
-
                 let cardContent = _self.format_block('jstpl_card_recto', cardTpl);
+
+                const iconify = ['lineage', 'objective', 'spell', 'invention'];
+                if (iconify.includes(card.deck)) {
+                    cardContent = cardContent.replaceAll('['+card.icon+']', _self.getIconAsText(card.icon));
+                }
+                if (card.deck === 'lineage') {
+                    ['objective', 'leading', 'fight', 'end_turn', card.meeple].forEach(
+                        (iconId) => cardContent = cardContent.replace('['+iconId+']', _self.getIconAsText(iconId))
+                    );
+                }
+
                 dojo.place(cardContent, domQuery);
             });
         },
@@ -223,7 +232,6 @@ function (dojo, on, declare) {
         },
         getIconAsText(iconId)
         {
-            console.log(iconId);
             let addClass = '';
             if (['worker', 'warrior', 'savant', 'mage', 'all', 'monster'].includes(iconId)) {
                 addClass = iconId;
@@ -237,7 +245,7 @@ function (dojo, on, declare) {
                     $clone.classList.add(addClass);
                 }
                 return $clone.outerHTML;
-            } else return '';
+            } else return iconId;
         },
 
         initCartridge: function()
@@ -245,7 +253,7 @@ function (dojo, on, declare) {
             const cartridge = this.format_block('jstpl_cartridge', {turn: 1});
             dojo.place(cartridge, 'player_boards', 'before');
 
-            this.$turn   = document.querySelector('#turn');
+            this.$turn   = document.querySelector('h2#turn');
 
             this.$peopleTitle = document.querySelector('#people-title');
             this.$peopleAll = document.querySelector('#people-people');
@@ -342,28 +350,17 @@ function (dojo, on, declare) {
 
         replaceIconsInObject: function(cardObject)
         {
-            const regex = /\[([a-z_]+)\]/ig;
-            const regexInvention = /\[invention\] \[([a-z_]+)\]/ig;
-            const regexSpell = /\[spell\] \[([a-z_]+)\]/ig;
-
             for (let attr in cardObject) {
                 if (cardObject.hasOwnProperty(attr)) {
                     let value = cardObject[attr];
                     if (typeof value === 'string' || value instanceof String) {
-
-                        cardObject[attr] = value.replaceAll(
-                            regexInvention,
-                            '<div class="double"><div class="icon cube invention"></div> (<div class="icon cube $1"></div>)</div>'
-                        );
-                        value = cardObject[attr];
-
-                        cardObject[attr] = value.replaceAll(
-                            regexSpell,
-                            '<div class="double"><div class="icon cube spell"></div> (<div class="icon cube $1"></div>)</div>'
-                        );
-                        value = cardObject[attr];
-
-                        [... value.matchAll(regex)].forEach((found) => {
+                        [... value.matchAll(/\[invention\] \[([a-z_]+)\]/ig)].forEach((found) => {
+                            value = value.replace(found[0], '<div class="double">'+this.getIconAsText('invention')+this.getIconAsText(found[1])+'</div>');
+                        });
+                        [... value.matchAll(/\[spell\] \[([a-z_]+)\]/ig)].forEach((found) => {
+                            value = value.replace(found[0], '<div class="double">'+this.getIconAsText('spell')+this.getIconAsText(found[1])+'</div>');
+                        });
+                        [... value.matchAll(/\[([a-z_]+)\]/ig)].forEach((found) => {
                             value = value.replace(found[0], this.getIconAsText(found[1]));
                         });
                         cardObject[attr] = value;

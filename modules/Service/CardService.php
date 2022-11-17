@@ -6,6 +6,7 @@ use LdH\Entity\Cards\AbstractCard;
 use LdH\Entity\Cards\Deck;
 use LdH\Repository\CardRepository;
 use LdH\State\ChooseLineageState;
+use LdH\State\DeadEndState;
 use LdH\State\DrawObjectiveState;
 
 class CardService
@@ -126,12 +127,12 @@ class CardService
                 return $stateId === ChooseLineageState::ID;
             case AbstractCard::TYPE_OBJECTIVE:
                 // Needed ?
-                return $stateId === DrawObjectiveState::ID;
+                return \in_array($stateId, [DrawObjectiveState::ID], true);
             case AbstractCard::TYPE_OTHER:
             case AbstractCard::TYPE_FIGHT:
             case AbstractCard::TYPE_DISEASE:
                 // To update
-                return $stateId === 0;
+                return $stateId === DeadEndState::ID;
         }
 
         return false;

@@ -192,6 +192,7 @@ abstract class AbstractCard implements CardInterface
     public const TPL_DECK      = 'deck';
     public const TPL_LARGE     = 'large';
     public const TPL_ICON      = 'icon';
+    public const TPL_MEEPLE    = 'meeple';
     public const TPL_COST      = 'cost';
     public const TPL_NAME      = 'name';
     public const TPL_TYPE_ICON = 'typeIcon';
@@ -255,6 +256,7 @@ abstract class AbstractCard implements CardInterface
             self::TPL_TEXT_BOLD       => '',
             self::TPL_TEXT            => $this->getDescription(),
             self::TPL_ARTIST          => $this->getArtist(),
+            self::TPL_MEEPLE          => '',
             self::TPL_MEEPLE_POWER    => '',
             self::TPL_OBJECTIVE       => '',
             self::TPL_OBJECTIVE_BONUS => '',
