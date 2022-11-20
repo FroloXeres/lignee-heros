@@ -9,8 +9,8 @@ use LdH\Entity\Bonus;
 class Invention extends AbstractCard
 {
     public const TYPE_START       = 'start';
-    public const TYPE_DEVELOPMENT = 'development';
-    public const TYPE_MAGICAL     = 'magic';
+    public const TYPE_DEVELOPMENT = 'city';
+    public const TYPE_MAGICAL     = 'spell';
     public const TYPE_FIGHT       = 'fight';
     public const TYPE_GROWTH      = 'growth';
     public const TYPE_SCIENCE     = 'science';
@@ -86,6 +86,7 @@ class Invention extends AbstractCard
     {
         $this->setType($type);
         $this->setCode($code);
+        $this->setCostIcon(self::TYPE_SCIENCE);
 
         $this->location_arg = 0;
     }
@@ -258,22 +259,45 @@ class Invention extends AbstractCard
     {
         $tpl = parent::toTpl($deck);
 
-        $tpl[self::TPL_ICON]      = Deck::TYPE_INVENTION;
-        $tpl[self::TPL_COST]      = $this->getScience();
+        $tpl[self::TPL_ICON] = Deck::TYPE_INVENTION;
+        $tpl[self::TPL_COST] = $this->getScience();
         $tpl[self::TPL_TYPE_ICON] = $this->getType();
-        $tpl[self::TPL_TYPE]      = self::getTypeName($this->getType());
-        $tpl[self::TPL_NEED_1]    = join(($this->or ? ' / ' : ''), array_map(function(Meeple $unit) {
+        $tpl[self::TPL_TYPE] = self::getTypeName($this->getType());
+        $tpl[self::TPL_NEED_1] = join(($this->or ? ' / ' : ''), array_map(function (Meeple $unit) {
             return sprintf('[%s]', $unit->getCode());
         }, $this->getUnits()));
-        $tpl[self::TPL_NEED_2]    =
-            ($this->getUnits() && $this->getResources() ? ' ~ ' : '') .
-            join(($this->or ? ' / ' : ''), array_map(function(Resource $resource) {
+        $tpl[self::TPL_NEED_2] =
+            ($this->getUnits() && $this->getResources() ? ' + ' : '') .
+            join(($this->or ? ' / ' : ''), array_map(function (Resource $resource) {
                 return sprintf('[%s]', $resource->getCode());
-            }, $this->getResources()))
-        ;
+            }, $this->getResources()));
 
         // Description/Gain are the same... See if it works like that
-        $tpl[self::TPL_GAIN]      = join(' ', $this->getGives());
+        $giveCount = count($this->gives);
+        $tplKey = self::TPL_GAIN_1;
+        if ($giveCount > 1) {
+            $tpl[self::TPL_GAIN_TYPE] = $this->or ? 'gain_or' : 'gain_and';
+
+            $lastId = count($this->gives) - 1;
+            for ($i = 0; $i <= $lastId; $i++) {
+                $bonus = $this->gives[$i];
+                $tpl[$tplKey] .= $bonus;
+
+                if ($this->or || ($i !== $lastId && $bonus->getCode() !== $this->gives[$i+1]->getCode())) {
+                    $tplKey = self::TPL_GAIN_2;
+                }
+            }
+            if ($tplKey === self::TPL_GAIN_1 && !$this->or) {
+                $tpl[self::TPL_GAIN_TYPE] = '';
+                $tpl[self::TPL_GAIN] = $tpl[self::TPL_GAIN_1];
+                $tpl[self::TPL_GAIN_1] = '';
+            }
+        } else if (!$giveCount) {
+            $tpl[self::TPL_GAIN_TYPE] = self::TPL_TYPE_EMPTY;
+        } else {
+            $tpl[self::TPL_GAIN_TYPE] = '';
+            $tpl[self::TPL_GAIN] = join(' ', $this->getGives());
+        }
 
         return $tpl;
     }

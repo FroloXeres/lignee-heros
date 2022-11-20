@@ -172,10 +172,14 @@ function (dojo, on, declare) {
             cards.forEach(function(card) {
                 let cardTpl = _self.replaceIconsInObject(card);
                 let cardContent = _self.format_block('jstpl_card_recto', cardTpl);
+                cardContent = cardContent.replaceAll('[none]', '');
 
                 const iconify = ['lineage', 'objective', 'spell', 'invention'];
                 if (iconify.includes(card.deck)) {
                     cardContent = cardContent.replaceAll('['+card.icon+']', _self.getIconAsText(card.icon));
+                    ['science', 'fight', 'city', 'growth', 'nature', 'spell', 'healing', 'foresight'].forEach(
+                        (iconId) => cardContent = cardContent.replace('['+iconId+']', _self.getIconAsText(iconId))
+                    );
                 }
                 if (card.deck === 'lineage') {
                     ['objective', 'leading', 'fight', 'end_turn', card.meeple].forEach(
@@ -276,8 +280,8 @@ function (dojo, on, declare) {
             this.$stockTitle = document.querySelector('#stock-title');
             this.$foodStock = document.querySelector('#stock-food');
             this.$scienceStock = document.querySelector('#stock-science');
-            dojo.place(this.getIcon('food-stock'), this.$foodStock, 'first');
-            dojo.place(this.getIcon('science-stock'), this.$scienceStock, 'first');
+            dojo.place(this.getIcon('food_stock'), this.$foodStock, 'first');
+            dojo.place(this.getIcon('science_stock'), this.$scienceStock, 'first');
 
             this.$woodStock = document.querySelector('#stock-wood');
             this.$animalStock = document.querySelector('#stock-animal');

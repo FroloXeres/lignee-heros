@@ -342,6 +342,15 @@ h2#turn::before {
     font-size: .9em;
     margin-right: 1%;
     padding: 0;
+    position: relative;
+}
+.card .cost svg {
+    position: absolute;
+    top: .25em;
+    left: .35em;
+    width: 1em;
+    height: 1em;
+    fill-opacity: .5;
 }
 .card .cost:empty {display: none}
 
@@ -350,6 +359,7 @@ h2#turn::before {
     flex-grow: 1;
     overflow: hidden;
 }
+
 .card.objective_509 .title
 {font-size: .95em;}
 .card.objective_504 .title,
@@ -361,6 +371,16 @@ h2#turn::before {
 .card.objective_509 .info
 {font-size: 0.6em;}
 
+.card.invention .title
+{font-size: .9em;}
+.card.invention_101 .title,
+.card.invention_113 .title,
+.card.invention_128 .title
+{font-size: .8em;}
+.card.invention_121 .title,
+.card.invention_136 .title
+{font-size: .6em;}
+
 .card .type {
     text-align: left;
     font-size: .7em;
@@ -370,23 +390,10 @@ h2#turn::before {
     display: flex;
     align-items: center;
 }
-.card .type::before {
-    content: "";
-    height: 100%;
-    aspect-ratio: 1;
-    background: url("img/icons.svg") 0 0 no-repeat;
-    background-size: 1100% 600%;
-    margin-right: 2%;
+.card .type svg {
+    width: 1em;
+    height: 1em;
 }
-.card .type.development::before {background-position: 60% 0%;}
-.card .type.nature::before {background-position: 70% 20%;}
-.card .type.healing::before {background-position: 0% 0%;}
-.card .type.fight::before {background-position: 40% 20%;}
-.card .type.science::before {background-position: 90% 20%;}
-.card .type.growth::before {background-position: 80% 60%;}
-.card .type.enchant::before {background-position: 0% 0%;}
-.card .type.magic::before {background-position: 60% 40%;}
-.card .type.foresight::before {background-position: 0% 0%;}
 .card .type:empty {display: none}
 
 .card .needs {
@@ -424,13 +431,37 @@ h2#turn::before {
     border-bottom-right-radius: 5% 21%;
     height: 9.8%;
     margin-bottom: 1%;
+    padding: 1% 10% 1% 17%;
+}
+.card .gain div {
     display: flex;
-    flex-direction: row;
     justify-content: space-evenly;
     align-items: center;
-    padding-left: 17%;
 }
-.card .gain::before {
+.card .gain.gain_or,
+.card .gain.gain_and {
+    height: 22%;
+    flex-direction: column;
+}
+.card .gain.gain_or::after,
+.card .gain.gain_and::after {
+    content: "+";
+    width: 1em;
+    height: 1em;
+    position: absolute;
+    top: 30%;
+    right: 0;
+    border: 1px solid #c29253;
+    border-radius: 1em;
+    text-align: center;
+    font-size: .7em;
+    font-weight: bold;
+    padding: .2em;
+}
+.card .gain.gain_or::after {
+    content: "/";
+}
+.card .gain:not(:empty)::before {
     content: "";
     position: absolute;
     width: 15%;
@@ -441,7 +472,12 @@ h2#turn::before {
     left: 2%;
     top: 10%;
 }
-.card .gain:empty {display: none}
+.card .gain.gain_or::before,
+.card .gain.gain_and::before {
+    top: 32%;
+    height: 38%;
+}
+.card .gain.empty {display: none;}
 
 .card:not(.lineage) .ldh_meeple {display: none;}
 .card:not(.lineage) .ldh-leading {display: none;}
@@ -583,6 +619,9 @@ h2#turn::before {
     justify-content: center;
     text-align: left;
     text-indent: 1em;
+}
+.card.invention {
+    text-indent: inherit;
 }
 .card.objective .info {
     font-style: normal;

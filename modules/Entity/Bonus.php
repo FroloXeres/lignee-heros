@@ -159,7 +159,7 @@ class Bonus implements \JsonSerializable
                 $icon = '['.$this->getType().']';
                 break;
             case self::DISTANT_POWER:
-                $icon = '[power][move]';
+                $icon = '[move][power]';
                 break;
             case self::STOCK:
                 $icon = '[food_stock]';

@@ -48,7 +48,7 @@ class Spell extends AbstractCard
     public const TYPE_FORESIGHT = 'foresight';
     public const TYPE_COMBAT    = 'fight';
     public const TYPE_NATURE   = 'nature';
-    public const TYPE_ENCHANT  = 'enchant';
+    public const TYPE_ENCHANT  = 'spell';
     public const TYPE_HEALING  = 'healing';
 
     public const HEAL              = 601;
