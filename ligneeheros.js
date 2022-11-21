@@ -171,13 +171,15 @@ function (dojo, on, declare) {
             let _self = this;
             cards.forEach(function(card) {
                 let cardTpl = _self.replaceIconsInObject(card);
+                cardTpl.textAsIcons = (cardTpl.text.indexOf('svg') !== -1) ? 'text_as_icon' : '';
+
                 let cardContent = _self.format_block('jstpl_card_recto', cardTpl);
                 cardContent = cardContent.replaceAll('[none]', '');
 
                 const iconify = ['lineage', 'objective', 'spell', 'invention'];
                 if (iconify.includes(card.deck)) {
                     cardContent = cardContent.replaceAll('['+card.icon+']', _self.getIconAsText(card.icon));
-                    ['science', 'fight', 'city', 'growth', 'nature', 'spell', 'healing', 'foresight'].forEach(
+                    ['science', 'fight', 'city', 'growth', 'nature', 'spell', 'healing', 'foresight', 'science'].forEach(
                         (iconId) => cardContent = cardContent.replace('['+iconId+']', _self.getIconAsText(iconId))
                     );
                 }

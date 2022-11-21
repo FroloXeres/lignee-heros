@@ -147,7 +147,7 @@ class Bonus implements \JsonSerializable
 
         switch ($this->code) {
             case self::POWER:
-                $icon = $this->getType() ? ': [power]' : '[power]';
+                $icon = ($this->getType() === Meeple::WARRIOR) ? '['.Meeple::WARRIOR.'] : [power]' : ' : [power]';
                 break;
             case self::DEFENSE_CITY:
             case self::DEFENSE_WARRIOR:

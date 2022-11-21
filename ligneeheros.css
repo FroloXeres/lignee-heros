@@ -620,7 +620,7 @@ h2#turn::before {
     text-align: left;
     text-indent: 1em;
 }
-.card.invention {
+.card.invention .info {
     text-indent: inherit;
 }
 .card.objective .info {
@@ -632,6 +632,14 @@ h2#turn::before {
 }
 .card .info > div:not(.bold) {
 }
+.card .info .text_as_icon {
+    font-style: normal;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+}
+
 .card.objective .info > div:not(.bold) {
     display: flex;
     justify-content: center;

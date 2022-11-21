@@ -242,7 +242,7 @@
                     </div>\
                     <div class="text info">\
                         <div class="bold">${textBold}</div>\
-                        <div>${text}</div>\
+                        <div class="${textAsIcons}">${text}</div>\
                     </div>\
                     <div class="text graph"></div>\
                     <div class="footer">\
