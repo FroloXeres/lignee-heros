@@ -48,107 +48,92 @@
 
 /********* You can start writing your CSS below this line: **********/
 
+html, body {
+    font-size: 15px;
+}
+
 /********* Cartridge **********/
 #cartridge {
-    font-weight: bold;
-    width: 50%;
-    margin: 0 auto;
-    background: url('img/card-sprites.png') 99% 8% no-repeat;
-    background-size: 710% 145%;
-    padding: 0.5em 1em;
-}
-#turn {
-    text-align: center;
-    font-size: 1.5em;
     margin: 0 auto .5em;
+    background: url('img/card-bg.jpg') 0 0 no-repeat;
+    background-size: 200% 100%;
+    padding: 0.5em 1em;
+    box-shadow: 0 3px 8px rgba(0,0,0,.3);
+}
+h2#turn {
+    text-align: center;
+    font-size: 1.25em;
+    margin: 0 auto;
     display: flex;
     justify-content: center;
     align-items: center;
 }
-#turn::before {
+h2#turn::before {
     display: block;
     content: '';
-    background: url("img/icons.svg") 100% 0% no-repeat;
-    background-size: 990% 600%;
+    background: url("img/icons.svg") 90% 0% no-repeat;
+    background-size: 1100% 600%;
     height: 1em;
     aspect-ratio: 1;
     margin-right: .5em;
 }
 #cartridge > div {
-    line-height: 1.8em;
-}
-#cartridge .people {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
+    line-height: 2em;
 }
 #people-people::after, #people-worker::after, #people-warrior::after, #people-savant::after, #people-mage::after,
 #harvest-food::after, #harvest-science::after, #stock-food::after, #stock-science::after,
 #stock-wood::after, #stock-animal::after, #stock-gem::after, #stock-paper::after, #stock-metal::after, #stock-stone::after, #stock-clay::after, #stock-medic::after {
     content: attr(data-count);
+    font-weight: bold;
 }
-#people-worker::before, #people-warrior::before, #people-savant::before, #people-mage::before,
-#harvest-food::before, #harvest-science::before, #stock-food::before, #stock-science::before,
-#stock-wood::before, #stock-animal::before, #stock-gem::before, #stock-paper::before,
-#stock-metal::before, #stock-stone::before, #stock-clay::before, #stock-medic::before  {
-    display: block;
-    content: '';
-    background: url("img/icons.svg") 0 0 no-repeat;
-    background-size: 990% 600%;
-    height: 1.5em;
-    aspect-ratio: 1;
-    margin-right: .5em;
-}
-#people-worker::before {background-position: 11.2% 0%;}
-#people-warrior::before {background-position: 0% 0%;}
-#people-savant::before {background-position: 33.6% 0%;}
-#people-mage::before {background-position: 22.5% 0%;}
+#cartridge svg {margin-right: .5em;}
 
-#cartridge .harvest {
+#cartridge .people {
     display: flex;
     justify-content: flex-start;
     align-items: center;
-    flex-wrap: wrap;
 }
-#harvest-food::before {background-position: 89.5% 20%;}
-#harvest-science::before {background-position: 100.8% 20%;}
-
-#cartridge .stock {
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    flex-wrap: wrap;
-}
-#cartridge .stock-resources {
+#people-people {
     flex-grow: 1;
+    margin-left: 1em;
 }
+#cartridge .people-types,
+#cartridge .harvest, #cartridge .stock {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+}
+#cartridge .harvest > div:first-child, #cartridge .stock > div:first-child {
+    width: 30%;
+}
+
 #cartridge .stock-resources .group {
     display: flex;
     align-items: center;
-    flex-grow: 1;
     flex-wrap: wrap;
     justify-content: space-evenly;
 }
 #cartridge .people > div,
+#cartridge .people-types > div,
 #cartridge .harvest > div,
 #cartridge .stock > div:not(.stock-resources),
 #cartridge .stock-resources .group > div {
     display: flex;
     align-items: center;
-    min-width: 4em;
+    min-width: 3em;
 }
-#stock-food::before {background-position: 44.8% 100%;}
-#stock-science::before {background-position: 56% 100%;}
+#stock-food::before {background-position: 40% 100%;}
+#stock-science::before {background-position: 50% 100%;}
 
 #stock-wood::before {background-position: 0% 60%;}
-#stock-animal::before {background-position: 11.2% 60%;}
-#stock-stone::before {background-position: 56% 60%;}
-#stock-metal::before {background-position: 44.71% 60%;}
-#stock-clay::before {background-position: 67.45% 60%;}
-#stock-paper::before {background-position: 33.6% 60%;}
-#stock-medic::before {background-position: 78.4% 60%;}
-#stock-gem::before {background-position: 22.4% 60%;}
+#stock-animal::before {background-position: 10% 60%;}
+#stock-stone::before {background-position: 50% 60%;}
+#stock-metal::before {background-position: 40% 60%;}
+#stock-clay::before {background-position: 60% 60%;}
+#stock-paper::before {background-position: 30% 60%;}
+#stock-medic::before {background-position: 70% 60%;}
+#stock-gem::before {background-position: 20% 60%;}
 
 /********* Card zones **********/
 #cards-zone > div {
@@ -159,23 +144,32 @@
     justify-content: flex-start;
     flex-wrap: wrap;
 }
-#cards-zone #floating-cards {
-    justify-content: center;
+#floating-cards {
+    position: absolute;
+    z-index: 100;
+    width: 100%;
+    box-sizing: border-box;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    padding: 1em;
+    max-width: 65em;
+    left: 50%;
+    transform: translateX(-50%);
 }
 #floating-cards:empty {display: none;}
-#cards-zone .card {
-    display: inline-block;
-    width: 15%;
-    margin-bottom: 1em;
-}
-#cards-zone .card.large {
-    width: 22%;
+#cards-zone .card.large, #floating-cards .card.large {
+    width: 15em;
+    margin-bottom: .5em;
 }
 #cards-zone .card.onTable {
 
 }
 #cards-zone .card.hand {
 
+}
+#cards-zone .card {
+    margin-bottom: 1em;
 }
 #cards-zone .card:not(:last-child) {
     margin-right: 1em;
@@ -189,27 +183,20 @@
 
 .card.disabled {display: none;}
 .card.inactive {cursor: not-allowed;}
+.card.selected {
+    box-shadow: 10px 5px 5px #00008b82;
+}
 
 .deck-list .card {
     display: inline-block;
     width: 15%;
     max-width: 250px;
 }
-.deck-list .card.lineage {
-    display: none;
-}
-.deck-list .card.objective {
-    display: none;
-}
 .card.magic {}
 .card.end_turn {float: right;}
 
 .deck-list .card.invention {margin-right: 2em;}
-.card_list .large {
-    width: 20%;
-}
 .card_list {
-    /* display: none; */
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
@@ -236,12 +223,9 @@
 
 .card {
     position: relative;
+    width: 10em;
     aspect-ratio: 7/11;
-    border-top-left-radius: 6% 3.8%;
-    border-top-right-radius: 6% 3.8%;
-    border-bottom-left-radius: 6% 3.8%;
-    border-bottom-right-radius: 6% 3.8%;
-    font-size: .7em;
+    border-radius: .5em;
 }
 .card.verso {
     background-color: #000;
@@ -252,21 +236,31 @@
     border: 1px solid #000;
 }
 .card .content {
-    background: url(img/card-sprites.png) 0 0 no-repeat;
+    background: url(img/card-bg.jpg) 100.5% 0 no-repeat;
+    background-size: 200% 100%;
     width: 94%;
     height: 96%;
-    background-size: 640% 135%;
     box-sizing: border-box;
     margin: 3%;
     padding-top: 5%;
 }
-.card.verso .content {
-    background-position: 100% 0%;
-}
 .card.recto .content {
-    background-position: 81% 0%;
-    background-size: 655% 135.4%;
+    background-position: 0 0;
+    background-size: 200% 100%;
     padding-top: 0;
+}
+.card.verso .content {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+}
+.card.lineage.verso .content::before {
+    content: "";
+    width: 95%;
+    height: 30%;
+    background: url("img/card-title.png") 0 5% no-repeat;
+    background-size: 100% 130%;
 }
 .card.verso .content .inner {
     position: relative;
@@ -278,6 +272,11 @@
     border: 1px solid #c29253;
     border-radius: 50%;
     box-shadow: #c29253 0 0 2em;
+}
+.card.lineage.verso .content .inner {
+    width: 80%;
+    height: 65%;
+    margin: 0 auto;
 }
 .card.verso .content .inner > div {
     display: none;
@@ -292,22 +291,24 @@
     justify-content: stretch;
     align-items: stretch;
 }
-.card.recto .content .inner::after {
-    content: "";
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    width: 11%;
-    height: 7%;
-    background: url("img/card-sprites.png") 90.3% 80% no-repeat;
-    background-size: 4200% 2100%;
-}
 .card .text {
     border: 1px solid #c29253;
     background-color: #f5ebb8;
     padding: 1% 2.5%;
     text-align: left;
 }
+.card .text .double {
+    height: 100%;
+    aspect-ratio: 2/1;
+    display: flex;
+    justify-content: center;
+    align-items: baseline;
+}
+.card .text .double svg:nth-child(2) {
+    height: 50%;
+    width: inherit;
+}
+
 .card .text.middle {
     display: flex;
     flex-direction: column;
@@ -324,17 +325,34 @@
 .card .header .card-icon {
     width: 16%;
     margin-right: 1%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
-.card-icon .icon {
+.card-icon .head-icon {
     width: 90%;
     height: 90%;
+}
+.card-icon svg {
+    width: 100%;
+    height: 100%;
 }
 .card .cost {
     width: 16%;
     border-radius: 50%;
     font-weight: bold;
+    font-size: .9em;
     margin-right: 1%;
     padding: 0;
+    position: relative;
+}
+.card .cost svg {
+    position: absolute;
+    top: .25em;
+    left: .35em;
+    width: 1em;
+    height: 1em;
+    fill-opacity: .5;
 }
 .card .cost:empty {display: none}
 
@@ -344,32 +362,40 @@
     overflow: hidden;
 }
 
+.card.objective_509 .title
+{font-size: .95em;}
+.card.objective_504 .title,
+.card.objective_507 .title
+    {font-size: .85em;}
+.card.objective_505 .title
+{font-size: .65em;}
+.card.objective_510 .info,
+.card.objective_509 .info
+{font-size: 0.6em;}
+
+.card.invention .title
+{font-size: .9em;}
+.card.invention_101 .title,
+.card.invention_113 .title,
+.card.invention_128 .title
+{font-size: .8em;}
+.card.invention_121 .title,
+.card.invention_136 .title
+{font-size: .6em;}
+
 .card .type {
     text-align: left;
     font-size: .7em;
-    font-weight: bold;
+    font-style: italic;
     height: 4.5%;
     margin-bottom: 1%;
     display: flex;
     align-items: center;
 }
-.card .type::before {
-    content: "";
-    height: 100%;
-    aspect-ratio: 1;
-    background: url("img/icons.png") 0 0 no-repeat;
-    background-size: 1100% 600%;
-    margin-right: 2%;
+.card .type svg {
+    width: 1em;
+    height: 1em;
 }
-.card .type.development::before {background-position: 60% 0%;}
-.card .type.nature::before {background-position: 70% 20%;}
-.card .type.healing::before {background-position: 0% 0%;}
-.card .type.fight::before {background-position: 40% 20%;}
-.card .type.science::before {background-position: 90% 20%;}
-.card .type.growth::before {background-position: 80% 60%;}
-.card .type.enchant::before {background-position: 0% 0%;}
-.card .type.magic::before {background-position: 60% 40%;}
-.card .type.foresight::before {background-position: 0% 0%;}
 .card .type:empty {display: none}
 
 .card .needs {
@@ -382,19 +408,20 @@
     height: 9.8%;
 
     display: flex;
-    flex-direction: column;
-    justify-content: center;
+    flex-direction: row;
+    justify-content: space-evenly;
     align-items: center;
+    padding-left: 17%;
 }
 .card .needs::before {
     content: "";
     position: absolute;
     width: 15%;
     height: 80%;
-    background: url(img/icons.png) 90% 0% no-repeat;
+    background: url(img/icons.svg) 90% 0% no-repeat;
     background-size: 1100% 600%;
     opacity: 0.2;
-    left: 2.5%;
+    left: 3%;
     top: 10%;
 }
 .card .needs:empty {display: none}
@@ -406,26 +433,57 @@
     border-bottom-right-radius: 5% 21%;
     height: 9.8%;
     margin-bottom: 1%;
+    padding: 1% 1% 1% 20%;
+}
+.card .gain div {
     display: flex;
-    flex-direction: column;
-    justify-content: center;
+    justify-content: space-evenly;
     align-items: center;
 }
-.card .gain::before {
+.card .gain.gain_or,
+.card .gain.gain_and {
+    height: 22%;
+    flex-direction: column;
+    padding-right: 10%;
+}
+.card .gain.gain_or::after,
+.card .gain.gain_and::after {
+    content: "+";
+    width: 1em;
+    height: 1em;
+    position: absolute;
+    top: 0;
+    right: 0;
+    border: 1px solid #c29253;
+    border-radius: 1em;
+    text-align: center;
+    font-size: .7em;
+    font-weight: bold;
+    padding: .2em;
+}
+.card .gain.gain_or::after {
+    content: "/";
+}
+.card .gain:not(:empty)::before {
     content: "";
     position: absolute;
     width: 15%;
     height: 80%;
-    background: url(img/icons.png) 50% 20% no-repeat;
+    background: url(img/icons.svg) 50% 20% no-repeat;
     background-size: 1100% 600%;
     opacity: 0.2;
-    left: 2.5%;
+    left: 2%;
     top: 10%;
 }
-.card .gain:empty {display: none}
+.card .gain.gain_or::before,
+.card .gain.gain_and::before {
+    top: 32%;
+    height: 38%;
+}
+.card .gain.empty {display: none;}
 
 .card:not(.lineage) .ldh_meeple {display: none;}
-.card:not(.lineage) .leading {display: none;}
+.card:not(.lineage) .ldh-leading {display: none;}
 
 .card .ldh_meeple {
     display: grid;
@@ -435,88 +493,102 @@
     grid-gap: 4% 1%;
     height: 18.6%;
 }
+.card .ldh_meeple::after {
+    content: "";
+    position: absolute;
+    height : 0;
+    width : 0;
+    border-top : 2.2em solid transparent;
+    border-bottom : 2.2em solid transparent;
+    border-left : .6em solid #c29253;
+    right: 28%;
+    top: 11%;
+}
+.card.lineage {
+    cursor: pointer;
+}
+.head-icon svg {height: 100%; width: 1.5em;}
 .card.lineage .ldh-power {
     grid-area: power;
     display: flex;
+    justify-content: space-evenly;
     align-items: center;
-    position: relative;
     overflow-y: auto;
+    padding-left: 20%;
+    border-right: 0;
 }
-.card.lineage .ldh-power::before {
-    content: "";
-    background: url('img/icons.png') 0 0 no-repeat;
-    background-size: 1100% 600%;
-    height: 60%;
-    aspect-ratio: 1;
+.card.lineage .ldh-power .head-icon {
+    position: absolute;
+    left: .4em;
 }
-.card.lineage.lineage_elven_mage .ldh-power::before {background-position: 40% 80.1%;}
-.card.lineage.lineage_elven_savant .ldh-power::before {background-position: 50% 80%;}
-.card.lineage.lineage_nani_warrior .ldh-power::before {background-position: 90% 80%;}
-.card.lineage.lineage_nani_savant .ldh-power::before {background-position: 80% 80%;}
-.card.lineage.lineage_humani_mage .ldh-power::before {background-position: 60% 80%;}
-.card.lineage.lineage_humani_worker .ldh-power::before {background-position: 70% 80%;}
-.card.lineage.lineage_ork_warrior .ldh-power::before {background-position: 30% 80%;}
-.card.lineage.lineage_ork_worker .ldh-power::before {background-position: 20% 80%;}
 
 .card.lineage .ldh-objective {
     grid-area: objective;
     display: flex;
     align-items: center;
     overflow-y: auto;
-    position: relative;
+    justify-content: space-evenly;
+    padding-left: 20%;
+    border-right: 0;
 }
-.card.lineage .ldh-objective::before {
-    content: "";
-    background: url('img/icons.png') 50% 40% no-repeat;
-    background-size: 1100% 600%;
+.card.lineage .ldh-objective .head-icon {
+    position: absolute;
     margin-right: 2%;
-    height: 65%;
-    aspect-ratio: 1;
+    left: .4em;
 }
 .card.lineage .ldh-bonus {
     grid-area: bonus;
     display: flex;
-    flex-direction: column;
     justify-content: center;
     align-items: center;
     text-align: center;
     overflow-y: auto;
-    position: relative;
+    border-left: 0;
 }
-.card.lineage .ldh-bonus::before {
-    position: absolute;
-    content: "\f05d";
-    font-family: "FontAwesome";
-    color: darkgreen;
-    bottom: 10%;
-    left: -10%;
-    z-index: 2;
+.card.lineage .ldh-bonus .icon {
+    height: 50%;
 }
 .card.lineage .ldh-leading {
-    height: 9.8%;
+    height: 7.3%;
     margin: 2% 0 1%;
     display: flex;
     align-items: center;
     overflow-y: auto;
+    position: relative;
+    justify-content: space-evenly;
+    padding-left: 15%;
 }
-.card.lineage .ldh-leading::before {
-    content: "";
-    background: url('img/icons.png') 70% 0 no-repeat;
-    background-size: 1100% 600%;
-    aspect-ratio: 1;
-    height: 70%;
+.card.lineage .ldh-leading .head-icon {
+    position: absolute;
     margin-right: 2%;
+    left: .2em;
 }
 .card.lineage .ldh-leading span {
-    display: block;
-    background: url('img/icons.png') 0 0 no-repeat;
-    background-size: 1100% 600%;
+    position: relative;
     aspect-ratio: 1;
-    height: 40%;
-    margin-right: 2%;
+    margin-right: 6%;
 }
-.card.lineage .ldh-leading.end_turn span {background-position: 80% 40%;}
-.card.lineage .ldh-leading.fight span {background-position: 40% 20%;}
+.card.lineage .ldh-leading span svg {
+    width: 1.25em;
+    height: 1.25em;
+}
+.card.lineage .ldh-leading.end_turn span::after {
+    position: absolute;
+    content: "/3";
+    margin-left: -.2em;
+    margin-top: .65em;
+    font-size: .9em;
+}
+.card.lineage .ldh-leading.fight span {
+    margin-right: 8%;
+}
+.card.lineage .ldh-leading.fight span::after {
+    content: "x1";
+    margin-left: 0;
+    margin-top: .6em;
+    position: absolute;
+    font-size: .9em;
+}
 
 .card .graph {
     height: 32.25%;
@@ -542,41 +614,71 @@
 .card .info {
     flex-grow: 1;
     font-style: italic;
-    font-size: .9em;
+    font-size: .8em;
     overflow-y: auto;
     margin-bottom: 1%;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    text-align: center;
+    text-align: left;
+    text-indent: 1em;
+}
+.card.invention .info {
+    text-indent: inherit;
+}
+.card.objective .info {
+    font-style: normal;
 }
 .card .info .bold {
     text-align: center;
+    font-weight: bold;
+}
+.card .info > div:not(.bold) {
+}
+.card .info .text_as_icon {
+    font-style: normal;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    flex-wrap: wrap;
+}
+
+.card.objective .info > div:not(.bold) {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    align-items: center;
+    align-content: center;
+    text-align: center;
+    font-size: 2em;
 }
 .card .info:empty {display: none}
 .card .footer {
-    padding-left: 12%;
     height: 7%;
+    font-style: italic;
     display: flex;
     flex-direction: row;
     align-items: center;
     justify-content: flex-start;
     margin-top: auto;
 }
-.card .footer::before {
-    position: absolute;
-    content: "";
-    background: url(img/card-sprites.png) 87% 78.3% no-repeat;
-    background-size: 5550% 2200%;
-    left: 1%;
-    bottom: 1%;
-    width: 11%;
-    height: 7%;
+.card .footer .artist {
+    flex-grow: 1;
+    text-align: left;
+    font-size: .9em;
+}
+.card .footer .design, .card .footer .ldh {
+    width: 1.5em;
+    height: 1.5em;
+}
+.card .footer .ldh {
+    background: url("img/card-title.png") 6.5% 98% no-repeat;
+    background-size: 1000% 620%;
 }
 .card.verso .inner::before {
     position: absolute;
     content: "";
-    background: url(img/card-sprites.png) 0 0 no-repeat;
+    background: url(img/card-sprites.svg) 0 0 no-repeat;
     background-size: 700% 280%;
     width: 90%;
     aspect-ratio: 1;
@@ -584,51 +686,40 @@
     left: 5%;
 }
 .card.verso.invention .inner::before {
-    background-size: 800% 280%;
-    background-position: 22.2% 89%;
-    top: 23%;
-}
-.card.verso.end_turn .inner::before {
-    background-position: 2% 88%;
-    background-size: 660% 280%;
-    top: 24%;
-    left: 6%;
-}
-.card.verso.explore .inner::before {
-    background-size: 630% 270%;
-    background-position: 26.35% 10%;
-    top: 23%;
+    background-size: 610% 240%;
+    background-position: 32.5% 100%;
+    top: 20%;
 }
 .card.verso.explore_fight .inner::before {
-    background-size: 880% 300%;
-    background-position: 61.3% 92%;
-    top: 26%;
+    background-size: 610% 240%;
+    background-position: 87.5% 100%;
+    top: 20%;
 }
 .card.verso.explore_other .inner::before {
-    background-size: 880% 300%;
-    background-position: 22.5% 15%;
-    top: 23%;
+    background-size: 610% 240%;
+    background-position: 32.3% 0;
+    top: 20%;
 }
 .card.verso.explore_disease .inner::before {
-    background-size: 820% 300%;
-    background-position: 61.35% 16.5%;
-    top: 21%;
+    background-size: 610% 240%;
+    background-position: 87.5% 0;
+    top: 15%;
 }
 .card.verso.spell .inner::before {
-    background-size: 880% 290%;
-    background-position: 41.8% 92%;
-    top: 26%;
+    background-size: 610% 240%;
+    background-position: 60% 100%;
+    top: 20%;
 }
 .card.verso.lineage .inner::before {
-    background-size: 590% 230%;
-    background-position: 0 5%;
+    background-size: 525% 200%;
+    background-position: 0 0;
     aspect-ratio: 0.9;
     top: 22%;
 }
 .card.verso.objective .inner::before {
-    background-position: 41.7% 13%;
-    background-size: 900% 300%;
-    top: 24%;
+    background-size: 640% 260%;
+    background-position: 60.3% 0;
+    top: 20%;
 }
 
 #city-zone {
@@ -636,10 +727,32 @@
 }
 
 /******** Icons *********/
+svg.svg-icon {
+    width: 1.5em;
+    height: 1.5em;
+}
+#liquid {fill: #2f73b8;}
+#colorWarrior {fill: #ed0000;}
+#colorWhite {fill: #fff;}
+#lines {fill: #010101;}
+#wheat {fill: #d49616;}
+#unit.warrior #type polygon {fill: #ed0000;}
+#unit.worker #type polygon {fill: #179538;}
+#unit.savant #type polygon {fill: #234295;}
+#unit.mage #type polygon {fill: #f0d904;}
+#unit.monster #type polygon {fill: #222;}
+#unit #acted {display: none;}
+#unit #moved {display: none;}
+#unit.moved #moved {display: initial;}
+#unit.acted #acted {display: initial;}
+#stroke-rnd {
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
 .icon {
     display: inline-block;
     background: url("img/icons.svg") 0 0 no-repeat;
-    background-size: 990% 600%;
+    background-size: 1100% 600%;
     height: 90%;
     aspect-ratio: 1;
 }
@@ -652,80 +765,83 @@
     height: 16px;
 }
 .icon.cube.warrior {background-position: 0 0;}
-.icon.cube.worker {background-position: 11.2% 0;}
-.icon.cube.mage {background-position: 22.4% 0;}
-.icon.cube.savant {background-position: 33.6% 0;}
-.icon.cube.all {background-position: 44.8% 0;}
-.icon.cube.monster {background-position: 56% 0;}
+.icon.cube.worker {background-position: 10% 0;}
+.icon.cube.mage {background-position: 20% 0;}
+.icon.cube.savant {background-position: 30% 0;}
+.icon.cube.all {background-position: 40% 0;}
+.icon.cube.monster {background-position: 50% 0;}
 
-.icon.cube.elven_mage {background-position: 44.8% 80%;}
-.icon.cube.elven_savant {background-position: 56% 80%;}
-.icon.cube.nani_warrior {background-position: 100.8% 80%;}
-.icon.cube.nani_savant {background-position: 89.5% 80%;}
-.icon.cube.humani_mage {background-position: 67.25% 80%;}
-.icon.cube.humani_worker {background-position: 78.4% 80%;}
-.icon.cube.ork_warrior {background-position: 33.6% 80%;}
-.icon.cube.ork_worker {background-position: 22.4% 80%;}
+.icon.cube.elven_mage {background-position: 40% 80%;}
+.icon.cube.elven_savant {background-position: 50% 80%;}
+.icon.cube.nani_warrior {background-position: 90% 80%;}
+.icon.cube.nani_savant {background-position: 80% 80%;}
+.icon.cube.humani_mage {background-position: 60% 80%;}
+.icon.cube.humani_worker {background-position: 70% 80%;}
+.icon.cube.ork_warrior {background-position: 30% 80%;}
+.icon.cube.ork_worker {background-position: 20% 80%;}
 
 .icon.cube.warrior.moved {background-position: 0 20%;}
-.icon.cube.worker.moved {background-position: 11.2% 20%;}
-.icon.cube.mage.moved {background-position: 22.4% 20%;}
-.icon.cube.savant.moved {background-position: 33.6% 20%;}
+.icon.cube.worker.moved {background-position: 10% 20%;}
+.icon.cube.mage.moved {background-position: 20% 20%;}
+.icon.cube.savant.moved {background-position: 30% 20%;}
 
 .icon.cube.warrior.acted {background-position: 0 40%;}
-.icon.cube.worker.acted {background-position: 11.2% 40%;}
-.icon.cube.mage.acted {background-position: 22.4% 40%;}
-.icon.cube.savant.acted {background-position: 33.6% 40%;}
+.icon.cube.worker.acted {background-position: 10% 40%;}
+.icon.cube.mage.acted {background-position: 20% 40%;}
+.icon.cube.savant.acted {background-position: 30% 40%;}
 
-.icon.cube.explore {background-position: 44.8% 40%;}
-.icon.cube.objective {background-position: 56% 40%;}
-.icon.cube.spell {background-position: 67.25% 40%;}
-.icon.cube.invention {background-position: 78.4% 40%;}
-.icon.cube.end_turn {background-position: 89.5% 40%;}
+.icon.cube.explore {background-position: 40% 40%;}
+.icon.cube.objective {background-position: 50% 40%;}
+.icon.cube.spell {background-position: 60% 40%;}
+.icon.cube.invention {background-position: 70% 40%;}
+.icon.cube.end_turn {background-position: 80% 0;}
 
-.icon.cube.fight {background-position: 44.8% 20%;}
-.icon.cube.other {background-position: 56% 20%;}
-.icon.cube.disease {background-position: 67.25% 20%;}
-.icon.cube.nature {background-position: 78.4% 20%;}
-.icon.cube.healing {background-position: 44.8% 20%;}
-.icon.cube.foresight {background-position: 44.8% 20%;}
-.icon.cube.enchant {background-position: 44.8% 20%;}
+.icon.cube.fight {background-position: 40% 20%;}
+.icon.cube.other {background-position: 50% 20%;}
+.icon.cube.disease {background-position: 60% 20%;}
+.icon.cube.nature {background-position: 70% 20%;}
+.icon.cube.healing {background-position: 40% 20%;}
+.icon.cube.foresight {background-position: 40% 20%;}
+.icon.cube.enchant {background-position: 40% 20%;}
 
-.icon.cube.city {background-position: 67.25% 0;}
-.icon.cube.lineage {background-position: 100.8% 40%;}
-.icon.cube.lead {background-position: 78.4% 0;}
-.icon.cube.generate {background-position: 89.5% 0;}
-.icon.cube.turn {background-position: 100.8% 0;}
+.icon.cube.city {background-position: 60% 0;}
+.icon.cube.lineage {background-position: 90% 40%;}
+.icon.cube.lead {background-position: 70% 0;}
+.icon.cube.generate {background-position: 80% 0;}
+.icon.cube.turn {background-position: 90% 0;}
 
-.icon.cube.food {background-position: 89.5% 20%;}
-.icon.cube.science {background-position: 100.8% 20%;}
+.icon.cube.food {background-position: 80% 20%;}
+.icon.cube.science {background-position: 90% 20%;}
 .icon.cube.wood {background-position: 0% 60%;}
-.icon.cube.gem {background-position: 22.4% 60%;}
-.icon.cube.paper {background-position: 33.6% 60%;}
-.icon.cube.metal {background-position: 44.8% 60%;}
-.icon.cube.stone {background-position: 56% 60%;}
-.icon.cube.animal {background-position: 11.2% 60%;}
-.icon.cube.clay {background-position: 67.25% 60%;}
-.icon.cube.medic {background-position: 78.4% 60%;}
+.icon.cube.gem {background-position: 20% 60%;}
+.icon.cube.paper {background-position: 30% 60%;}
+.icon.cube.metal {background-position: 40% 60%;}
+.icon.cube.stone {background-position: 50% 60%;}
+.icon.cube.animal {background-position: 10% 60%;}
+.icon.cube.clay {background-position: 60% 60%;}
+.icon.cube.medic {background-position: 70% 60%;}
 
-.icon.cube.food_stock {background-position: 44.8% 100%;}
-.icon.cube.science_stock {background-position: 56% 100%;}
-.icon.cube.growth {background-position: 89.5% 60%;}
-.icon.cube.power {background-position: 100.8% 60%;}
+.icon.cube.food_stock {background-position: 40% 100%;}
+.icon.cube.science_stock {background-position: 50% 100%;}
+.icon.cube.growth {background-position: 80% 60%;}
+.icon.cube.power {background-position: 90% 60%;}
 .icon.cube.defense_city {background-position: 0% 80%;}
-.icon.cube.defense_warrior {background-position: 11.2% 80%;}
+.icon.cube.defense_warrior {background-position: 10% 80%;}
 
-.icon.cube.draw {background-position: 33.6% 100%;}
-.icon.cube.undraw {background-position: 67.25% 100%;}
+.icon.cube.draw {background-position: 30% 100%;}
+.icon.cube.undraw {background-position: 60% 100%;}
 .icon.cube.dice_fight {background-position: 0% 100%;}
-.icon.cube.dice_growth {background-position: 11.2% 100%;}
-.icon.cube.dice_explore {background-position: 22.4% 100%;}
+.icon.cube.dice_growth {background-position: 10% 100%;}
+.icon.cube.dice_explore {background-position: 20% 100%;}
+
+/********* Buttons **********/
+#page-title .action-button.hidden {display: none;}
 
 /********* MAP **********/
 #map-zone {
-    width: 80%;
+    width: 85%;
     min-width: 320px;
-    margin: -8% 6.5% 0;
+    margin: -13% 4% 0;
     transform: rotate(90deg);
 }
 
@@ -814,14 +930,14 @@
 }
 
 .tile {
-    background: url('img/card-sprites.png') 99% 8% no-repeat;
-    background-size: 710% 145%;
+    background: url('img/card-bg.jpg') 0 0 no-repeat;
+    background-size: 200% 100%;
     cursor: not-allowed;
 }
 .tile::before {
     content: "";
-    background: url("img/icons.svg") 45.4% 40% no-repeat;
-    background-size: 1200% 650%;
+    background: url("img/icons.svg") 40% 40% no-repeat;
+    background-size: 1100% 600%;
     width: 65%;
     aspect-ratio: 1;
 }
@@ -864,7 +980,7 @@
 .tile .resources.resources_2 .resource-3 {display: none}
 .tile .resource {
     background: url("img/icons.svg") 0 0 no-repeat #FFF;
-    background-size: 990% 600%;
+    background-size: 1100% 600%;
     height: 32.5%;
     aspect-ratio: 1;
     border: 1px solid #000;
@@ -873,16 +989,16 @@
 .tile .resources.resources_3 {margin-top: 4%;}
 .tile .resources.resources_3 .resource-2 {margin-left: 3%; margin-top: -15%;}
 
-.tile .resource.food {background-position: 89.5% 20%;}
-.tile .resource.science {background-position: 100.8% 20%;}
+.tile .resource.food {background-position: 80% 20%;}
+.tile .resource.science {background-position: 90% 20%;}
 .tile .resources .resource.wood {background-position: 0% 60%;}
-.tile .resources .resource.gem {background-position: 22.4% 60%;}
-.tile .resources .resource.paper {background-position: 33.6% 60%;}
-.tile .resources .resource.metal {background-position: 44.8% 60%;}
-.tile .resources .resource.stone {background-position: 56% 60%;}
-.tile .resources .resource.animal {background-position: 11.2% 60%;}
-.tile .resources .resource.clay {background-position: 67.25% 60%;}
-.tile .resources .resource.medic {background-position: 78.4% 60%;}
+.tile .resources .resource.gem {background-position: 20% 60%;}
+.tile .resources .resource.paper {background-position: 30% 60%;}
+.tile .resources .resource.metal {background-position: 40% 60%;}
+.tile .resources .resource.stone {background-position: 50% 60%;}
+.tile .resources .resource.animal {background-position: 10% 60%;}
+.tile .resources .resource.clay {background-position: 60% 60%;}
+.tile .resources .resource.medic {background-position: 70% 60%;}
 
 .tile.tile_reveal .name {
     font-weight: bold;
@@ -976,10 +1092,6 @@
 }
 
 @media all and (max-width: 360px) {
-    #cartridge {
-        width: 90%;
-    }
-
     #map-zone {
         font-size: 1em;
     }
@@ -990,12 +1102,7 @@
 }
 
 @media all and (max-width: 720px) and (max-width: 720px) {
-    #cartridge {
-        width: 90%;
-    }
-
     .card {
-        font-size: 0.6rem;
     }
 
     #map-zone {
@@ -1014,10 +1121,6 @@
 }
 
 @media all and (min-width: 721px) and (max-width: 1100px) {
-    #cartridge {
-        width: 90%;
-    }
-
     #map-zone {
         width: 86%;
         margin-left: 3.5%;
@@ -1029,24 +1132,12 @@
 }
 
 @media all and (min-width: 1101px) and (max-width: 1450px) {
-    #cartridge {
-        font-size: 1.1em;
-        width: 70%;
-    }
-
     #map-zone .tile .name {
         font-size: .9em;
-    }
-
-    .card {
-        font-size: 1rem;
     }
 }
 
 @media all and (min-width: 1451px) {
-    #cartridge {
-        font-size: 1.3em;
-    }
 }
 
 /*

@@ -48,7 +48,7 @@ class Spell extends AbstractCard
     public const TYPE_FORESIGHT = 'foresight';
     public const TYPE_COMBAT    = 'fight';
     public const TYPE_NATURE   = 'nature';
-    public const TYPE_ENCHANT  = 'enchant';
+    public const TYPE_ENCHANT  = 'spell';
     public const TYPE_HEALING  = 'healing';
 
     public const HEAL              = 601;
@@ -371,7 +371,7 @@ class Spell extends AbstractCard
         $tpl[self::TPL_TYPE_ICON] = $this->getType();
         $tpl[self::TPL_TYPE]      = self::getTypeAsText($this->getType());
         $tpl[self::TPL_NEED_1]    = self::getCasterAsIcon($this->getCasterCount());
-        $tpl[self::TPL_NEED_2]    = $this->getCost()? ' ['.$this->getCost()->getCode().']' : null;
+        $tpl[self::TPL_NEED_2]    = $this->getCost()? ' ['.$this->getCost()->getCode().']' : '';
 
         return $tpl;
     }

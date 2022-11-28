@@ -30,6 +30,11 @@ class Lineage extends AbstractCard
         $this->location_arg = 0;
     }
 
+    private static function buildCode(string $id): string
+    {
+        return self::TYPE_LINEAGE . '_' . $id;
+    }
+
     /**
      * @return string
      */
@@ -43,7 +48,7 @@ class Lineage extends AbstractCard
      */
     public function setCode(string $code): void
     {
-        $this->code = self::TYPE_LINEAGE . '_' . $code;
+        $this->code = self::buildCode($code);
         $this->setType($code);
     }
 
@@ -196,7 +201,8 @@ class Lineage extends AbstractCard
     {
         $tpl = parent::toTpl($deck);
 
-        $tpl[self::TPL_ICON]            = $this->getMeeple()->getCode();
+        $tpl[self::TPL_ICON]            = 'lineage';
+        $tpl[self::TPL_MEEPLE]          = $this->getMeeple()->getCode();
         $tpl[self::TPL_MEEPLE_POWER]    = (string) $this->getMeeplePower();
         $tpl[self::TPL_OBJECTIVE]       = (string) $this->getObjective();
         $tpl[self::TPL_OBJECTIVE_BONUS] = (string) $this->getObjectiveBonus();
@@ -204,5 +210,22 @@ class Lineage extends AbstractCard
         $tpl[self::TPL_LEAD_POWER]      = (string) $this->getLeadingBonus();
 
         return $tpl;
+    }
+
+    public static function getLineageIds(): array
+    {
+        return array_map(function(string $code) {
+                return self::buildCode($code);
+            },[
+                Meeple::ELVEN_MAGE,
+                Meeple::ELVEN_SAVANT,
+                Meeple::ORK_WARRIOR,
+                Meeple::ORK_WORKER,
+                Meeple::NANI_SAVANT,
+                Meeple::NANI_WARRIOR,
+                Meeple::HUMANI_MAGE,
+                Meeple::HUMANI_WORKER
+            ]
+        );
     }
 }

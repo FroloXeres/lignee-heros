@@ -24,8 +24,9 @@ class Bonus implements \JsonSerializable
     public const MOVE            = 'move';            // More move
     public const SPELL_RECAST    = 'recast';          // Can cast another spell
     public const MEEPLE_POWER_UP = 'power_up';        // Meeple increase +1 Power for Warriors
-
-    public const BONUS_MULTIPLY = 'multiply';
+    public const BONUS_MULTIPLY  = 'multiply';
+    public const BIRTH_ALL       = 'birth_choose';    // Choose unit type at birth
+    public const SAVANT_HEALING  = 'savant_healing';         // Savant can heal units
 
     // Used in CSS
     protected string  $code        = '';
@@ -147,6 +148,8 @@ class Bonus implements \JsonSerializable
 
         switch ($this->code) {
             case self::POWER:
+                $icon = ($this->getType() === Meeple::WARRIOR) ? '['.Meeple::WARRIOR.'] : [power]' : ' : [power]';
+                break;
             case self::DEFENSE_CITY:
             case self::DEFENSE_WARRIOR:
             case self::GROWTH:
@@ -157,16 +160,16 @@ class Bonus implements \JsonSerializable
                 $icon = '['.$this->getType().']';
                 break;
             case self::DISTANT_POWER:
-                $icon = '[power][move]';
+                $icon = '[move][power]';
                 break;
             case self::STOCK:
                 $icon = '[food_stock]';
                 break;
             case self::FOOD:
                 $icon = sprintf(
-                    '%s[%s] : [food]',
-                    $this->getType()? '' : '[end_turn] ',
-                    $this->getType() === Meeple::WARRIOR? 'warrior' : 'worker'
+                    '%s%s : [food]',
+                    $this->getType() ? '' : '[little_end] ',
+                    in_array($this->getType(), [Meeple::WARRIOR, Meeple::WORKER]) ? '['.$this->getType().']' : ''
                 );
                 break;
             case self::FOOD_FOUND:
@@ -174,9 +177,9 @@ class Bonus implements \JsonSerializable
                 break;
             case self::SCIENCE:
                 $icon = sprintf(
-                    '%s[%s] : [science]',
-                    $this->getType()? '' : '[end_turn] ',
-                    $this->getType() === Meeple::WARRIOR? 'warrior' : 'savant'
+                    '%s%s : [science]',
+                    $this->getType()? '' : '[little_end] ',
+                    in_array($this->getType(), [Meeple::WARRIOR, Meeple::SAVANT]) ? '['.$this->getType().']' : ''
                 );
                 break;
             case self::SCIENCE_FOUND:
@@ -196,7 +199,7 @@ class Bonus implements \JsonSerializable
                 $operation = '';
                 $count     = $this->getCount() > 1? 'x'.$this->getCount() : '';
                 $icon      = sprintf(
-                    '[all]%s[end_turn]['.$this->getType().']%s',
+                    '[all]%s[little_end]['.$this->getType().']%s',
                     $count,
                     $count
                 );
@@ -207,13 +210,13 @@ class Bonus implements \JsonSerializable
                 break;
             case self::SPELL_RECAST:
                 $operation = '';
-                $preOp     = $this->count;
-                $icon      = ' [mage] : +1 [spell]';
+                $preOp     = ' ';
+                $icon      = ' [mage]x5 : +1 [spell]';
                 break;
             case self::MEEPLE_POWER_UP:
                 $operation = '';
-                $preOp     = $this->count;
-                $icon      = ' [warrior] + [ork_warrior] : [power] +1';
+                $preOp     = ' ';
+                $icon      = '[warrior]x5 + [ork_warrior] : [power] +1';
                 break;
             default:
                 $icon = '[none]';

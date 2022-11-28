@@ -1,5 +1,8 @@
 # config/services.yaml
 services:
+    LdH\Service\PeopleService:
+        public: true
+
     LdH\Service\CardService:
         public: true
 
@@ -7,6 +10,13 @@ services:
         public: true
 
     LdH\Service\StateService:
+        public: true
+
+    # Repositories
+    LdH\Repository\MapRepository:
+        public: true
+
+    LdH\Repository\CardRepository:
         public: true
 
     # States
@@ -22,5 +32,9 @@ services:
         tags: [ 'ldh.state' ]
 
     LdH\State\DrawObjectiveState:
+        public: true
+        tags: ['ldh.state']
+
+    LdH\State\DeadEndState:
         public: true
         tags: ['ldh.state']

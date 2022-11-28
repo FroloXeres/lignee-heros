@@ -18,6 +18,7 @@ abstract class AbstractCard implements CardInterface
     public const LOCATION_DISCARD  = 'discard';
     public const LOCATION_HIDDEN   = 'hidden';
     public const LOCATION_REMOVED  = 'removed';
+    public const LOCATION_PLAYER   = 'player';
 
     /** @var int[]  */
     protected ?array $ids          = [];
@@ -30,6 +31,7 @@ abstract class AbstractCard implements CardInterface
 
     protected string  $name        = '';
     protected string  $description = '';
+    protected string  $costIcon    = 'none';
     protected string  $artist      = '';
 
     /**
@@ -171,6 +173,21 @@ abstract class AbstractCard implements CardInterface
     /**
      * @return string
      */
+    public function getCostIcon(): string
+    {
+        return $this->costIcon;
+    }
+
+    public function setCostIcon(string $costIcon): self
+    {
+        $this->costIcon = $costIcon;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
     public function getArtist(): string
     {
         return $this->artist;
@@ -192,13 +209,18 @@ abstract class AbstractCard implements CardInterface
     public const TPL_DECK      = 'deck';
     public const TPL_LARGE     = 'large';
     public const TPL_ICON      = 'icon';
+    public const TPL_MEEPLE    = 'meeple';
     public const TPL_COST      = 'cost';
+    public const TPL_COST_ICON = 'costIcon';
     public const TPL_NAME      = 'name';
     public const TPL_TYPE_ICON = 'typeIcon';
     public const TPL_TYPE      = 'type';
     public const TPL_NEED_1    = 'need1';
     public const TPL_NEED_2    = 'need2';
+    public const TPL_GAIN_TYPE = 'gainType';
     public const TPL_GAIN      = 'gain';
+    public const TPL_GAIN_1    = 'gainOrAnd1';
+    public const TPL_GAIN_2    = 'gainOrAnd2';
     public const TPL_TEXT_BOLD = 'textBold';
     public const TPL_TEXT      = 'text';
     public const TPL_ARTIST    = 'artist';
@@ -208,12 +230,14 @@ abstract class AbstractCard implements CardInterface
     public const TPL_OBJECTIVE_BONUS = 'objectiveBonus';
     public const TPL_LEAD_TYPE       = 'leadType';
     public const TPL_LEAD_POWER      = 'leadPower';
+    public const TPL_TYPE_EMPTY      = 'empty';
 
     public const BGA_TYPE         = 'type';
     public const BGA_TYPE_ARG     = 'type_arg';
     public const BGA_LOCATION     = 'location';
     public const BGA_LOCATION_ARG = 'location_arg';
     public const BGA_NBR          = 'nbr';
+
 
     /**
      * Return data for Card module
@@ -246,15 +270,20 @@ abstract class AbstractCard implements CardInterface
             self::TPL_LARGE           => ($deck->isLarge()? 'large' : ''),
             self::TPL_ICON            => 'none',
             self::TPL_COST            => '',
+            self::TPL_COST_ICON       => $this->getCostIcon(),
             self::TPL_NAME            => $this->getName(),
-            self::TPL_TYPE_ICON       => '',
+            self::TPL_TYPE_ICON       => 'none',
             self::TPL_TYPE            => '',
             self::TPL_NEED_1          => '',
             self::TPL_NEED_2          => '',
+            self::TPL_GAIN_TYPE       => self::TPL_TYPE_EMPTY,
             self::TPL_GAIN            => '',
+            self::TPL_GAIN_1          => '',
+            self::TPL_GAIN_2          => '',
             self::TPL_TEXT_BOLD       => '',
             self::TPL_TEXT            => $this->getDescription(),
             self::TPL_ARTIST          => $this->getArtist(),
+            self::TPL_MEEPLE          => '',
             self::TPL_MEEPLE_POWER    => '',
             self::TPL_OBJECTIVE       => '',
             self::TPL_OBJECTIVE_BONUS => '',

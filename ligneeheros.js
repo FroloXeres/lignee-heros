@@ -16,11 +16,11 @@
  */
 
 define([
-    "dojo", "dojo/_base/declare",
+    "dojo", "dojo/on", "dojo/_base/declare",
     "ebg/core/gamegui",
     "ebg/counter"
 ],
-function (dojo, declare) {
+function (dojo, on, declare) {
     return declare("bgagame.ligneeheros", ebg.core.gamegui, {
         constructor: function(){
             this.map       = [];
@@ -63,37 +63,14 @@ function (dojo, declare) {
 
         setupGameState: function(gamedatas)
         {
-            this.currentState = gamedatas.currentState;
-            this.decks        = gamedatas.decks;
-            this.cards        = gamedatas.cards;
+            this.currentState  = gamedatas.currentState;
+            this.decks         = gamedatas.decks;
+            this.cards         = gamedatas.cards;
+            this.selectedCards = [];
 
-            this.$turn   = document.querySelector('#turn');
-
-            this.$peopleTitle = document.querySelector('#people-title');
-            this.$peopleAll = document.querySelector('#people-people');
-            this.$peopleWorker = document.querySelector('#people-worker');
-            this.$peopleWarrior = document.querySelector('#people-warrior');
-            this.$peopleSavant = document.querySelector('#people-savant');
-            this.$peopleMage = document.querySelector('#people-mage');
-
-            this.$harvestTitle = document.querySelector('#harvest-title');
-            this.$foodHarvest = document.querySelector('#harvest-food');
-            this.$scienceHarvest = document.querySelector('#harvest-science');
-
-            this.$stockTitle = document.querySelector('#stock-title');
-            this.$foodStock = document.querySelector('#stock-food');
-            this.$scienceStock = document.querySelector('#stock-science');
-            this.$woodStock = document.querySelector('#stock-wood');
-            this.$animalStock = document.querySelector('#stock-animal');
-            this.$stoneStock = document.querySelector('#stock-stone');
-            this.$metalStock = document.querySelector('#stock-metal');
-            this.$clayStock = document.querySelector('#stock-clay');
-            this.$paperStock = document.querySelector('#stock-paper');
-            this.$medicStock = document.querySelector('#stock-medic');
-            this.$gemStock = document.querySelector('#stock-gem');
-
-            this.updateCartridge();
+            this.initCartridge();
             this.initCards();
+            this.initEvents()
         },
 
         setupGameData: function(gamedatas)
@@ -139,6 +116,16 @@ function (dojo, declare) {
             });
         },
 
+        getCard: function(type, location, id)
+        {
+            if (
+                this.cards[type] !== 'undefined' &&
+                this.cards[type][location] !== 'undefined'
+            ) {
+                return this.cards[type][location].find(card => card.id === id);
+            }
+            return {};
+        },
         initCards: function()
         {
             for (let type in this.cards) {
@@ -183,11 +170,140 @@ function (dojo, declare) {
         {
             let _self = this;
             cards.forEach(function(card) {
-                let cardContent = _self.format_block('jstpl_card_recto', _self.replaceIconsInObject(card));
+                let cardTpl = _self.replaceIconsInObject(card);
+                cardTpl.textAsIcons = (cardTpl.text.indexOf('svg') !== -1) ? 'text_as_icon' : '';
+
+                let cardContent = _self.format_block('jstpl_card_recto', cardTpl);
+                cardContent = cardContent.replaceAll('[none]', '');
+
+                const iconify = ['lineage', 'objective', 'spell', 'invention'];
+                if (iconify.includes(card.deck)) {
+                    cardContent = cardContent.replaceAll('['+card.icon+']', _self.getIconAsText(card.icon));
+                    ['science', 'fight', 'city', 'growth', 'nature', 'spell', 'healing', 'foresight', 'science'].forEach(
+                        (iconId) => cardContent = cardContent.replace('['+iconId+']', _self.getIconAsText(iconId))
+                    );
+                }
+                if (card.deck === 'lineage') {
+                    ['objective', 'leading', 'fight', 'end_turn', card.meeple].forEach(
+                        (iconId) => cardContent = cardContent.replace('['+iconId+']', _self.getIconAsText(iconId))
+                    );
+                }
+
                 dojo.place(cardContent, domQuery);
             });
         },
 
+        initEvents: function()
+        {
+            this.evts = {};
+            this.evts['onChooseLineage'] = on(dojo.query('#floating-cards'), 'click', this.onChooseLineage.bind(this));
+
+
+        },
+
+        removeEvent: function(key)
+        {
+            if (typeof this.evts[key] !== 'undefined') {
+                this.evts[key].remove();
+                delete this.evts[key];
+            }
+        },
+
+        onChooseLineage: function(event)
+        {
+            const card = event.target.closest('.card.lineage');
+            if (card === null) return;
+
+            dojo.query('#floating-cards .card').forEach((thisCard) => {thisCard.classList.remove('selected');});
+            card.classList.add('selected');
+
+            const id = card.getAttribute('data-id');
+            const selectedCard = this.getCard('lineage', 'deck', id);
+            this.selectedCards = [id];
+
+            dojo.query('#pagemaintitletext').text(_('You choose to play with lineage: ') + selectedCard.name);
+
+            dojo.query('#chooseLineage')[0].classList.remove('hidden');
+            dojo.query('#cancelChooseLineage')[0].classList.remove('hidden');
+        },
+
+        getIcon(iconId, addClass = '')
+        {
+            const $clone = document.querySelector('#icons svg#'+iconId).cloneNode(true);
+            if (addClass.length) {
+                $clone.classList.add(addClass);
+            }
+
+            return $clone;
+        },
+        getIconAsText(iconId)
+        {
+            let addClass = '';
+            if (['worker', 'warrior', 'savant', 'mage', 'all', 'monster'].includes(iconId)) {
+                addClass = iconId;
+                iconId = 'unit';
+            }
+
+            const $icon = document.querySelector('#icons svg#'+iconId)
+            if ($icon !== null) {
+                const $clone = $icon.cloneNode(true);
+                if (addClass.length) {
+                    $clone.classList.add(addClass);
+                }
+                return $clone.outerHTML;
+            } else return iconId;
+        },
+
+        initCartridge: function()
+        {
+            const cartridge = this.format_block('jstpl_cartridge', {turn: 1});
+            dojo.place(cartridge, 'player_boards', 'before');
+
+            this.$turn   = document.querySelector('h2#turn');
+
+            this.$peopleTitle = document.querySelector('#people-title');
+            this.$peopleAll = document.querySelector('#people-people');
+
+            this.$peopleWorker = document.querySelector('#people-worker');
+            this.$peopleWarrior = document.querySelector('#people-warrior');
+            this.$peopleSavant = document.querySelector('#people-savant');
+            this.$peopleMage = document.querySelector('#people-mage');
+            dojo.place(this.getIcon('unit', 'worker'), this.$peopleWorker, 'first');
+            dojo.place(this.getIcon('unit', 'warrior'), this.$peopleWarrior, 'first');
+            dojo.place(this.getIcon('unit', 'savant'), this.$peopleSavant, 'first');
+            dojo.place(this.getIcon('unit', 'mage'), this.$peopleMage, 'first');
+
+            this.$harvestTitle = document.querySelector('#harvest-title');
+            this.$foodHarvest = document.querySelector('#harvest-food');
+            this.$scienceHarvest = document.querySelector('#harvest-science');
+            dojo.place(this.getIcon('food'), this.$foodHarvest, 'first');
+            dojo.place(this.getIcon('science'), this.$scienceHarvest, 'first');
+
+            this.$stockTitle = document.querySelector('#stock-title');
+            this.$foodStock = document.querySelector('#stock-food');
+            this.$scienceStock = document.querySelector('#stock-science');
+            dojo.place(this.getIcon('food_stock'), this.$foodStock, 'first');
+            dojo.place(this.getIcon('science_stock'), this.$scienceStock, 'first');
+
+            this.$woodStock = document.querySelector('#stock-wood');
+            this.$animalStock = document.querySelector('#stock-animal');
+            this.$stoneStock = document.querySelector('#stock-stone');
+            this.$metalStock = document.querySelector('#stock-metal');
+            this.$clayStock = document.querySelector('#stock-clay');
+            this.$paperStock = document.querySelector('#stock-paper');
+            this.$medicStock = document.querySelector('#stock-medic');
+            this.$gemStock = document.querySelector('#stock-gem');
+            dojo.place(this.getIcon('wood'), this.$woodStock, 'first');
+            dojo.place(this.getIcon('animal'), this.$animalStock, 'first');
+            dojo.place(this.getIcon('stone'), this.$stoneStock, 'first');
+            dojo.place(this.getIcon('metal'), this.$metalStock, 'first');
+            dojo.place(this.getIcon('clay'), this.$clayStock, 'first');
+            dojo.place(this.getIcon('paper'), this.$paperStock, 'first');
+            dojo.place(this.getIcon('medic'), this.$medicStock, 'first');
+            dojo.place(this.getIcon('gem'), this.$gemStock, 'first');
+
+            this.updateCartridge();
+        },
         updateCartridge: function()
         {
             this.updateTurn();
@@ -240,13 +356,20 @@ function (dojo, declare) {
 
         replaceIconsInObject: function(cardObject)
         {
-            const regex = /\[([a-z_]+)\]/ig;
-
             for (let attr in cardObject) {
                 if (cardObject.hasOwnProperty(attr)) {
                     let value = cardObject[attr];
                     if (typeof value === 'string' || value instanceof String) {
-                        cardObject[attr] = value.replaceAll(regex, '<div class="icon cube $1"></div>');
+                        [... value.matchAll(/\[invention\] \[([a-z_]+)\]/ig)].forEach((found) => {
+                            value = value.replace(found[0], '<div class="double">'+this.getIconAsText('invention')+this.getIconAsText(found[1])+'</div>');
+                        });
+                        [... value.matchAll(/\[spell\] \[([a-z_]+)\]/ig)].forEach((found) => {
+                            value = value.replace(found[0], '<div class="double">'+this.getIconAsText('spell')+this.getIconAsText(found[1])+'</div>');
+                        });
+                        [... value.matchAll(/\[([a-z_]+)\]/ig)].forEach((found) => {
+                            value = value.replace(found[0], this.getIconAsText(found[1]));
+                        });
+                        cardObject[attr] = value;
                     }
                 }
             }
@@ -262,26 +385,18 @@ function (dojo, declare) {
         //
         onEnteringState: function( stateName, args )
         {
-            console.log( 'Entering state: '+stateName );
-            
             switch( stateName ) {
-            case 'GameInit' :
-                console.log('GameInit');
-                break;
             case 'ChooseLineage' :
-                console.log('ChooseLineage');
+                const chooseBtn = dojo.query('#chooseLineage');
+                const cancelBtn = dojo.query('#cancelChooseLineage');
+                if (chooseBtn.length && cancelBtn.length) {
+                    chooseBtn.forEach((elt) => elt.classList.add('hidden'));
+                    cancelBtn.forEach((elt) => elt.classList.add('hidden'));
+                }
                 break;
             case 'DrawObjective' :
                 console.log('DrawObjective');
                 break;
-            /* Example:
-            case 'myGameState':
-            
-                // Show some HTML block at this game state
-                dojo.style( 'my_html_block_id', 'display', 'block' );
-                
-                break;
-           */
             }
         },
 
@@ -290,25 +405,12 @@ function (dojo, declare) {
         //
         onLeavingState: function( stateName )
         {
-            console.log( 'Leaving state: '+stateName );
-            
-            switch( stateName )
-            {
-            
-            /* Example:
-            
-            case 'myGameState':
-            
-                // Hide the HTML block we are displaying only during this game state
-                dojo.style( 'my_html_block_id', 'display', 'none' );
-                
+            switch( stateName ) {
+            case 'ChooseLineage':
+                dojo.query('#floating-cards .card.lineage').remove();
+                this.removeEvent('onChooseLineage');
                 break;
-           */
-           
-           
-            case 'dummmy':
-                break;
-            }               
+            }
         }, 
 
         // onUpdateActionButtons: in this method you can manage "action buttons" that are displayed in the
@@ -316,13 +418,12 @@ function (dojo, declare) {
         //        
         onUpdateActionButtons: function( stateName, args )
         {
-            console.log( 'onUpdateActionButtons: '+stateName );
-                      
             if( this.isCurrentPlayerActive() )
             {            
                 switch( stateName ) {
-                    case 'gameInit' :
-                        this.addActionButton( 'action1', _('Action1'), 'onAction1' );
+                    case 'ChooseLineage' :
+                        this.addActionButton( 'chooseLineage', _('Yes'), 'onSelectLineage' );
+                        this.addActionButton( 'cancelChooseLineage', _('No'), 'onUnselectLineage' );
                         break;
 /*
                  case 'myGameState':
@@ -343,10 +444,30 @@ function (dojo, declare) {
         
         /*
         
-            Here, you can defines some utility methods that you can use everywhere in your javascript
+            Here, you can define some utility methods that you can use everywhere in your javascript
             script.
         
         */
+        ajaxCallWrapper: function(action, args, onResponse, onError)
+        {
+            if (typeof  args === 'undefined' || typeof args.lock === 'undefined') {
+                args.lock = true;
+            }
+            if (typeof onResponse === 'undefined') {
+                onResponse = (result) => {console.log(result);};
+            }
+            if (typeof onError === 'undefined') {
+                onError = (error) => {console.log(error);};
+            }
+
+            this.ajaxcall(
+                '/' + this.game_name + '/' + this.game_name + '/' + action + '.html',
+                args,
+                this,
+                onResponse,
+                onError
+            );
+        },
 
 
         ///////////////////////////////////////////////////
@@ -362,8 +483,21 @@ function (dojo, declare) {
             _ make a call to the game server
         
         */
-        onAction1: function()  {
-            console.log('Action1');
+        onSelectLineage: function()  {
+            if (this.selectedCards[0] !== 'undefined' && this.checkAction('selectLineage')) {
+                this.ajaxCallWrapper('selectLineage', {lineage: this.selectedCards[0]});
+            }
+        },
+
+        onUnselectLineage: function() {
+            this.selectedCards = [];
+            dojo.query('#floating-cards .card').forEach((thisCard) => {
+                thisCard.classList.remove('selected');
+            });
+
+            dojo.query('#pagemaintitletext').text(_('Please, select your lineage'));
+            dojo.query('#chooseLineage')[0].classList.add('hidden');
+            dojo.query('#cancelChooseLineage')[0].classList.add('hidden');
         },
 
         /* Example:
@@ -416,7 +550,9 @@ function (dojo, declare) {
         setupNotifications: function()
         {
             console.log( 'notifications subscriptions setup' );
-            
+
+            dojo.subscribe( 'debug', this, "onDebug" );
+
             // TODO: here, associate your game notifications with local methods
             
             // Example 1: standard notification handling
@@ -430,6 +566,10 @@ function (dojo, declare) {
             // 
         },
 
+        onDebug: function(sentData)
+        {
+            console.log(sentData);
+        }
         // TODO: from this point and below, you can write your game notifications handling methods
 
         /*

@@ -25,7 +25,6 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use LdH\Service\StateCompilerPass;
 
-use LdH\Repository\MapRepository;
 use LdH\Service\CurrentStateService;
 use LdH\Service\MapService;
 use LdH\Service\CardService;
@@ -35,11 +34,11 @@ use LdH\Entity\Cards\AbstractCard;
 use LdH\Entity\Map\Resource;
 use LdH\Entity\Map\Terrain;
 use LdH\Entity\Meeple;
+use \LdH\Entity\PeopleService;
 
 class ligneeheros extends Table
 {
-    /** @var \Deck[] */
-    public array $decks = [];
+    public $gamestate;
 
     /** @var Deck[] */
     public array $cards = [];
@@ -51,10 +50,13 @@ class ligneeheros extends Table
     public array $resources = [];
 
     /** @var Meeple[]  */
-    public array $meeples = [];
+    public array $meeples  = [];
+    public \Deck $bgaMeeple;
+    public ?PeopleService $people = null;
 
     public ?StateService $stateService = null;
     public ?CardService  $cardService  = null;
+    public ?MapService  $mapService  = null;
 
     /**
      * @var callable[]
@@ -109,6 +111,9 @@ class ligneeheros extends Table
 
         $this->container->addCompilerPass(new StateCompilerPass());
         $this->container->compile();
+
+        $this->mapService = $this->getService(MapService::class);
+        $this->mapService->setTerrains($this->terrains);
     }
 
     /**
@@ -127,8 +132,10 @@ class ligneeheros extends Table
             $bgaDeck->init($deck->getType());
 
             $deck->setBgaDeck($bgaDeck);
-            $this->decks[$deck->getType()] = $bgaDeck;
         }
+
+        $this->bgaMeeple = self::getNew( "module.common.deck" );
+        $this->bgaMeeple->init(Meeple::BGA_TYPE);
     }
 
     /**
@@ -142,9 +149,23 @@ class ligneeheros extends Table
         $this->stateService = $this->getService(StateService::class);
 
         // Fill available methods
-        $this->stateArgMethods    = $this->getStateService()->getStateArgMethods($this);
-        $this->stateActionMethods = $this->getStateService()->getStateActionMethods($this);
-        $this->actionMethods      = $this->getStateService()->getActionMethods($this);
+        foreach ($this->getStateService()->getStateArgMethods() as $name => $argMethod) {
+            if (is_callable($argMethod)) {
+                $this->stateArgMethods[$name] = $argMethod->bindTo($this, $this);
+            }
+        }
+
+        foreach ($this->getStateService()->getStateActionMethods($this) as $name => $stateActionMethod) {
+            if (is_callable($stateActionMethod)) {
+                $this->stateActionMethods[$name] = $stateActionMethod->bindTo($this, $this);
+            }
+        }
+
+        foreach ($this->getStateService()->getActionMethods() as $name => $actionMethod) {
+            if (is_callable($actionMethod)) {
+                $this->actionMethods[$name] = $actionMethod->bindTo($this, $this);
+            }
+        }
     }
 
     protected function getGameName( )
@@ -228,27 +249,19 @@ class ligneeheros extends Table
     public function initTables()
     {
         // Generate map
-        $this->tiles = MapService::generateMap(MapService::DEFAULT_RADIUS);
-        MapService::initMap($this->tiles, $this->terrains);
-        foreach (MapRepository::getSaveQueries($this->tiles) as $qry) {
-            self::DbQuery($qry);
-        }
+        $this->mapService->createInitialMap($this->terrains);
 
         // Init cards
-        if (!empty($this->decks)) {
-            foreach ($this->decks as $type => $deck) {
-                /** @var Deck $ldhDeck */
-                $ldhDeck = $this->cards[$type];
+        if (!empty($this->cards)) {
+            foreach ($this->cards as $deck) {
+                $bgaDeck = $deck->getBgaDeck();
+                $bgaDeck->createCards($deck->getBgaDeckData(), AbstractCard::LOCATION_DEFAULT);
 
-                $deck->createCards($ldhDeck->getBgaDeckData(), AbstractCard::LOCATION_DEFAULT);
-
-                if (!$ldhDeck->isPublic()) {
-                    $deck->shuffle(AbstractCard::LOCATION_DEFAULT);
+                if (!$deck->isPublic()) {
+                    $bgaDeck->shuffle(AbstractCard::LOCATION_DEFAULT);
                 }
             }
         }
-
-        // Init units
     }
 
     /*
@@ -276,18 +289,14 @@ class ligneeheros extends Table
         $result['terrains']  = $this->terrains?? [];
 
         // Send map details : Load Map from Db
-        $tiles = MapService::buildMapFromDb(
-            self::getCollectionFromDb(MapRepository::getMapQry(true)),
-            $this->terrains?? []
-        );
-        $result['map'] = $tiles;
+        $result['map'] = $this->mapService->getMapTiles($this->terrains?? [], true);;
 
         // Game states
         $result['currentState'] = $this->getCurrentState();
 
         // Cards
         $currentStateId  = $this->gamestate->state_id();
-        $result['cards'] = $this->cardService->getPublicCards($this->decks, $this->cards, $currentStateId, $currentPlayerId);
+        $result['cards'] = $this->cardService->getPublicCards($this->cards, $currentStateId, $currentPlayerId);
         $result['decks'] = $this->cardService->getPublicDecks($this->cards);
 
         // TODO: Gather all information about current game situation (visible by player $current_player_id).
@@ -306,7 +315,7 @@ class ligneeheros extends Table
             ]
         ];
 
-        foreach (array_keys(CurrentStateService::CURRENT_STATES) as $i => $stateName) {
+        foreach (array_keys(CurrentStateService::CURRENT_STATES) as $stateName) {
             $states[$stateName] = (int) $this->getGameStateValue($stateName);
         }
 
@@ -529,6 +538,19 @@ class ligneeheros extends Table
 //        // Please add your future database scheme changes here
 //
 //
+    }
+
+    public function getPeople(): PeopleService
+    {
+        if ($this->people === null) {
+            $this->people = new PeopleService();
+            $this->people->init(
+                $this->bgaMeeple,
+                $this->meeples
+            );
+        }
+
+        return $this->people;
     }
 
     public function getDeck(string $type):? Deck

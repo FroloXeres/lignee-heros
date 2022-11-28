@@ -88,38 +88,30 @@ abstract class AbstractState implements StateInterface
     public function getDescription(): string {return $this->description;}
 
     /**
-     * @param \APP_GameAction $gameAction
-     *
-     * @return callable[]|null
+     * @return array<string, callable>|null
      */
-    public function getActionCleanMethods(\APP_GameAction $gameAction): ?array
+    public function getActionCleanMethods(): array
     {
         return [];
     }
 
     /**
-     * @param \Table $game
-     *
-     * @return callable[]|null
+     * @return array<string, callable>|null
      */
-    public function getActionMethods(\Table $game): ?array
+    public function getActionMethods(): array
     {
         return [];
     }
 
     /**
-     * @param \Table $game
-     *
      * @return callable[]|null
      */
-    abstract public function getStateArgMethod(\Table $game): ?callable;
+    abstract public function getStateArgMethod(): ?callable;
 
     /**
-     * @param \Table $game
-     *
      * @return callable[]|null
      */
-    abstract public function getStateActionMethod(\Table $game): ?callable;
+    abstract public function getStateActionMethod(): ?callable;
 
     /**
      * Generate associative array used by BGA to build Game State Machine
@@ -148,7 +140,7 @@ abstract class AbstractState implements StateInterface
         }
 
         if (!empty($this->possibleActions)) {
-            $stateAsArray['possibleActions'] = $this->possibleActions;
+            $stateAsArray['possibleactions'] = $this->possibleActions;
         }
 
         return $stateAsArray;

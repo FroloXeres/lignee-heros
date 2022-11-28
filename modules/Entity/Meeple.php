@@ -6,6 +6,8 @@ use LdH\Entity\Cards\Lineage;
 
 class Meeple
 {
+    public const BGA_TYPE = 'meeple';
+
     public const MAGE          = 'mage';
     public const WORKER        = 'worker';
     public const WARRIOR       = 'warrior';
@@ -116,5 +118,35 @@ class Meeple
         }
 
         return $this;
+    }
+
+    public function getColor(): string
+    {
+        switch ($this->code) {
+            case self::ELVEN_MAGE :
+            case self::HUMANI_MAGE :
+                return self::MAGE;
+            case self::NANI_WARRIOR :
+            case self::ORK_WARRIOR :
+                return self::WARRIOR;
+            case self::HUMANI_WORKER :
+            case self::ORK_WORKER :
+                return self::WORKER;
+            case self::NANI_SAVANT :
+            case self::ELVEN_SAVANT :
+                return self::SAVANT;
+            default: return $this->code;
+        }
+    }
+
+    public function toArray(): array
+    {
+        return [
+            'code' => $this->code,
+            'name' => $this->name,
+            'color' => $this->getColor(),
+            'description' => $this->description,
+            'lineage' => $this->getLineage() ? $this->getLineage()->getCode() : ''
+        ];
     }
 }

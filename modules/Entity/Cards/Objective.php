@@ -203,25 +203,35 @@ class Objective extends AbstractCard
      */
     protected static function getSubNeedAsText(int $subNeed): string
     {
+        $brackets = true;
+        $text = '';
         switch ($subNeed) {
-            case self::NEED_SUB_WORKER: return Meeple::WORKER;
-            case self::NEED_SUB_WARRIOR: return Meeple::WARRIOR;
-            case self::NEED_SUB_MAGE: return Meeple::MAGE;
-            case self::NEED_SUB_SAVANT: return Meeple::SAVANT;
-            case self::NEED_SUB_NATURE: return Spell::TYPE_NATURE;
-            case self::NEED_SUB_FIGHT: return Spell::TYPE_COMBAT;
-            case self::NEED_SUB_SCIENCE: return Bonus::SCIENCE;
-            case self::NEED_SUB_FOOD: return Bonus::FOOD;
-            case self::NEED_SUB_FAR_I: return 'I';
-            case self::NEED_SUB_FAR_III: return 'III';
-            case self::NEED_SUB_TOWER: return 'tower';
-            case self::NEED_SUB_RUINS: return 'ruins';
-            case self::NEED_SUB_LAIR: return 'lair';
-            case self::NEED_SUB_RESOURCE_ONE: return 'resource';
-            case self::NEED_SUB_RESOURCE_ALL: return 'resources';
-            case self::NEED_SUB_NO_WOUND: return 'no_wound';
+            case self::NEED_SUB_WORKER: $text = Meeple::WORKER; break;
+            case self::NEED_SUB_WARRIOR: $text = Meeple::WARRIOR; break;
+            case self::NEED_SUB_MAGE: $text = Meeple::MAGE; break;
+            case self::NEED_SUB_SAVANT: $text = Meeple::SAVANT; break;
+            case self::NEED_SUB_NATURE: $text = Spell::TYPE_NATURE; break;
+            case self::NEED_SUB_FIGHT: $text = Spell::TYPE_COMBAT; break;
+            case self::NEED_SUB_SCIENCE: $text = Bonus::SCIENCE; break;
+            case self::NEED_SUB_FOOD: $text = Bonus::FOOD; break;
+            case self::NEED_SUB_FAR_I: $text = 'I'; break;
+            case self::NEED_SUB_FAR_III: $text = 'III'; break;
+            default: $brackets = false; break;
+        }
+        if ($brackets) {
+            return '['.$text.']';
+        }
+
+        switch ($subNeed) {
+            case self::NEED_SUB_TOWER: $text = clienttranslate('Tower'); break;
+            case self::NEED_SUB_RUINS: $text = clienttranslate('Ruins'); break;
+            case self::NEED_SUB_LAIR: $text = clienttranslate('Lair'); break;
+            case self::NEED_SUB_NO_WOUND: $text = clienttranslate('No wound'); break;
+            case self::NEED_SUB_RESOURCE_ONE: $text = clienttranslate('Harvest a resource'); break;
+            case self::NEED_SUB_RESOURCE_ALL: $text = clienttranslate('Harvest one of each resource'); break;
             default: return '';
         }
+        return $text;
     }
 
     /**
@@ -233,21 +243,21 @@ class Objective extends AbstractCard
 
         switch ($this->getNeed()) {
             case self::NEED_HARVEST:
-                $txt[] = '[end_turn]';
+                $txt[] = '[little_end]';
             case self::NEED_UNITS:
                 break;
             case self::NEED_SPELL: $txt[] = '[spell]'; break;
             case self::NEED_INVENTION: $txt[] = '[invention]'; break;
             case self::NEED_WIN_FIGHT: $txt[] = '[fight]'; break;
             case self::NEED_SURVIVE: $txt[] = '[turn]'; break;
-            case self::NEED_EXPLORE: $txt[] = '[tile]'; break;
+            case self::NEED_EXPLORE: $txt[] = '[explore]'; break;
             default:
                 $txt[] = '[none]';
                 break;
         }
 
         if ($this->getSubNeed()) {
-            $txt[] = '['.self::getSubNeedAsText($this->getSubNeed()).']';
+            $txt[] = self::getSubNeedAsText($this->getSubNeed());
         }
         if ($this->getNeedCount() > 1) {
             $txt[] = 'x' . $this->getNeedCount();

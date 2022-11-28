@@ -180,23 +180,6 @@ class Deck implements \Iterator
         return $this;
     }
 
-    /**
-     * @param \Table $game
-     * @param AbstractCard[] $cards
-     */
-    public function drawCards(\Table $game, array $cards): void
-    {
-        /*
-        $cardIds = $game::getCollectionFromDB(
-            CardRepository::getCardIdsInLocationQry($this->getType(), $cards)
-        );
-        $this->getBgaDeck()->moveCards(
-            array_keys($cardIds),
-            AbstractCard::LOCATION_HAND
-        );
-        */
-    }
-
     public function getPublicData(): array
     {
         return [
@@ -237,14 +220,10 @@ class Deck implements \Iterator
     {
         switch ($this->type) {
             case AbstractCard::TYPE_INVENTION:
-                return [
-                    AbstractCard::LOCATION_DEFAULT,
-                    AbstractCard::LOCATION_ON_TABLE,
-                    AbstractCard::LOCATION_HAND
-                ];
             case AbstractCard::TYPE_MAGIC:
                 return [
                     AbstractCard::LOCATION_DEFAULT,
+                    AbstractCard::LOCATION_ON_TABLE,
                     AbstractCard::LOCATION_HAND
                 ];
             case AbstractCard::TYPE_LINEAGE:
@@ -258,6 +237,17 @@ class Deck implements \Iterator
             default:
                 return [];
         }
+    }
+
+    public function getCardByCode(string $code): ?AbstractCard
+    {
+        foreach ($this->cards as $card) {
+            if ($card->getCode() === $code) {
+                return $card;
+            }
+        }
+
+        return null;
     }
 
     // Implement Traversable

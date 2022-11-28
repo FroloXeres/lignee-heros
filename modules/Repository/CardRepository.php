@@ -4,29 +4,56 @@ namespace LdH\Repository;
 
 use LdH\Entity\Cards\AbstractCard;
 
-class CardRepository
+class CardRepository extends AbstractRepository
 {
     /**
-     * @param string $type
-     * @param AbstractCard[] $cards
-     * @param string $location
+     * @param string  $type
+     * @param int[]   $typeArgs
+     * @param ?string $location
+     * @param bool    $oneOfEach
      *
-     * @return string
+     * @return array
      */
-    public static function getCardIdsInLocationQry(string $type, array $cards, string $location = AbstractCard::LOCATION_DEFAULT): string
+    public function getCardIds(string $type, array $typeArgs, string $location = null, bool $oneOfEach = false): array
     {
-        if (count($cards)) {
-            return sprintf('SELECT `card_id` FROM `%s` WHERE `card_type_arg` IN (%s) AND `card_location` = "%s" LIMIT 1',
-                $type,
-                join(', ', array_map(function(AbstractCard $card) {
-                        return $card->getTypeArg();
-                    },
-                    $cards
-                )),
-                $location
-            );
+        if (!count($typeArgs)) {
+            return [];
         }
 
-        return '';
+        return array_map(function(array $card) {
+                return $card['card_type_arg'];
+            },
+            $this->selectAll(
+                sprintf('SELECT `card_id`, `card_type_arg` FROM `%s` WHERE `card_type_arg` IN (%s)%s',
+                    $type,
+                    join(', ', $typeArgs),
+                    ($location ?
+                        sprintf(' AND `card_location` = "%s"%s',
+                            $location,
+                            ($oneOfEach ? ' GROUP BY `card_type_arg`, `card_id`' : '')
+                        ) :
+                        ''
+                    )
+                )
+            )?? []
+        );
+    }
+
+    public function getCardTypeDataByLocation(string $type, string $location = null): array
+    {
+        return $this->selectAll(
+            sprintf('SELECT * FROM `%s`%s',
+                $type,
+                $location !== null ? sprintf(
+                    ' WHERE `card_location` = "%s"',
+                    $location
+                ) : ''
+            )
+        );
+    }
+
+    public function getPeopleData(): array
+    {
+        return $this->selectAll('SELECT * FROM `meeple` ORDER BY `card_type`, `card_location`');
     }
 }

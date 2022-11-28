@@ -5,98 +5,79 @@ namespace LdH\Service;
 use LdH\Entity\Map\City;
 use LdH\Entity\Map\Terrain;
 use LdH\Entity\Map\Tile;
+use LdH\Repository\MapRepository;
 
 class MapService
 {
     public const DEFAULT_RADIUS = 3;
 
+    /** @var Terrain[] */
+    protected array         $terrains;
+    protected MapRepository $mapRepository;
+
+    public function __construct()
+    {
+        $this->mapRepository = new MapRepository();
+    }
+
+    public function setTerrains(array $terrains): self
+    {
+        $this->terrains = $terrains;
+
+        return $this;
+    }
+
+    public function updateCity(City $city)
+    {
+        $this->mapRepository->updateCity($city);
+    }
+
     /**
-     * Hexa, $radius circles around central town, flipped on start
-     * 2 * $radius + 1 square tiles, with some disabled (too far from center)
-     *
-     * Dependant of CSS (have to be parametrized to change radius)
-     *
-     * @param int $radius
+     * @param Terrain[] $terrains
+     */
+    public function createInitialMap(array $terrains): void
+    {
+        $tiles = self::initMap(
+            self::generateMap(),
+            $terrains
+        );
+        $this->mapRepository->saveMap($tiles);
+    }
+
+    /**
+     * @param Terrain[] $terrains
+     * @param bool      $onlyRevealed
      *
      * @return Tile[]
      */
-    public static function generateMap(int $radius = self::DEFAULT_RADIUS): array
+    public function getMapTiles(array $terrains = [], bool $onlyRevealed = false): array
     {
-        $tiles       = [];
-        $width       = $radius * 2 + 1;
-        $max         = $width * $width + 1;
-        $limit       = (int) floor($width / 2);
-        $x           = -$limit;
-        $yStart      = -1;
-        $y           = $yStart;
-        $line        = 1;
-        for ($id = 1; $id < $max; $id++) {
-            if ($x > $limit) {
-                $x = -$limit;
-                $yStart++;
-                $y = $yStart;
-                $line++;
-            }
-            if ($y < $yStart - $limit) {$y = -1;}
-
-            $distance = max(abs($y), abs($x), abs(-$x - $y));
-            $disabled = $distance > $limit;
-            $flip     = !$x && !$y;     // Center is town (visible at the beginning)
-            $tile     = new Tile($id, $x, $y, $distance, $disabled, $flip);
-
-            $tiles[$tile->getId()] = $tile;
-
-            $x++;
-            if ($line%2 !== 0? ($id%2 !== 0) : ($id%2 === 0)) $y--;
-        }
-
-        return $tiles;
+        return self::buildMapFromDb(
+            $this->mapRepository->getMapTiles($onlyRevealed),
+            $terrains
+        );
     }
 
-    /**
-     * @param array $defaultMap
-     * @param array $terrains
-     *
-     * @return array
-     */
-    public static function initMap(array $defaultMap, array $terrains = []): array
+    public function getCentralTile(): Tile
     {
-        if (!empty($terrains)) {
-            $defaultMap = self::randomTerrain($defaultMap, $terrains);
-        }
-
-        return $defaultMap;
+        return $this->buildFromData(
+            $this->mapRepository->getTileInfosByPosition(0, 0)
+        );
     }
 
-    /**
-     * @param array $dbLines
-     * @param array $terrains
-     *
-     * @return array
-     */
-    public static function buildMapFromDb(array $dbLines, array $terrains = []): array
+    protected function buildFromData($data): Tile
     {
-        $tiles       = [];
-        $fillTerrain = !empty($terrains);
-
-        foreach ($dbLines as $id => $line) {
-            $tile = new Tile(
-                (int) $id,
-                (int) $line['tile_x'],
-                (int) $line['tile_y'],
-                (int) $line['tile_far'],
-                $line['tile_disabled'] === '1',
-                $line['tile_revealed'] === '1'
-            );
-
-            if ($fillTerrain) {
-                $tile->setTerrain($terrains[$line['tile_terrain']]?? null);
-            }
-
-            $tiles[] = $tile;
-        }
-
-        return $tiles;
+        return (new Tile(
+            (int) $data['tile_id'],
+            (int) $data['tile_x'],
+            (int) $data['tile_y'],
+            (int) $data['tile_far'],
+            $data['tile_disabled'] === '1',
+            $data['tile_revealed'] === '1'
+        ))
+        ->setTerrain($this->terrains[
+            $data['tile_terrain']
+        ]);
     }
 
     /**
@@ -151,6 +132,95 @@ class MapService
     }
 
     /**
+     * Hexa, $radius circles around central town, flipped on start
+     * 2 * $radius + 1 square tiles, with some disabled (too far from center)
+     *
+     * Dependant of CSS (have to be parametrized to change radius)
+     *
+     * @param int $radius
+     *
+     * @return Tile[]
+     */
+    protected static function generateMap(int $radius = self::DEFAULT_RADIUS): array
+    {
+        $tiles       = [];
+        $width       = $radius * 2 + 1;
+        $max         = $width * $width + 1;
+        $limit       = (int) floor($width / 2);
+        $x           = -$limit;
+        $yStart      = -1;
+        $y           = $yStart;
+        $line        = 1;
+        for ($id = 1; $id < $max; $id++) {
+            if ($x > $limit) {
+                $x = -$limit;
+                $yStart++;
+                $y = $yStart;
+                $line++;
+            }
+            if ($y < $yStart - $limit) {$y = -1;}
+
+            $distance = max(abs($y), abs($x), abs(-$x - $y));
+            $disabled = $distance > $limit;
+            $flip     = !$x && !$y;     // Center is town (visible at the beginning)
+            $tile     = new Tile($id, $x, $y, $distance, $disabled, $flip);
+
+            $tiles[$tile->getId()] = $tile;
+
+            $x++;
+            if ($line%2 !== 0? ($id%2 !== 0) : ($id%2 === 0)) $y--;
+        }
+
+        return $tiles;
+    }
+
+    /**
+     * @param array $defaultMap
+     * @param array $terrains
+     *
+     * @return array
+     */
+    private static function initMap(array $defaultMap, array $terrains = []): array
+    {
+        if (!empty($terrains)) {
+            $defaultMap = self::randomTerrain($defaultMap, $terrains);
+        }
+
+        return $defaultMap;
+    }
+
+    /**
+     * @param array $dbLines
+     * @param array $terrains
+     *
+     * @return array
+     */
+    protected static function buildMapFromDb(array $dbLines, array $terrains = []): array
+    {
+        $tiles       = [];
+        $fillTerrain = !empty($terrains);
+
+        foreach ($dbLines as $id => $line) {
+            $tile = new Tile(
+                (int) $id,
+                (int) $line['tile_x'],
+                (int) $line['tile_y'],
+                (int) $line['tile_far'],
+                $line['tile_disabled'] === '1',
+                $line['tile_revealed'] === '1'
+            );
+
+            if ($fillTerrain) {
+                $tile->setTerrain($terrains[$line['tile_terrain']]?? null);
+            }
+
+            $tiles[] = $tile;
+        }
+
+        return $tiles;
+    }
+
+    /**
      * Generate random terrains for given tile map
      *
      * @param Tile[]    $tiles
@@ -158,7 +228,7 @@ class MapService
      *
      * @return array
      */
-    public static function randomTerrain(array $tiles, array $terrains): array
+    private static function randomTerrain(array $tiles, array $terrains): array
     {
         $terrainByDistance = self::getTerrainByDistance();
         $keys              = array_fill(0, count($terrainByDistance), 0);

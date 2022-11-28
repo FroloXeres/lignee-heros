@@ -6,13 +6,20 @@ use LdH\Entity\Cards\AbstractCard;
 use LdH\Entity\Cards\Deck;
 use LdH\Entity\Map\City;
 use LdH\Entity\Map\Terrain;
-use LdH\Repository\MapRepository;
-use LdH\Service\CardService;
+use LdH\Entity\Meeple;
+use LdH\Entity\PeopleService;
+use LdH\Entity\Unit;
+use LdH\Service\CurrentStateService;
 
 class GameInitState extends AbstractState
 {
     public const ID = 2;
     public const NAME = 'GameInit';
+
+    public const NOTIFY_CITY_START         = 'cityStart';
+    public const NOTIFY_CITY_INVENTIONS    = 'cityInventions';
+    public const NOTIFY_CITY_UNITS         = 'cityUnits';
+    public const NOTIFY_INVENTION_REVEALED = 'inventionRevealed';
 
     public static function getId(): int
     {
@@ -29,38 +36,54 @@ class GameInitState extends AbstractState
         $this->transitions       = ["" => ChooseLineageState::ID];
     }
 
-    public function getStateArgMethod(\Table $game): ?callable
+    public function getStateArgMethod(): ?callable
     {
-        return function () use ($game) {
+        return function () {
             // No data to send for this
             return [];
         };
     }
 
-    public function getStateActionMethod(\Table $game): ?callable
+    public function getStateActionMethod(): ?callable
     {
-        return function () use ($game) {
+        return function () {
+            /** @var \ligneeheros $this */
+
             // Choose random city (notify)
-            $city = GameInitState::getRandomCity($game->terrains);
-            $game::DbQuery(MapRepository::updateCity($city));
+            $city = GameInitState::getRandomCity($this->terrains);
+            $this->mapService->updateCity($city);
 
             // -> Draw city inventions (notify)
-            /** @var Deck $invention */
-            $invention = $game->getDeck(AbstractCard::TYPE_INVENTION);
-            $invention->drawCards($game, $city->getInventions());
+            /** @var Deck $inventions */
+            $inventions = $this->getDeck(AbstractCard::TYPE_INVENTION);
+            $this->cardService->drawCards($inventions, $city->getInventions());
+
+            // Draw 1st invention card of the deck (notify)
+            $inventions->getBgaDeck()->pickCardForLocation(AbstractCard::LOCATION_DEFAULT, AbstractCard::LOCATION_ON_TABLE);
+
+            $peopleService = $this->getPeople();
 
             // -> Put city units on central tile (notify)
-
+            foreach ($city->getUnits() as $meeple) {
+                $peopleService->birth(
+                    $meeple->getCode(),
+                    Unit::LOCATION_MAP,
+                    PeopleService::CITY_ID
+                );
+            }
 
             // Put 8 Worker (- number of player) on central tile (notify)
-
-
-            // Draw 1st Invention card of the deck (notify)
-            $invention->getBgaDeck()->pickCardForLocation(AbstractCard::LOCATION_DEFAULT, AbstractCard::LOCATION_ON_TABLE);
+            $toAddCnt = CurrentStateService::START_PEOPLE - $this->getPlayersNumber() - count($city->getUnits());
+            $peopleService->birth(
+                Meeple::WORKER,
+                Unit::LOCATION_MAP,
+                PeopleService::CITY_ID,
+                $toAddCnt
+            );
 
             // Notify players on next state (Notifications don't work on game start)
 
-            $game->gamestate->nextState();
+            $this->gamestate->nextState();
         };
     }
 
@@ -69,7 +92,7 @@ class GameInitState extends AbstractState
      *
      * @return City
      */
-    protected static function getRandomCity(array $terrains): City
+    public static function getRandomCity(array $terrains): City
     {
         $cities   = [Terrain::TOWN_HUMANIS, Terrain::TOWN_ORK, Terrain::TOWN_NANI, Terrain::TOWN_ELVEN];
         $cityCode = $cities[array_rand($cities)];

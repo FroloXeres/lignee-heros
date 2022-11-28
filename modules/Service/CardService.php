@@ -4,40 +4,89 @@ namespace LdH\Service;
 
 use LdH\Entity\Cards\AbstractCard;
 use LdH\Entity\Cards\Deck;
+use LdH\Repository\CardRepository;
 use LdH\State\ChooseLineageState;
+use LdH\State\DeadEndState;
 use LdH\State\DrawObjectiveState;
-use LdH\State\GameInitState;
 
 class CardService
 {
-    public function getPublicDecks(array $bgaDecks): array
+    protected CardRepository $cardRepository;
+
+    public function __construct()
+    {
+        $this->cardRepository = new CardRepository();
+    }
+
+    /**
+     * @param Deck           $deck
+     * @param AbstractCard[] $cards
+     */
+    public function drawCards(Deck $deck, array $cards): void
+    {
+        $cardIds = $this->cardRepository->getCardIds(
+            $deck->getType(),
+            array_map(function(AbstractCard $card) {return $card->getTypeArg();}, $cards),
+            AbstractCard::LOCATION_DEFAULT,
+            true
+        );
+
+        $deck->getBgaDeck()->moveCards(
+            array_keys($cardIds),
+            AbstractCard::LOCATION_HAND
+        );
+    }
+
+    protected function populateDeckWithIds(Deck $deck)
+    {
+        $cardIds = $this->cardRepository->getCardIds(
+            $deck->getType(),
+            array_map(function(AbstractCard $card) {return $card->getTypeArg();}, $deck->getCards())
+        );
+
+        $cardsIdsByTypeArg = [];
+        foreach ($cardIds as $cardId => $typeArg) {
+            if (array_key_exists($typeArg, $cardsIdsByTypeArg)) {
+                $cardsIdsByTypeArg[$typeArg][] = $cardId;
+            } else {
+                $cardsIdsByTypeArg[$typeArg] = [$cardId];
+            }
+        }
+
+        foreach ($deck->getCards() as $card) {
+            $card->setIds(
+                $cardsIdsByTypeArg[$card->getTypeArg()] ?? []
+            );
+        }
+    }
+
+    public function getPublicDecks(array $decks): array
     {
         return array_combine(
-            array_keys($bgaDecks),
-            array_map(function(Deck $bgaDeck) {
-                return $bgaDeck->getPublicData();
-            }, $bgaDecks)
+            array_keys($decks),
+            array_map(function(Deck $deck) {
+                return $deck->getPublicData();
+            }, $decks)
         );
     }
 
     /**
-     * @param \Deck[] $bgaDeck
-     * @param Deck[]  $ldhDeck
+     * @param Deck[]  $decks
      * @param int     $stateId
      * @param int     $currentPlayerId
      *
      * @return array<string, array>
      */
-    public function getPublicCards(array $bgaDeck, array $ldhDeck, int $stateId, int $currentPlayerId): array
+    public function getPublicCards(array $decks, int $stateId, int $currentPlayerId): array
     {
         $cards = [];
 
-        foreach ($ldhDeck as $type => $deck) {
+        foreach ($decks as $type => $deck) {
             if ($this->canSendDeckByStateAndPlayer($type, $stateId, $currentPlayerId)) {
                 $cards[$type] = [];
 
                 foreach ($deck->getPublicLocations() as $location) {
-                    $cards[$type][$location] = $this->preparePublicData($bgaDeck[$type], $deck, $location);
+                    $cards[$type][$location] = $this->preparePublicData($deck->getBgaDeck(), $deck, $location);
                 }
             }
         }
@@ -78,12 +127,12 @@ class CardService
                 return $stateId === ChooseLineageState::ID;
             case AbstractCard::TYPE_OBJECTIVE:
                 // Needed ?
-                return $stateId === DrawObjectiveState::ID;
+                return \in_array($stateId, [DrawObjectiveState::ID], true);
             case AbstractCard::TYPE_OTHER:
             case AbstractCard::TYPE_FIGHT:
             case AbstractCard::TYPE_DISEASE:
                 // To update
-                return $stateId === 0;
+                return $stateId === DeadEndState::ID;
         }
 
         return false;

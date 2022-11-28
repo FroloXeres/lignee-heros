@@ -27,8 +27,6 @@
 require_once( APP_BASE_PATH."view/common/game.view.php" );
 
 use LdH\Repository\MapRepository;
-use LdH\Service\CurrentStateService;
-use LdH\Service\StateService;
 use LdH\Service\MapService;
 use LdH\Entity\Cards\Deck;
 use LdH\Entity\Map\Tile;
@@ -45,20 +43,15 @@ class view_ligneeheros_ligneeheros extends game_view
     function populateMapBlock() {
         $this->page->begin_block('ligneeheros_ligneeheros', 'MAP_TILES');
 
-        // Load Map from Db
-        $tiles = MapService::buildMapFromDb(self::getCollectionFromDb(MapRepository::getMapQry()));
-
         // Prepare HTML/CSS map
-        foreach ($tiles as $tile) {
+        foreach ($this->game->mapService->getMapTiles() as $tile) {
             /** @var Tile $tile */
-            $params = [
-                'TILE_ID'         => $tile->getId(),
-                'COORD'      => $tile->getX() . '_' . $tile->getY(),
-                'CLASS'      => MapService::getClass($tile),
-                'HOW_FAR'    => MapService::getDistanceToDisplay($tile),
-            ];
-
-            $this->page->insert_block('MAP_TILES', $params);
+            $this->page->insert_block('MAP_TILES', [
+                'TILE_ID' => $tile->getId(),
+                'COORD'   => $tile->getX() . '_' . $tile->getY(),
+                'CLASS'   => MapService::getClass($tile),
+                'HOW_FAR' => MapService::getDistanceToDisplay($tile),
+            ]);
         }
     }
 
