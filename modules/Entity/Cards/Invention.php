@@ -60,7 +60,7 @@ class Invention extends AbstractCard
     public const FERMENTING    = 139;
     public const FESTIVAL      = 140;
     public const GEM_CUTTING   = 141;
-    public const BREEDING      = 142;
+    public const REARING      = 142;
 
     // Cost
     /** @var int */

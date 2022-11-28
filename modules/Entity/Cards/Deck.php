@@ -220,14 +220,10 @@ class Deck implements \Iterator
     {
         switch ($this->type) {
             case AbstractCard::TYPE_INVENTION:
-                return [
-                    AbstractCard::LOCATION_DEFAULT,
-                    AbstractCard::LOCATION_ON_TABLE,
-                    AbstractCard::LOCATION_HAND
-                ];
             case AbstractCard::TYPE_MAGIC:
                 return [
                     AbstractCard::LOCATION_DEFAULT,
+                    AbstractCard::LOCATION_ON_TABLE,
                     AbstractCard::LOCATION_HAND
                 ];
             case AbstractCard::TYPE_LINEAGE:

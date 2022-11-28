@@ -168,9 +168,11 @@ h2#turn::before {
 #cards-zone .card.hand {
 
 }
+#cards-zone .card {
+    margin-bottom: 1em;
+}
 #cards-zone .card:not(:last-child) {
     margin-right: 1em;
-    margin-bottom: 1em;
 }
 
 /********* Cards **********/
@@ -431,7 +433,7 @@ h2#turn::before {
     border-bottom-right-radius: 5% 21%;
     height: 9.8%;
     margin-bottom: 1%;
-    padding: 1% 10% 1% 17%;
+    padding: 1% 1% 1% 20%;
 }
 .card .gain div {
     display: flex;
@@ -442,6 +444,7 @@ h2#turn::before {
 .card .gain.gain_and {
     height: 22%;
     flex-direction: column;
+    padding-right: 10%;
 }
 .card .gain.gain_or::after,
 .card .gain.gain_and::after {
@@ -449,7 +452,7 @@ h2#turn::before {
     width: 1em;
     height: 1em;
     position: absolute;
-    top: 30%;
+    top: 0;
     right: 0;
     border: 1px solid #c29253;
     border-radius: 1em;
@@ -636,7 +639,7 @@ h2#turn::before {
     font-style: normal;
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: space-around;
     flex-wrap: wrap;
 }
 

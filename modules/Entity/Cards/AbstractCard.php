@@ -18,6 +18,7 @@ abstract class AbstractCard implements CardInterface
     public const LOCATION_DISCARD  = 'discard';
     public const LOCATION_HIDDEN   = 'hidden';
     public const LOCATION_REMOVED  = 'removed';
+    public const LOCATION_PLAYER   = 'player';
 
     /** @var int[]  */
     protected ?array $ids          = [];

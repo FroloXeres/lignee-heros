@@ -24,8 +24,9 @@ class Bonus implements \JsonSerializable
     public const MOVE            = 'move';            // More move
     public const SPELL_RECAST    = 'recast';          // Can cast another spell
     public const MEEPLE_POWER_UP = 'power_up';        // Meeple increase +1 Power for Warriors
-
-    public const BONUS_MULTIPLY = 'multiply';
+    public const BONUS_MULTIPLY  = 'multiply';
+    public const BIRTH_ALL       = 'birth_choose';    // Choose unit type at birth
+    public const SAVANT_HEALING  = 'savant_healing';         // Savant can heal units
 
     // Used in CSS
     protected string  $code        = '';
