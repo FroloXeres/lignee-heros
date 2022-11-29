@@ -383,6 +383,14 @@ h2#turn::before {
 .card.invention_136 .title
 {font-size: .6em;}
 
+.card.spell_621 .title,
+.card.spell_612 .title
+{font-size: .9em;}
+.card.spell_624 .title
+{font-size: .85em;}
+.card.spell_617 .title
+{font-size: .8em;}
+
 .card .type {
     text-align: left;
     font-size: .7em;
