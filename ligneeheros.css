@@ -171,6 +171,7 @@ h2#turn::before {
 #cards-zone .card {
     margin-bottom: 1em;
 }
+#floating-cards .card,
 #cards-zone .card:not(:last-child) {
     margin-right: 1em;
 }
@@ -1014,6 +1015,7 @@ svg.svg-icon {
     display: flex;
     justify-content: center;
     align-items: flex-end;
+    padding: 0 .5em;
 }
 .tile .harvest {
     display: flex;
