@@ -99,16 +99,21 @@ function (dojo, on, declare) {
             let tileTerrain = {};
             let tileContent = null;
             _self.map.forEach(function(tile) {
-                tileTerrain = _self.terrains[tile.terrain];
+                tileTerrain = _self.replaceIconsInObject(
+                    _self.terrains[tile.terrain]
+                );
                 tileContent = _self.format_block('jstpl_tile', {
                     count: tileTerrain.resources.length,
-                    resource1: tileTerrain.resources[0]? tileTerrain.resources[0] : '',
-                    resource2: tileTerrain.resources[1]? tileTerrain.resources[1] : '',
-                    resource3: tileTerrain.resources[2]? tileTerrain.resources[2] : '',
+                    resource1: tileTerrain.resources[0]? _self.getIconAsText(tileTerrain.resources[0]) : '',
+                    resource2: tileTerrain.resources[1]? _self.getIconAsText(tileTerrain.resources[1]) : '',
+                    resource3: tileTerrain.resources[2]? _self.getIconAsText(tileTerrain.resources[2]) : '',
                     name: tileTerrain.name,
+                    bonus: tileTerrain.bonusAsTxt,
                     food: tileTerrain.food? '' : 'none',
                     foodCount: tileTerrain.food,
-                    science: tileTerrain.science? '' : 'none'
+                    foodIcon: _self.getIconAsText('food'),
+                    science: tileTerrain.science? '' : 'none',
+                    scienceIcon: _self.getIconAsText('science')
                 });
                 dojo.place(tileContent, 'tile-content-'+tile.id);
                 dojo.query('#tile-' + tile.id + ' .map-hex-content')

@@ -196,7 +196,8 @@ class Terrain implements \JsonSerializable
             'food'      => $this->getFood(),
             'science'   => $this->hasScience(),
             'resources' => array_keys($this->getResources()),
-            'bonuses'   => $this->getBonuses()
+            'bonuses'   => $this->getBonuses(),
+            'bonusAsTxt'     => join('', $this->getBonuses())
         ];
     }
 }

@@ -190,14 +190,17 @@
 
     var jstpl_tile =
        '<div class="resources resources_${count}">\
-            <div class="resource resource-1 ${resource1}"></div>\
-            <div class="resource resource-2 ${resource2}"></div>\
-            <div class="resource resource-3 ${resource3}"></div>\
+            <div class="resource resource-1">${resource1}</div>\
+            <div class="resource resource-2">${resource2}</div>\
+            <div class="resource resource-3">${resource3}</div>\
         </div>\
-        <div class="name">${name}</div>\
+        <div class="name">\
+            <div class="bonus">${bonus}</div>\
+            ${name}\
+        </div>\
         <div class="harvest">\
-            <div class="resource food ${food}" data-count="${foodCount}"></div>\
-            <div class="resource science ${science}"></div>\
+            <div class="resource food ${food}" data-count="${foodCount}">${foodIcon}</div>\
+            <div class="resource science ${science}">${scienceIcon}</div>\
         </div>'
     ;
 

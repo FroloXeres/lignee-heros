@@ -122,7 +122,7 @@ $mountainRiver  = new Terrain(clienttranslate('Mountain river'), Terrain::MOUNTA
 
 $plain          = new Terrain(clienttranslate('Plain'), Terrain::PLAIN, 2, false, [$clay, $animal]);
 $plainLake      = new Terrain(clienttranslate('Plain lake'), Terrain::PLAIN_LAKE, 3, false, [$paper, $clay, $animal]);
-$plainLake->addBonus(new Bonus(1, Bonus::FOOD));
+$plainLake->addBonus((new Bonus(1, Bonus::FOOD))->setDescription('[food]+1'));
 $plainWood      = new Terrain(clienttranslate('Wooded plain'), Terrain::PLAIN_WOOD, 1, false, [$wood, $animal]);
 $plainDesert    = new Terrain(clienttranslate('Deserted plain'), Terrain::PLAIN_DESERT, 0, false, [$clay]);
 $plainRiverRuin = new Terrain(clienttranslate('Plain ruins'), Terrain::PLAIN_RIVER_RUIN, 3, false, [$paper, $clay, $animal]);
@@ -143,7 +143,7 @@ $swampTower->addBonus(new Bonus(10, Bonus::FOOD_FOUND));
 $hill           = new Terrain(clienttranslate('Hills'), Terrain::HILL, 2, false, [$stone, $metal]);
 $hillPlateau    = new Terrain(clienttranslate('Plateau'), Terrain::HILL_PLATEAU, 1, false, [$stone]);
 $hillWoodRiver  = new Terrain(clienttranslate('Wooded hills'), Terrain::HILL_WOOD_RIVER, 2, false, [$wood, $metal, $animal]);
-$hillWoodRiver->addBonus(new Bonus(1, Bonus::FOOD));
+$hillWoodRiver->addBonus((new Bonus(1, Bonus::FOOD))->setDescription('[food] +1'));
 $hillRuin       = new Terrain(clienttranslate('Hills ruins'), Terrain::HILL_RUIN, 2, false, [$stone, $metal]);
 $hillRuin
     ->addBonus(new Bonus(10, Bonus::SCIENCE_FOUND))
@@ -161,8 +161,8 @@ $forestLair     = new Terrain(clienttranslate('Forest lair'), Terrain::FOREST_LA
 $forestDense    = new Terrain(clienttranslate('Dense forest'), Terrain::FOREST_DENSE, 0, false, [$wood, $wood, $medic]);
 $forestRuin     = new Terrain(clienttranslate('Forest ruins'), Terrain::FOREST_RUIN, 0, false, [$wood, $animal]);
 $forestRuin
-    ->addBonus(new Bonus(10, Bonus::SCIENCE_FOUND))
-    ->addBonus(new Bonus(1, Bonus::SCIENCE))
+    ->addBonus((new Bonus(10, Bonus::SCIENCE_FOUND))->setDescription('+10 [science] | '))
+    ->addBonus((new Bonus(1, Bonus::SCIENCE))->setDescription('[science] +1'))
 ;
 
 /*--------------------------------------
