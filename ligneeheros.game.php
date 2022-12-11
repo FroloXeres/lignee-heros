@@ -311,6 +311,8 @@ class ligneeheros extends Table
                 'turn'    => clienttranslate('Turn'),
                 'people'  => clienttranslate('People:'),
                 'harvest' => clienttranslate('Harvest:'),
+                'military' => clienttranslate('Warrior:'),
+                'city' => clienttranslate('City:'),
                 'stock'   => clienttranslate('Stock:')
             ]
         ];

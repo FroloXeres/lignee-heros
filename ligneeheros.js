@@ -119,6 +119,16 @@ function (dojo, on, declare) {
                 dojo.query('#tile-' + tile.id + ' .map-hex-content')
                     .addClass('tile_reveal tile_' + tileTerrain.code);
             });
+
+            _self.scrollToTile(0, 0);
+        },
+        scrollToTile: function(x, y)
+        {
+            const map = dojo.query('#map-zone');
+            const tile = dojo.query('[data-coord="'+x+'_'+y+'"]');
+            if (map.length && tile.length) {
+                map[0].scrollTo(tile[0].offsetLeft / 2, tile[0].offsetTop / 2);
+            }
         },
 
         getCard: function(type, location, id)
@@ -284,6 +294,18 @@ function (dojo, on, declare) {
             dojo.place(this.getIcon('food'), this.$foodHarvest, 'first');
             dojo.place(this.getIcon('science'), this.$scienceHarvest, 'first');
 
+            this.$militaryTitle = document.querySelector('#military-title');
+            this.$powerMilitary = document.querySelector('#military-power');
+            this.$defenseMilitary = document.querySelector('#military-defense');
+            dojo.place(this.getIcon('power'), this.$powerMilitary, 'first');
+            dojo.place(this.getIcon('defense_warrior'), this.$defenseMilitary, 'first');
+
+            this.$cityTitle = document.querySelector('#city-title');
+            this.$cityLife = document.querySelector('#city-life');
+            this.$cityDefense = document.querySelector('#city-defense');
+            dojo.place(this.getIcon('growth'), this.$cityLife, 'first');
+            dojo.place(this.getIcon('defense_city'), this.$cityDefense, 'first');
+
             this.$stockTitle = document.querySelector('#stock-title');
             this.$foodStock = document.querySelector('#stock-food');
             this.$scienceStock = document.querySelector('#stock-science');
@@ -314,6 +336,8 @@ function (dojo, on, declare) {
             this.updateTurn();
             this.updatePeople();
             this.updateHarvest();
+            this.updateMilitary();
+            this.updateCity();
             this.updateStock();
         },
 
@@ -340,6 +364,22 @@ function (dojo, on, declare) {
 
             this.$foodHarvest.dataset.count = this.currentState.foodProduction;
             this.$scienceHarvest.dataset.count = this.currentState.scienceProduction;
+        },
+
+        updateMilitary: function()
+        {
+            this.$militaryTitle.innerHTML = this.currentState.title.military;
+
+            this.$powerMilitary.dataset.count = this.currentState.warriorPower;
+            this.$defenseMilitary.dataset.count = this.currentState.warriorDefense;
+        },
+
+        updateCity: function()
+        {
+            this.$cityTitle.innerHTML = this.currentState.title.city;
+
+            this.$cityLife.dataset.count = this.currentState.life;
+            this.$cityDefense.dataset.count = this.currentState.cityDefense;
         },
 
         updateStock: function()

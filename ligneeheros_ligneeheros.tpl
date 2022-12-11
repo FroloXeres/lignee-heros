@@ -1,24 +1,24 @@
 {OVERALL_GAME_HEADER}
 
 <div id="floating-cards"></div>
+<div id="map-zone">
+    <ul class="map-hex-grid">
+        <!-- BEGIN MAP_TILES -->
+        <li id="tile-{TILE_ID}" data-coord="{COORD}" class="map-hex-item">
+            <div class="map-hex-content {CLASS}">
+                <div class="map-dist-bg"><label data-dist="{HOW_FAR}"></label></div>
+                <div class="map-content" id="tile-content-{TILE_ID}"></div>
+            </div>
+        </li>
+        <!-- END MAP_TILES -->
+    </ul>
+</div>
 <div id="cards-zone">
     <div id="invention"></div>
     <div id="spell"></div>
     <div id="explore_fight"></div>
     <div id="explore_disease"></div>
     <div id="explore_other"></div>
-</div>
-<div id="map-zone">
-    <ul class="map-hex-grid">
-        <!-- BEGIN MAP_TILES -->
-            <li id="tile-{TILE_ID}" data-coord="{COORD}" class="map-hex-item">
-                <div class="map-hex-content {CLASS}">
-                    <div class="map-dist-bg"><label data-dist="{HOW_FAR}"></label></div>
-                    <div class="map-content" id="tile-content-{TILE_ID}"></div>
-                </div>
-            </li>
-        <!-- END MAP_TILES -->
-    </ul>
 </div>
 <div id="icons" class="hidden">
     <svg id="cardUnderDeck" class="svg-icon" xmlns="http://www.w3.org/2000/svg" width="50" height="50" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 50 50"><g><path id="arrow" d="M27.82,42.61c.44,.44-.15,1.08,.26,1.5,.2,.2,.41,.41,.61,.61,.18,.19,.19,.43,.03,.6-.16,.17-.42,.16-.6-.02-.85-.85-1.7-1.7-2.55-2.55-.2-.2-.2-.43,0-.62,.86-.86,1.71-1.72,2.57-2.57,.19-.19,.43-.19,.6-.02,.16,.17,.16,.42-.03,.6-.59,.6-.39,1.26-.99,1.85-.03,.03-.87-.02-.91,0,.01,.02,.02,.03,.03,.05,.29-.02,.59-.03,.88-.06,1.76-.2,3.31-.88,4.63-2.06,1.54-1.38,2.45-3.1,2.73-5.14,.05-.34,.06-.69,.07-1.04,.01-.27,.17-.45,.41-.45,.23,0,1.01,0,1.01,.26,.15,5.11-4.46,9.85-8.75,9.78-.6,.13-.24-.51-.85-.5-.04,0,.93-.22,.85-.22Z"/><path id="card" d="M49,21.88c0,4.89,0,9.78,0,14.67,0,1.63-.89,2.53-2.51,2.53-6.08,0-12.15,0-18.23,0-1.59,0-2.51-.91-2.51-2.49,0-9.84,0-19.68,0-29.52,0-1.56,.91-2.48,2.47-2.48,6.11,0,12.22,0,18.32,0,1.53,0,2.46,.92,2.46,2.44,0,4.95,0,9.9,0,14.86Zm-21.8-.05c0,4.89,0,9.78,0,14.67,0,.86,.22,1.08,1.08,1.08,6.03,0,12.06,0,18.09,0,.86,0,1.08-.22,1.08-1.08,0-9.78,0-19.56,0-29.34,0-.86-.22-1.08-1.08-1.08-6.03,0-12.06,0-18.09,0-.86,0-1.08,.22-1.08,1.08,0,4.89,0,9.78,0,14.67Z"/><path id="deck" d="M1,43.75v-37.5c.37-1.18,1.13-1.87,2.42-1.87,6.14,0,12.28,0,18.42,0,1.47,0,2.41,.94,2.41,2.4,0,12.14,0,24.28,0,36.42,0,.22,0,.44-.06,.65-.26,1.12-1.15,1.76-2.44,1.76-5.97,0-11.94,0-17.91,0-1.68,0-2.23-.36-2.85-1.86Zm1.52-4.91c.08,.57,.3,.78,.84,.78,6.17,0,12.34,0,18.51,0,.11,0,.23,0,.32-.03,.36-.14,.59-.37,.52-.75h-20.2Zm0,2.24c.06,.59,.3,.79,.97,.79,6.09,0,12.18,0,18.27,0,.12,0,.25,0,.37-.02,.41-.09,.6-.37,.55-.77h-20.16Zm20.21,2.24c-6.78,0-13.5,0-20.21,0,.08,.59,.31,.79,.99,.79,6.07,0,12.15,0,18.22,0,.14,0,.29,0,.42-.03,.38-.11,.61-.35,.59-.76Z"/></g></svg>
@@ -160,6 +160,16 @@
                 <div id="people-warrior" data-count="0"></div>\
                 <div id="people-savant" data-count="0"></div>\
                 <div id="people-mage" data-count="0"></div>\
+            </div>\
+            <div class="military">\
+                <div id="military-title"></div>\
+                <div id="military-power" data-count="0"></div>\
+                <div id="military-defense" data-count="0"></div>\
+            </div>\
+            <div class="city">\
+                <div id="city-title"></div>\
+                <div id="city-life" data-count="0"></div>\
+                <div id="city-defense" data-count="0"></div>\
             </div>\
             <div class="harvest">\
                 <div id="harvest-title"></div>\
