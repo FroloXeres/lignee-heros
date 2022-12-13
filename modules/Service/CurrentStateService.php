@@ -2,6 +2,8 @@
 
 namespace LdH\Service;
 
+use LdH\Entity\Meeple;
+
 class CurrentStateService
 {
     public const GLB_TURN_LFT    = 'turnLeft';
@@ -54,4 +56,15 @@ class CurrentStateService
         CurrentStateService::GLB_WAR_DFS     => 18,
         CurrentStateService::GLB_CTY_DFS     => 19
     ];
+
+    public static function getStateByMeepleType(Meeple $meeple): string
+    {
+        switch ($meeple->getCode()) {
+            case Meeple::WORKER: return self::GLB_WORKER_CNT;
+            case Meeple::WARRIOR: return self::GLB_WARRIOR_CNT;
+            case Meeple::MAGE: return self::GLB_MAGE_CNT;
+            case Meeple::SAVANT: return self::GLB_SAVANT_CNT;
+            default: return '';
+        }
+    }
 }

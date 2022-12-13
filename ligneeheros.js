@@ -18,7 +18,8 @@
 define([
     "dojo", "dojo/on", "dojo/_base/declare",
     "ebg/core/gamegui",
-    "ebg/counter"
+    "ebg/counter",
+    "ebg/zone"
 ],
 function (dojo, on, declare) {
     return declare("bgagame.ligneeheros", ebg.core.gamegui, {
@@ -56,6 +57,7 @@ function (dojo, on, declare) {
             this.setupGameState(gamedatas);
             this.setupGameData(gamedatas);
             this.setupMap();
+            this.initPeople(gamedatas.people);
 
             // Setup game notifications to handle (see "setupNotifications" method below)
             this.setupNotifications();
@@ -91,6 +93,7 @@ function (dojo, on, declare) {
             }
 
             this.map       = gamedatas.map;
+            this.mapZones  = {};
         },
 
         setupMap: function()
@@ -103,6 +106,7 @@ function (dojo, on, declare) {
                     _self.terrains[tile.terrain]
                 );
                 tileContent = _self.format_block('jstpl_tile', {
+                    id: tile.id,
                     count: tileTerrain.resources.length,
                     resource1: tileTerrain.resources[0]? _self.getIconAsText(tileTerrain.resources[0]) : '',
                     resource2: tileTerrain.resources[1]? _self.getIconAsText(tileTerrain.resources[1]) : '',
@@ -120,8 +124,86 @@ function (dojo, on, declare) {
                     .addClass('tile_reveal tile_' + tileTerrain.code);
             });
 
+            _self.initMapZones();
             _self.scrollToTile(0, 0);
         },
+
+        initMapZones: function()
+        {
+            const _self = this;
+            const tiles = dojo.query('.tile:not(.tile_disabled)');
+            tiles.forEach(function(tile) {
+                let item = tile.closest('.map-hex-item');
+                let id = item.id.replace('tile-', '');
+                let code = tile.classList.contains('tile_reveal') ? 'tile-name-' + id : 'map-explore-' + id;
+
+                let zone = new ebg.zone();
+                zone.create(_self, code, 24, 24);
+                zone.setPattern('horizontalfit');
+                _self.mapZones[id] = zone;
+            });
+        },
+
+        initPeople: function(people)
+        {
+            this.initMapPeople(people.byPlace.map, people.units);
+            this.initInventionPeople(people.byPlace.invention, people.units);
+            this.initSpellPeople(people.byPlace.spell, people.units);
+        },
+
+        initInventionPeople: function(byInvention, units)
+        {
+
+        },
+
+        initSpellPeople: function(bySpell, units)
+        {
+
+        },
+
+        getDomIdByUnit: function(unit)
+        {
+            return 'unit-' + unit.id;
+        },
+
+        initMapPeople: function(byMap, units)
+        {
+            for (let location in byMap) {
+                let key = byMap[location];
+                let unit = units[key];
+                let tileId = unit.location;
+
+                let zone = this.mapZones[tileId];
+                const domUnitId = this.getDomIdByUnit(unit);
+                let domUnits = dojo.query(domUnitId);
+                if (domUnits.length) {
+                    // Move to new place ?
+                    //zone.move
+
+                    this.updateUnitStatus(domUnits[0], unit.status);
+                } else {
+                    // Add new unit to map
+                    this.createUnit(unit.type, domUnitId, unit.status);
+                    zone.placeInZone(domUnitId, unit.type);
+                }
+            }
+        },
+
+        updateUnitStatus: function(domUnit, status)
+        {
+            domUnit.classList.remove('free');
+            domUnit.classList.remove('moved');
+            domUnit.classList.remove('acted');
+
+            domUnit.classList.add(status);
+        },
+
+        createUnit: function(iconId, domUnitId, unitStatus)
+        {
+            const newUnit = this.getWrappedIcon(iconId, domUnitId, unitStatus);
+            dojo.place(newUnit, 'new-unit');
+        },
+
         scrollToTile: function(x, y)
         {
             const map = dojo.query('#map-zone');
@@ -251,11 +333,15 @@ function (dojo, on, declare) {
 
             return $clone;
         },
-        getIconAsText(iconId)
+        getWrappedIcon(iconId, wrapId, cssClass = '')
         {
-            let addClass = '';
+            return '<div id="' + wrapId + '">' + this.getIconAsText(iconId, cssClass) + '</div>';
+        },
+        getIconAsText(iconId, cssClass = '')
+        {
+            let addClass = cssClass.length ? [cssClass] : [];
             if (['worker', 'warrior', 'savant', 'mage', 'all', 'monster'].includes(iconId)) {
-                addClass = iconId;
+                addClass.push(iconId);
                 iconId = 'unit';
             }
 
@@ -263,7 +349,7 @@ function (dojo, on, declare) {
             if ($icon !== null) {
                 const $clone = $icon.cloneNode(true);
                 if (addClass.length) {
-                    $clone.classList.add(addClass);
+                    addClass.forEach((cssClass) => $clone.classList.add(cssClass));
                 }
                 return $clone.outerHTML;
             } else return iconId;
@@ -594,8 +680,6 @@ function (dojo, on, declare) {
         */
         setupNotifications: function()
         {
-            console.log( 'notifications subscriptions setup' );
-
             dojo.subscribe( 'debug', this, "onDebug" );
 
             // TODO: here, associate your game notifications with local methods

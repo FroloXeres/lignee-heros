@@ -54,11 +54,17 @@ html, body {
 
 /********* Cartridge **********/
 #cartridge {
+    position: relative;
     margin: 0 auto .5em;
     background: url('img/card-bg.jpg') 0 0 no-repeat;
     background-size: 200% 100%;
     padding: 0.5em 1em;
     box-shadow: 0 3px 8px rgba(0,0,0,.3);
+    z-index: 1;
+}
+#new-unit {
+    position: absolute;
+    z-index: 0;
 }
 h2#turn {
     text-align: center;
@@ -874,7 +880,7 @@ svg.svg-icon {
     list-style-type: none;
     display: grid;
     grid-template-columns: repeat(var(--amount),1fr 2fr) 1fr;
-    margin: -9% 5em 0;
+    margin: -10em 5em 0;
     transform: rotate(90deg);
 }
 .map-hex-item {
@@ -903,6 +909,14 @@ svg.svg-icon {
     text-decoration: none;
     text-align: center;
     transition: transform .24s ease-out;
+}
+.map-explore {
+    position: absolute;
+    width: 8em;
+    height: 10em;
+    left: calc(50% - 4em);
+    top: calc(50% - 5em);
+    z-index: 5;
 }
 
 .map-hex-item:nth-of-type(7n+1) {

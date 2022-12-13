@@ -6,6 +6,7 @@
         <!-- BEGIN MAP_TILES -->
         <li id="tile-{TILE_ID}" data-coord="{COORD}" class="map-hex-item">
             <div class="map-hex-content {CLASS}">
+                <div class="map-explore" id="map-explore-{TILE_ID}"></div>
                 <div class="map-dist-bg"><label data-dist="{HOW_FAR}"></label></div>
                 <div class="map-content" id="tile-content-{TILE_ID}"></div>
             </div>
@@ -150,6 +151,7 @@
     // Javascript HTML templates
     var jstpl_cartridge =
         '<div id="cartridge">\
+            <div id="new-unit"></div>\
             <h2 id="turn" data-turn="1">Turn ${turn}</h2>\
             <div class="people">\
                 <div id="people-title"></div>\
@@ -204,7 +206,7 @@
             <div class="resource resource-2">${resource2}</div>\
             <div class="resource resource-3">${resource3}</div>\
         </div>\
-        <div class="name">\
+        <div class="name" id="tile-name-${id}">\
             <div class="bonus">${bonus}</div>\
             ${name}\
         </div>\

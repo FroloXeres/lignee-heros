@@ -4,7 +4,7 @@ namespace LdH\Entity;
 
 use LdH\Repository\CardRepository;
 
-class PeopleService
+class PeopleService implements \JsonSerializable
 {
     public const CITY_ID = 25;
 
@@ -142,5 +142,14 @@ class PeopleService
                 self::buildUnit($unitData)
             );
         }
+    }
+    public function jsonSerialize(): array
+    {
+        return [
+            'byType' => $this->byType,
+            'byPlace' => $this->byPlace,
+            'byIds' => $this->byIds,
+            'units' => $this->units
+        ];
     }
 }

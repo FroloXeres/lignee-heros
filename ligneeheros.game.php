@@ -299,6 +299,10 @@ class ligneeheros extends Table
         $result['cards'] = $this->cardService->getPublicCards($this->cards, $currentStateId, $currentPlayerId);
         $result['decks'] = $this->cardService->getPublicDecks($this->cards);
 
+        // Meeples
+        $result['meeples'] = $this->meeples;
+        $result['people'] = $this->getPeople();
+
         // TODO: Gather all information about current game situation (visible by player $current_player_id).
 
         return $result;

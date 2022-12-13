@@ -1331,7 +1331,7 @@ $townHumanis
     ->addUnit($worker)->addUnit($mage)
     ->addInvention($pottery)->addInvention($irrigation)
 ;
-$townElven   = new City(clienttranslate("Gala\'ar"), Terrain::TOWN_ELVEN, 5, true, [$clay, $medic]);
+$townElven   = new City(clienttranslate("Gala'ar"), Terrain::TOWN_ELVEN, 5, true, [$clay, $medic]);
 $townElven
     ->addUnit($mage)->addUnit($savant)
     ->addInvention($writing)->addInvention($herbalism)

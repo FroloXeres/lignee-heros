@@ -70,6 +70,11 @@ class GameInitState extends AbstractState
                     Unit::LOCATION_MAP,
                     PeopleService::CITY_ID
                 );
+
+                $state = CurrentStateService::getStateByMeepleType($meeple);
+                if ($state) {
+                    $this->incGameStateValue($state, 1);
+                }
             }
 
             // Put 8 Worker (- number of player) on central tile (notify)
@@ -80,6 +85,7 @@ class GameInitState extends AbstractState
                 PeopleService::CITY_ID,
                 $toAddCnt
             );
+            $this->incGameStateValue(CurrentStateService::GLB_WORKER_CNT, $toAddCnt);
 
             // Notify players on next state (Notifications don't work on game start)
 
