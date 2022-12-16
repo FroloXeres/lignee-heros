@@ -135,13 +135,78 @@ function (dojo, on, declare) {
             tiles.forEach(function(tile) {
                 let item = tile.closest('.map-hex-item');
                 let id = item.id.replace('tile-', '');
-                let code = tile.classList.contains('tile_reveal') ? 'tile-name-' + id : 'map-explore-' + id;
 
-                let zone = new ebg.zone();
-                zone.create(_self, code, 24, 24);
-                zone.setPattern('horizontalfit');
-                _self.mapZones[id] = zone;
+                ['warrior', 'worker', 'mage', 'savant', 'lineage'].forEach(function(unitType) {
+                    let zone = new ebg.zone();
+                    let code = _self.getZoneIdByTileIdAndType(id, unitType);
+                    zone.create(_self, code);
+                    zone.setPattern('custom');
+
+                    _self.createProxy(zone, 'updateDisplay', _self.zoneDisplayItemsMiddleWare);
+                    zone.itemIdToCoords = _self.mapZoneCoords;
+                    _self.mapZones[code] = zone;
+                });
             });
+        },
+
+        /**
+         * @param {Object}   object     Object to override
+         * @param {String}   method     Method of object to override
+         * @param {function} extended   Extended method for object
+         */
+        createProxy: function(object, method, extended)
+        {
+            const existingMethod = object[method];
+            object[method] = function () {
+                existingMethod.call(object);
+                extended.call(object);
+            };
+        },
+
+        zoneDisplayItemsMiddleWare: function()
+        {
+            const _self = this;
+            const countByWeight = [0, 0, 0];
+            const idByWeight = [null, null, null];
+            this.items.forEach(function(item) {
+                countByWeight[item.weight]++;
+                idByWeight[item.weight] = item.id;
+            });
+            countByWeight.forEach(function(count, weight) {
+                const $units = dojo.query('#'+idByWeight[weight]);
+                if (!$units.length) return ;
+                if (countByWeight[weight] > 1) {
+                    $units[0].setAttribute('data-count', count);
+                } else {
+                    $units[0].removeAttribute('data-count');
+                }
+            });
+        },
+
+        mapZoneCoords: function(i, width, maxWidth, count) {
+            const item = this.items[i];
+
+            return {
+                x: item.weight * (width - this.item_margin),
+                y: 0,
+                w: width,
+                h: width
+            };
+        },
+
+        getZoneIdByTileIdAndType: function(id, type)
+        {
+            let zoneType = 'lineage';
+            switch (type) {
+                case 'warrior':
+                case 'worker':
+                case 'mage':
+                case 'savant':
+                    zoneType = type;
+                    break;
+            }
+
+            return 'map-explore-' + id + '-' + zoneType;
         },
 
         initPeople: function(people)
@@ -171,9 +236,8 @@ function (dojo, on, declare) {
             for (let location in byMap) {
                 let key = byMap[location];
                 let unit = units[key];
-                let tileId = unit.location;
 
-                let zone = this.mapZones[tileId];
+                let zone = this.mapZones[this.getZoneIdByTileIdAndType(unit.location, unit.type)];
                 const domUnitId = this.getDomIdByUnit(unit);
                 let domUnits = dojo.query(domUnitId);
                 if (domUnits.length) {
@@ -184,8 +248,17 @@ function (dojo, on, declare) {
                 } else {
                     // Add new unit to map
                     this.createUnit(unit.type, domUnitId, unit.status);
-                    zone.placeInZone(domUnitId, unit.type);
+                    zone.placeInZone(domUnitId, this.getUnitStatusPriority(unit.status));
                 }
+            }
+        },
+
+        getUnitStatusPriority: function(status)
+        {
+            switch (status) {
+                case 'acted': return 0;
+                case 'moved': return 1;
+                default: return 2;
             }
         },
 
@@ -335,7 +408,7 @@ function (dojo, on, declare) {
         },
         getWrappedIcon(iconId, wrapId, cssClass = '')
         {
-            return '<div id="' + wrapId + '">' + this.getIconAsText(iconId, cssClass) + '</div>';
+            return '<div id="' + wrapId + '" class="wrapped-icon">' + this.getIconAsText(iconId, cssClass) + '</div>';
         },
         getIconAsText(iconId, cssClass = '')
         {

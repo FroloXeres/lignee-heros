@@ -912,11 +912,36 @@ svg.svg-icon {
 }
 .map-explore {
     position: absolute;
-    width: 8em;
+    width: 5.5em;
     height: 10em;
-    left: calc(50% - 4em);
-    top: calc(50% - 5em);
+    left: 3.75em;
+    top: 1.5em;
     z-index: 5;
+}
+.map-explore .space {
+    width: 8em;
+    height: 2em;
+}
+.wrapped-icon {
+    transform: rotate(-90deg);
+    cursor: pointer;
+}
+.wrapped-icon::after {visibility: hidden;}
+.wrapped-icon[data-count]::after {visibility: visible;}
+.wrapped-icon::after {
+    position: absolute;
+    z-index: 1;
+    content: attr(data-count);
+    font-size: 0.8em;
+    width: 1em;
+    height: 1em;
+    border: .1em solid #000;
+    background-color: #fff;
+    border-radius: .5em;
+    bottom: -.5em;
+    right: -.5em;
+    text-align: center;
+    line-height: 1em;
 }
 
 .map-hex-item:nth-of-type(7n+1) {
@@ -966,7 +991,6 @@ svg.svg-icon {
 .tile {
     background: url('img/card-bg.jpg') 0 0 no-repeat;
     background-size: 200% 100%;
-    cursor: not-allowed;
 }
 .tile::before {
     content: "";
@@ -1023,6 +1047,7 @@ svg.svg-icon {
     border: .15em solid #065009;
     border-radius: 50%;
     padding: .15em;
+    cursor: pointer;
 }
 .tile .resource svg.svg-icon {
     width: 100%;

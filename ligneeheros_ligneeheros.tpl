@@ -6,7 +6,13 @@
         <!-- BEGIN MAP_TILES -->
         <li id="tile-{TILE_ID}" data-coord="{COORD}" class="map-hex-item">
             <div class="map-hex-content {CLASS}">
-                <div class="map-explore" id="map-explore-{TILE_ID}"></div>
+                <div class="map-explore" id="map-explore-{TILE_ID}">
+                    <div class="space" id="map-explore-{TILE_ID}-lineage"></div>
+                    <div class="space" id="map-explore-{TILE_ID}-savant"></div>
+                    <div class="space" id="map-explore-{TILE_ID}-mage"></div>
+                    <div class="space" id="map-explore-{TILE_ID}-worker"></div>
+                    <div class="space" id="map-explore-{TILE_ID}-warrior"></div>
+                </div>
                 <div class="map-dist-bg"><label data-dist="{HOW_FAR}"></label></div>
                 <div class="map-content" id="tile-content-{TILE_ID}"></div>
             </div>
