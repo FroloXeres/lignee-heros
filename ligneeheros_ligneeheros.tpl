@@ -186,8 +186,8 @@
             </div>\
             <div class="stock">\
                 <div id="stock-title"></div>\
-                <div id="stock-food" data-count="0"></div>\
-                <div id="stock-science" data-count="0"></div>\
+                <div id="stock-food" data-count="0" data-stock="0"></div>\
+                <div id="stock-science" data-count="0" data-stock="0"></div>\
             </div>\
             <div class="stock-resources">\
                 <div class="group">\

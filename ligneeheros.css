@@ -90,11 +90,15 @@ h2#turn::before {
 #military-power::after, #military-defense::after,
 #city-life::after, #city-defense::after,
 #harvest-food::after, #harvest-science::after,
-#stock-food::after, #stock-science::after,
 #stock-wood::after, #stock-animal::after, #stock-gem::after, #stock-paper::after, #stock-metal::after, #stock-stone::after, #stock-clay::after, #stock-medic::after {
     content: attr(data-count);
     font-weight: bold;
 }
+#stock-food::after, #stock-science::after {
+    content: attr(data-count)" / "attr(data-stock);
+    font-weight: bold;
+}
+
 #cartridge svg {margin-right: .5em;}
 
 #cartridge .people {

@@ -545,8 +545,10 @@ function (dojo, on, declare) {
         {
             this.$stockTitle.innerHTML = this.currentState.title.stock;
 
-            this.$foodStock.dataset.count = this.currentState.foodStock;
-            this.$scienceStock.dataset.count = this.currentState.scienceStock;
+            this.$foodStock.dataset.count = this.currentState.food;
+            this.$scienceStock.dataset.count = this.currentState.science;
+            this.$foodStock.dataset.stock = this.currentState.foodStock;
+            this.$scienceStock.dataset.stock = this.currentState.scienceStock;
 
             this.$woodStock.dataset.count = this.currentState.woodStock;
             this.$animalStock.dataset.count = this.currentState.animalStock;

@@ -14,8 +14,8 @@ class Unit implements \JsonSerializable
     public const LOCATION_SPELL     = 'spell';
     public const LOCATION_INVENTION = 'invention';
 
-    protected int      $id;
-    protected string   $type;
+    protected int      $id          = 0;
+    protected string   $type        = Meeple::ALL;
     protected string   $location    = self::LOCATION_MAP;
     protected ?int     $locationArg = null;
     protected string   $status      = self::STATUS_FREE;
