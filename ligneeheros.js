@@ -58,6 +58,7 @@ function (dojo, on, declare) {
             this.setupGameData(gamedatas);
             this.setupMap();
             this.initPeople(gamedatas.people);
+            this.initTooltips(gamedatas.tooltips);
 
             // Setup game notifications to handle (see "setupNotifications" method below)
             this.setupNotifications();
@@ -111,6 +112,9 @@ function (dojo, on, declare) {
                     resource1: tileTerrain.resources[0]? _self.getIconAsText(tileTerrain.resources[0]) : '',
                     resource2: tileTerrain.resources[1]? _self.getIconAsText(tileTerrain.resources[1]) : '',
                     resource3: tileTerrain.resources[2]? _self.getIconAsText(tileTerrain.resources[2]) : '',
+                    resource1Class: tileTerrain.resources[0]? tileTerrain.resources[0] : '',
+                    resource2Class: tileTerrain.resources[1]? tileTerrain.resources[1] : '',
+                    resource3Class: tileTerrain.resources[2]? tileTerrain.resources[2] : '',
                     name: tileTerrain.name,
                     bonus: tileTerrain.bonusAsTxt,
                     food: tileTerrain.food? '' : 'none',
@@ -165,7 +169,6 @@ function (dojo, on, declare) {
 
         zoneDisplayItemsMiddleWare: function()
         {
-            const _self = this;
             const countByWeight = [0, 0, 0];
             const idByWeight = [null, null, null];
             this.items.forEach(function(item) {
@@ -363,6 +366,32 @@ function (dojo, on, declare) {
             });
         },
 
+        initTooltips: function(tooltips)
+        {
+            for (let domId in tooltips.id) {
+                if (tooltips.id.hasOwnProperty(domId)) {
+                    this.callTooltip(domId, tooltips.id[domId]);
+                }
+            }
+            for (let cssClass in tooltips.class) {
+                if (tooltips.class.hasOwnProperty(cssClass)) {
+                    this.callTooltip(cssClass, tooltips.class[cssClass], false);
+                }
+            }
+        },
+
+        callTooltip: function(key, data, byId = true)
+        {
+            let hasAction = data instanceof Array;
+            let info = hasAction ? _(data[0]) : _(data);
+            let action = hasAction ? _(data[1]) : '';
+
+            byId ?
+                this.addTooltip(key, info, action) :
+                this.addTooltipToClass(key, info, action)
+            ;
+        },
+
         initEvents: function()
         {
             this.evts = {};
@@ -408,7 +437,7 @@ function (dojo, on, declare) {
         },
         getWrappedIcon(iconId, wrapId, cssClass = '')
         {
-            return '<div id="' + wrapId + '" class="wrapped-icon">' + this.getIconAsText(iconId, cssClass) + '</div>';
+            return '<div id="' + wrapId + '" class="wrapped-icon ' + iconId + ' ' + cssClass + '">' + this.getIconAsText(iconId, cssClass) + '</div>';
         },
         getIconAsText(iconId, cssClass = '')
         {
@@ -548,7 +577,6 @@ function (dojo, on, declare) {
             this.$foodStock.dataset.count = this.currentState.food;
             this.$scienceStock.dataset.count = this.currentState.science;
             this.$foodStock.dataset.stock = this.currentState.foodStock;
-            this.$scienceStock.dataset.stock = this.currentState.scienceStock;
 
             this.$woodStock.dataset.count = this.currentState.woodStock;
             this.$animalStock.dataset.count = this.currentState.animalStock;

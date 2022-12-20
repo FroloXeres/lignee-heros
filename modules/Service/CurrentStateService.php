@@ -17,7 +17,6 @@ class CurrentStateService
     public const GLB_FOOD_STK    = 'foodStock';
     public const GLB_SCIENCE_PRD = 'scienceProduction';
     public const GLB_SCIENCE     = 'science';
-    public const GLB_SCIENCE_STK = 'scienceStock';
     public const GLB_WOOD_STK    = 'woodStock';
     public const GLB_ANIMAL_STK  = 'animalStock';
     public const GLB_GEM_STK     = 'gemStock';
@@ -46,7 +45,6 @@ class CurrentStateService
         self::GLB_FOOD_STK    => 13,
         self::GLB_SCIENCE_PRD => 14,
         self::GLB_SCIENCE     => 33,
-        self::GLB_SCIENCE_STK => 15,
         self::GLB_WOOD_STK    => 24,
         self::GLB_ANIMAL_STK  => 25,
         self::GLB_GEM_STK     => 26,

@@ -187,7 +187,7 @@
             <div class="stock">\
                 <div id="stock-title"></div>\
                 <div id="stock-food" data-count="0" data-stock="0"></div>\
-                <div id="stock-science" data-count="0" data-stock="0"></div>\
+                <div id="stock-science" data-count="0"></div>\
             </div>\
             <div class="stock-resources">\
                 <div class="group">\
@@ -208,17 +208,17 @@
 
     var jstpl_tile =
        '<div class="resources resources_${count}">\
-            <div class="resource resource-1">${resource1}</div>\
-            <div class="resource resource-2">${resource2}</div>\
-            <div class="resource resource-3">${resource3}</div>\
+            <div class="resource resource-1 ${resource1Class}" id="resource-${id}-1">${resource1}</div>\
+            <div class="resource resource-2 ${resource2Class}" id="resource-${id}-2">${resource2}</div>\
+            <div class="resource resource-3 ${resource3Class}" id="resource-${id}-3">${resource3}</div>\
         </div>\
         <div class="name" id="tile-name-${id}">\
             <div class="bonus">${bonus}</div>\
             ${name}\
         </div>\
         <div class="harvest">\
-            <div class="resource food ${food}" data-count="${foodCount}">${foodIcon}</div>\
-            <div class="resource science ${science}">${scienceIcon}</div>\
+            <div class="resource food ${food}" id="resource-food-${id}" data-count="${foodCount}">${foodIcon}</div>\
+            <div class="resource science ${science}" id="resource-science-${id}">${scienceIcon}</div>\
         </div>'
     ;
 
