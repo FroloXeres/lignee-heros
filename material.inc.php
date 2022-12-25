@@ -128,7 +128,6 @@ $plainDesert    = new Terrain(clienttranslate('Deserted plain'), Terrain::PLAIN_
 $plainRiverRuin = new Terrain(clienttranslate('Plain ruins'), Terrain::PLAIN_RIVER_RUIN, 3, false, [$paper, $clay, $animal]);
 $plainRiverRuin
     ->addBonus(new Bonus(10, Bonus::SCIENCE_FOUND))
-    ->addBonus(new Bonus(1, Bonus::SCIENCE))
     ->addBonus(new Bonus(1, Bonus::FOOD))
 ;
 
@@ -147,7 +146,6 @@ $hillWoodRiver->addBonus((new Bonus(1, Bonus::FOOD))->setDescription('[food] +1'
 $hillRuin       = new Terrain(clienttranslate('Hills ruins'), Terrain::HILL_RUIN, 2, false, [$stone, $metal]);
 $hillRuin
     ->addBonus(new Bonus(10, Bonus::SCIENCE_FOUND))
-    ->addBonus(new Bonus(1, Bonus::SCIENCE))
 ;
 $hillLake       = new Terrain(clienttranslate('Hills lake'), Terrain::HILL_LAKE, 3, false, [$stone, $metal, $animal]);
 $hillLake->addBonus(new Bonus(1, Bonus::FOOD));
@@ -161,8 +159,7 @@ $forestLair     = new Terrain(clienttranslate('Forest lair'), Terrain::FOREST_LA
 $forestDense    = new Terrain(clienttranslate('Dense forest'), Terrain::FOREST_DENSE, 0, false, [$wood, $wood, $medic]);
 $forestRuin     = new Terrain(clienttranslate('Forest ruins'), Terrain::FOREST_RUIN, 0, false, [$wood, $animal]);
 $forestRuin
-    ->addBonus((new Bonus(10, Bonus::SCIENCE_FOUND))->setDescription('+10 [science] | '))
-    ->addBonus((new Bonus(1, Bonus::SCIENCE))->setDescription('[science] +1'))
+    ->addBonus((new Bonus(10, Bonus::SCIENCE_FOUND))->setDescription('+10 [science]'))
 ;
 
 /*--------------------------------------

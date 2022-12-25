@@ -1,8 +1,10 @@
 <?php
 
-namespace LdH\Entity;
+namespace LdH\Service;
 
 use LdH\Repository\CardRepository;
+use LdH\Entity\Unit;
+use LdH\Entity\Meeple;
 
 class PeopleService implements \JsonSerializable
 {
@@ -108,10 +110,12 @@ class PeopleService implements \JsonSerializable
                 ->setStatus(Unit::STATUS_ACTED)
                 ->setDisease(null)
             ;
-            $this->getBgaDeck()->createCards([$baby->toArray()], $location, $locationArg);
-            $baby->setId($this->cardRepository->getLastId());
+            if ($this->getBgaDeck() !== null) {
+                $this->getBgaDeck()->createCards([$baby->toArray()], $location, $locationArg);
+                $baby->setId($this->cardRepository->getLastId());
 
-            $this->addUnit($baby);
+                $this->addUnit($baby);
+            }
         }
 
     }

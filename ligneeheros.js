@@ -129,8 +129,46 @@ function (dojo, on, declare) {
             });
 
             _self.initMapZones();
+            _self.initZoom();
             _self.scrollToTile(0, 0);
         },
+
+        initZoom: function()
+        {
+            this.ZOOMS = [50, 70, 90, 110, 130];
+            this.MAX_ZOOM = 4;
+            this.MIN_ZOOM = 0;
+            this.$mapZone = dojo.query('.map-hex-grid')[0];
+            this.$zoom = dojo.query('#zoom')[0];
+            this.$zoomOut = dojo.query('#zoom_out_icon')[0];
+            this.$zoomIn = dojo.query('#zoom_in_icon')[0];
+            on(this.$zoomIn, 'click', this.onZoomIn.bind(this));
+            on(this.$zoomOut, 'click', this.onZoomOut.bind(this));
+        },
+
+        onZoomIn: function()
+        {
+            if (this.getZoom() < this.MAX_ZOOM) {
+                this.incDecZoom();
+                this.applyZoom();
+                this.toggleZoom();
+            }
+        },
+        onZoomOut: function()
+        {
+            if (this.getZoom() > this.MIN_ZOOM) {
+                this.incDecZoom(false);
+                this.applyZoom();
+                this.toggleZoom();
+            }
+        },
+        toggleZoom: function () {
+            this.$zoomIn.style.color = (this.getZoom() === this.MAX_ZOOM) ? '#666' : '#000';
+            this.$zoomOut.style.color = (this.getZoom() === this.MIN_ZOOM) ? '#666' : '#000';
+        },
+        applyZoom: function() {this.$mapZone.style.width = this.ZOOMS[this.getZoom()]+'em';},
+        getZoom: function() {return parseInt(this.$zoom.dataset.zoom);},
+        incDecZoom: function(inc = true) {this.$zoom.dataset.zoom = this.getZoom() + (inc ? 1 : -1);},
 
         initMapZones: function()
         {
@@ -190,8 +228,8 @@ function (dojo, on, declare) {
             const item = this.items[i];
 
             return {
-                x: item.weight * (width - this.item_margin),
-                y: 0,
+                x: 0,
+                y: item.weight * (width - this.item_margin),
                 w: width,
                 h: width
             };

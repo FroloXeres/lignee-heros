@@ -2,6 +2,10 @@
 
 <div id="floating-cards"></div>
 <div id="map-zone">
+    <div id="zoom" data-zoom="2">
+        <i id="zoom_out_icon" class="fa fa-search-minus"></i>
+        <i id="zoom_in_icon" class="fa fa-search-plus"></i>
+    </div>
     <ul class="map-hex-grid">
         <!-- BEGIN MAP_TILES -->
         <li id="tile-{TILE_ID}" data-coord="{COORD}" class="map-hex-item">
@@ -21,7 +25,11 @@
     </ul>
 </div>
 <div id="cards-zone">
-    <div id="invention"></div>
+    <div id="invention">
+        <div class="deck" id="invention-deck"></div>
+        <div class="onTable" id="invention-onTable"></div>
+        <div class="hand" id="invention-hand"></div>
+    </div>
     <div id="spell"></div>
     <div id="explore_fight"></div>
     <div id="explore_disease"></div>

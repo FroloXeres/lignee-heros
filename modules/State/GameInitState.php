@@ -7,8 +7,8 @@ use LdH\Entity\Cards\Deck;
 use LdH\Entity\Map\City;
 use LdH\Entity\Map\Terrain;
 use LdH\Entity\Meeple;
-use LdH\Entity\PeopleService;
 use LdH\Entity\Unit;
+use LdH\Service\PeopleService;
 use LdH\Service\CurrentStateService;
 
 class GameInitState extends AbstractState

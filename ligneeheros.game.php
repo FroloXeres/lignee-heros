@@ -29,12 +29,12 @@ use LdH\Service\CurrentStateService;
 use LdH\Service\MapService;
 use LdH\Service\CardService;
 use LdH\Service\StateService;
+use \LdH\Service\PeopleService;
 use LdH\Entity\Cards\Deck;
 use LdH\Entity\Cards\AbstractCard;
 use LdH\Entity\Map\Resource;
 use LdH\Entity\Map\Terrain;
 use LdH\Entity\Meeple;
-use \LdH\Entity\PeopleService;
 
 class ligneeheros extends Table
 {
