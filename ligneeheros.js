@@ -56,6 +56,8 @@ function (dojo, on, declare) {
 
             this.setupGameState(gamedatas);
             this.setupGameData(gamedatas);
+            this.initCards(gamedatas);
+
             this.setupMap();
             this.initPeople(gamedatas.people);
             this.initTooltips(gamedatas.tooltips);
@@ -67,12 +69,7 @@ function (dojo, on, declare) {
         setupGameState: function(gamedatas)
         {
             this.currentState  = gamedatas.currentState;
-            this.decks         = gamedatas.decks;
-            this.cards         = gamedatas.cards;
-            this.selectedCards = [];
-
             this.initCartridge();
-            this.initCards();
             this.initEvents()
         },
 
@@ -282,19 +279,19 @@ function (dojo, on, declare) {
                 const domUnitId = this.getDomIdByUnit(unit);
                 let domUnits = dojo.query(domUnitId);
                 if (domUnits.length) {
-                    // Move to new place ?
+                    // TODO: Move to new place ?
                     //zone.move
 
                     this.updateUnitStatus(domUnits[0], unit.status);
                 } else {
                     // Add new unit to map
                     this.createUnit(unit.type, domUnitId, unit.status);
-                    zone.placeInZone(domUnitId, this.getUnitStatusPriority(unit.status));
+                    zone.placeInZone(domUnitId, this.getPriorityByUnitStatus(unit.status));
                 }
             }
         },
 
-        getUnitStatusPriority: function(status)
+        getPriorityByUnitStatus: function(status)
         {
             switch (status) {
                 case 'acted': return 0;
@@ -337,14 +334,68 @@ function (dojo, on, declare) {
             }
             return {};
         },
-        initCards: function()
+
+        initCards: function(gamedatas)
         {
+            this.decks         = gamedatas.decks;
+            this.selectedCards = [];
+
+            // Init zones
+            this.cardZones = {
+                invention: {deck: null, onTable: null, hand: null},
+                spell: {deck: null, onTable: null, hand: null}
+            };
+            for (let type in this.cardZones) {
+                for (let location in this.cardZones[type]) {
+                    let zone = new ebg.zone();
+                    zone.create(this, type+'-'+location);
+                    zone.setPattern('custom');
+                    //this.createProxy(zone, 'updateDisplay', this.zoneDisplayCardMiddleWare);
+                    zone.itemIdToCoords = this.cardZoneCoords;
+
+                    this.cardZones[type][location] = zone;
+                }
+            }
+
+            // Init cards
+            this.cards = gamedatas.cards;
             for (let type in this.cards) {
                 if (this.cards.hasOwnProperty(type)) {
                     this.initLocation(this.cards[type], type);
                 }
             }
         },
+
+        cardZoneCoords: function(i, width, maxWidth, count) {
+            const item = this.items[i];
+
+            return {
+                x: 0,
+                y: item.weight * (width - this.item_margin),
+                w: width,
+                h: width
+            };
+        },
+
+        zoneDisplayCardMiddleWare: function()
+        {
+            const countByWeight = [0, 0, 0];
+            const idByWeight = [null, null, null];
+            this.items.forEach(function(item) {
+                countByWeight[item.weight]++;
+                idByWeight[item.weight] = item.id;
+            });
+            countByWeight.forEach(function(count, weight) {
+                const $units = dojo.query('#'+idByWeight[weight]);
+                if (!$units.length) return ;
+                if (countByWeight[weight] > 1) {
+                    $units[0].setAttribute('data-count', count);
+                } else {
+                    $units[0].removeAttribute('data-count');
+                }
+            });
+        },
+
         initLocation: function(cardLocation, type)
         {
             for (let location in cardLocation) {
@@ -357,7 +408,7 @@ function (dojo, on, declare) {
         {
             if (cards.length) {
                 let visibleDeck = ['invention', 'spell'].includes(type);
-                let domQuery    = visibleDeck ? type : 'floating-cards';
+                let domQuery    = visibleDeck ? type + '-' + location : 'floating-cards';
                 if (location === 'deck' && visibleDeck) {
                     this.createDeck(type, domQuery, cards.length);
                 } else {
@@ -400,6 +451,7 @@ function (dojo, on, declare) {
                     );
                 }
 
+                //this.zone.placeInZone();
                 dojo.place(cardContent, domQuery);
             });
         },
@@ -408,26 +460,37 @@ function (dojo, on, declare) {
         {
             for (let domId in tooltips.id) {
                 if (tooltips.id.hasOwnProperty(domId)) {
-                    this.callTooltip(domId, tooltips.id[domId]);
+                    this.addTooltipToId(domId, tooltips.id[domId]);
                 }
             }
             for (let cssClass in tooltips.class) {
                 if (tooltips.class.hasOwnProperty(cssClass)) {
-                    this.callTooltip(cssClass, tooltips.class[cssClass], false);
+                    this.addTooltipByClass(cssClass, tooltips.class[cssClass]);
                 }
             }
         },
 
-        callTooltip: function(key, data, byId = true)
+        addTooltipByClass: function(key, data)
         {
+            const _self = this;
+            let targets = dojo.query(key);
+            targets.forEach(function(target) {
+                _self.addTooltipToId(target.id, data);
+            });
+        },
+        addTooltipToId: function (key, data) {
             let hasAction = data instanceof Array;
             let info = hasAction ? _(data[0]) : _(data);
             let action = hasAction ? _(data[1]) : '';
 
-            byId ?
-                this.addTooltip(key, info, action) :
-                this.addTooltipToClass(key, info, action)
-            ;
+            let target = document.getElementById(key);
+            if (target !== null && (info.includes('%count%') || action.includes('%count%'))) {
+                let count = target.dataset.count ? target.dataset.count : 1;
+                info = info.replace('%count%', count);
+                action = action.replace('%count%', count);
+            }
+
+            this.addTooltip(key, info, action);
         },
 
         initEvents: function()

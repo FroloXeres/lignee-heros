@@ -155,6 +155,14 @@ h2#turn::before {
 
 
 /********* Card zones **********/
+#cards-zone {
+    position: relative;
+    z-index: 0;
+}
+#new-card {
+    position: absolute;
+    z-index: -1;
+}
 #cards-zone > div {
     padding-left: 1em;
     margin-top: 1em;
@@ -162,6 +170,21 @@ h2#turn::before {
     display: flex;
     justify-content: flex-start;
     flex-wrap: wrap;
+}
+#cards-zone #invention > .deck, #cards-zone #spell > .deck {
+    width: 11em;
+}
+#cards-zone .deck::before {
+    position: absolute;
+    content: "";
+}
+#cards-zone .onTable {
+    min-width: 23em;
+    flex-grow: 1;
+}
+#cards-zone .hand {
+    width: 100%;
+    min-height: 1em;
 }
 #floating-cards {
     position: absolute;
@@ -188,11 +211,13 @@ h2#turn::before {
 
 }
 #cards-zone .card {
-    margin-bottom: 1em;
+    display: inline-block;
 }
-#floating-cards .card,
-#cards-zone .card:not(:last-child) {
+#floating-cards .card {
     margin-right: 1em;
+}
+#tile-43, #tile-45, #tile-47, #tile-49 {
+    display: none;
 }
 
 /********* Cards **********/

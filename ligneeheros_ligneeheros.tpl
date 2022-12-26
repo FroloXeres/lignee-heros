@@ -25,12 +25,17 @@
     </ul>
 </div>
 <div id="cards-zone">
+    <div id="new-card"></div>
     <div id="invention">
         <div class="deck" id="invention-deck"></div>
         <div class="onTable" id="invention-onTable"></div>
         <div class="hand" id="invention-hand"></div>
     </div>
-    <div id="spell"></div>
+    <div id="spell">
+        <div class="deck" id="spell-deck"></div>
+        <div class="onTable" id="spell-onTable"></div>
+        <div class="hand" id="spell-hand"></div>
+    </div>
     <div id="explore_fight"></div>
     <div id="explore_disease"></div>
     <div id="explore_other"></div>
