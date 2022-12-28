@@ -236,7 +236,7 @@
     ;
 
     var jstpl_card_verso =
-       '<div class="card verso thickness ${large} ${canDraw} ${type}" title="${name}">\
+       '<div class="card verso thickness ${large} ${canDraw} ${type}" id="deck-${type}" title="${name}">\
             <div class="content">\
                 <div class="inner"></div>\
             </div>\

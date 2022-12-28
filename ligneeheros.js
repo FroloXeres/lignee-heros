@@ -220,7 +220,6 @@ function (dojo, on, declare) {
                 }
             });
         },
-
         mapZoneCoords: function(i, width, maxWidth, count) {
             const item = this.items[i];
 
@@ -231,7 +230,6 @@ function (dojo, on, declare) {
                 h: width
             };
         },
-
         getZoneIdByTileIdAndType: function(id, type)
         {
             let zoneType = 'lineage';
@@ -247,28 +245,25 @@ function (dojo, on, declare) {
             return 'map-explore-' + id + '-' + zoneType;
         },
 
+        // All about People/Unit
         initPeople: function(people)
         {
             this.initMapPeople(people.byPlace.map, people.units);
             this.initInventionPeople(people.byPlace.invention, people.units);
             this.initSpellPeople(people.byPlace.spell, people.units);
         },
-
         initInventionPeople: function(byInvention, units)
         {
 
         },
-
         initSpellPeople: function(bySpell, units)
         {
 
         },
-
         getDomIdByUnit: function(unit)
         {
             return 'unit-' + unit.id;
         },
-
         initMapPeople: function(byMap, units)
         {
             for (let location in byMap) {
@@ -290,7 +285,6 @@ function (dojo, on, declare) {
                 }
             }
         },
-
         getPriorityByUnitStatus: function(status)
         {
             switch (status) {
@@ -299,7 +293,6 @@ function (dojo, on, declare) {
                 default: return 2;
             }
         },
-
         updateUnitStatus: function(domUnit, status)
         {
             domUnit.classList.remove('free');
@@ -308,7 +301,6 @@ function (dojo, on, declare) {
 
             domUnit.classList.add(status);
         },
-
         createUnit: function(iconId, domUnitId, unitStatus)
         {
             const newUnit = this.getWrappedIcon(iconId, domUnitId, unitStatus);
@@ -324,6 +316,7 @@ function (dojo, on, declare) {
             }
         },
 
+        // All about cards
         getCard: function(type, location, id)
         {
             if (
@@ -334,7 +327,6 @@ function (dojo, on, declare) {
             }
             return {};
         },
-
         initCards: function(gamedatas)
         {
             this.decks         = gamedatas.decks;
@@ -343,19 +335,16 @@ function (dojo, on, declare) {
             // Init zones
             this.cardZones = {
                 invention: {deck: null, onTable: null, hand: null},
-                spell: {deck: null, onTable: null, hand: null}
+                spell: {deck: null, onTable: null, hand: null},
+                outside: null
             };
             for (let type in this.cardZones) {
                 for (let location in this.cardZones[type]) {
-                    let zone = new ebg.zone();
-                    zone.create(this, type+'-'+location);
-                    zone.setPattern('custom');
-                    //this.createProxy(zone, 'updateDisplay', this.zoneDisplayCardMiddleWare);
-                    zone.itemIdToCoords = this.cardZoneCoords;
-
-                    this.cardZones[type][location] = zone;
+                    this.cardZones[type][location] = this.createCardZone(type+'-'+location);
                 }
             }
+            // Floating-cards
+            this.cardZones.outside = this.createCardZone('floating-cards');
 
             // Init cards
             this.cards = gamedatas.cards;
@@ -365,7 +354,15 @@ function (dojo, on, declare) {
                 }
             }
         },
+        createCardZone: function(code)
+        {
+            let zone = new ebg.zone();
+            zone.create(this, code);
+            zone.setPattern('custom');
+            zone.itemIdToCoords = this.cardZoneCoords;
 
+            return zone;
+        },
         cardZoneCoords: function(i, width, maxWidth, count) {
             const item = this.items[i];
 
@@ -376,26 +373,6 @@ function (dojo, on, declare) {
                 h: width
             };
         },
-
-        zoneDisplayCardMiddleWare: function()
-        {
-            const countByWeight = [0, 0, 0];
-            const idByWeight = [null, null, null];
-            this.items.forEach(function(item) {
-                countByWeight[item.weight]++;
-                idByWeight[item.weight] = item.id;
-            });
-            countByWeight.forEach(function(count, weight) {
-                const $units = dojo.query('#'+idByWeight[weight]);
-                if (!$units.length) return ;
-                if (countByWeight[weight] > 1) {
-                    $units[0].setAttribute('data-count', count);
-                } else {
-                    $units[0].removeAttribute('data-count');
-                }
-            });
-        },
-
         initLocation: function(cardLocation, type)
         {
             for (let location in cardLocation) {
@@ -408,15 +385,14 @@ function (dojo, on, declare) {
         {
             if (cards.length) {
                 let visibleDeck = ['invention', 'spell'].includes(type);
-                let domQuery    = visibleDeck ? type + '-' + location : 'floating-cards';
                 if (location === 'deck' && visibleDeck) {
-                    this.createDeck(type, domQuery, cards.length);
+                    this.createDeck(type, cards.length);
                 } else {
-                    this.createCardsInLocation(cards, type, location, domQuery);
+                    this.createCardsInLocation(cards, type, location, !visibleDeck);
                 }
             }
         },
-        createDeck: function(type, domQuery, count)
+        createDeck: function(type, count)
         {
             let deck        = this.decks[type];
             let deckContent = this.format_block('jstpl_card_verso', {
@@ -426,9 +402,10 @@ function (dojo, on, declare) {
                 name: deck.name,
                 count: count
             });
-            dojo.place(deckContent, domQuery);
+            dojo.place(deckContent, 'new-card');
+            this.cardZones[type]['deck'].placeInZone('deck-' + type, 0);
         },
-        createCardsInLocation: function(cards, type, location, domQuery)
+        createCardsInLocation: function(cards, type, location, useOutsideZone)
         {
             let _self = this;
             cards.forEach(function(card) {
@@ -451,11 +428,25 @@ function (dojo, on, declare) {
                     );
                 }
 
-                //this.zone.placeInZone();
-                dojo.place(cardContent, domQuery);
+                dojo.place(cardContent, 'new-card');
+                useOutsideZone ?
+                    _self.cardZones[type][location].placeInZone(card.id, _self.getPriorityByCard(card)) :
+                    _self.cardZones.outside.placeInZone(card.id, _self.getPriorityByCard(card))
+                ;
             });
         },
+        getPriorityByCard: function(card)
+        {
+            let priority = 0;
+            switch (card.type) {
+                default: priority = 10;
+            }
+            priority += parseInt(card.name[0]);
 
+            return priority;
+        },
+
+        // Tooltips
         initTooltips: function(tooltips)
         {
             for (let domId in tooltips.id) {
@@ -469,7 +460,6 @@ function (dojo, on, declare) {
                 }
             }
         },
-
         addTooltipByClass: function(key, data)
         {
             const _self = this;
