@@ -245,7 +245,7 @@
     ;
 
     var jstpl_card_recto =
-       '<div class="card recto ${deck} ${large} ${id} ${location}" data-id="${id}">\
+       '<div class="card recto ${deck} ${large} ${id} ${location}" id="${id}" data-id="${id}">\
             <div class="content">\
                 <div class="inner">\
                     <div class="header">\

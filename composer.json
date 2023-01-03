@@ -9,6 +9,7 @@
     "ext-ctype": "*",
     "ext-iconv": "*",
     "ext-json": "*",
+    "ext-curl": "*",
     "symfony/config": "^5.4",
     "symfony/dependency-injection": "^5.4",
     "symfony/finder": "^5.4",

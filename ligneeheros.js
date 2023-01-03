@@ -54,6 +54,7 @@ function (dojo, on, declare) {
                 // TODO: Setting up players boards if needed
             }
 
+            this.isInitializing = true;
             this.setupGameState(gamedatas);
             this.setupGameData(gamedatas);
             this.initCards(gamedatas);
@@ -64,6 +65,9 @@ function (dojo, on, declare) {
 
             // Setup game notifications to handle (see "setupNotifications" method below)
             this.setupNotifications();
+            this.isInitializing = false;
+
+            this.postInitCardUpdate();
         },
 
         setupGameState: function(gamedatas)
@@ -163,7 +167,10 @@ function (dojo, on, declare) {
             this.$zoomIn.style.color = (this.getZoom() === this.MAX_ZOOM) ? '#666' : '#000';
             this.$zoomOut.style.color = (this.getZoom() === this.MIN_ZOOM) ? '#666' : '#000';
         },
-        applyZoom: function() {this.$mapZone.style.width = this.ZOOMS[this.getZoom()]+'em';},
+        applyZoom: function() {
+            this.$mapZone.style.width = this.ZOOMS[this.getZoom()]+'em';
+            this.updateMapZones();
+        },
         getZoom: function() {return parseInt(this.$zoom.dataset.zoom);},
         incDecZoom: function(inc = true) {this.$zoom.dataset.zoom = this.getZoom() + (inc ? 1 : -1);},
 
@@ -181,24 +188,48 @@ function (dojo, on, declare) {
                     zone.create(_self, code);
                     zone.setPattern('custom');
 
-                    _self.createProxy(zone, 'updateDisplay', _self.zoneDisplayItemsMiddleWare);
+                    _self.addMiddleware(zone, 'updateDisplay', _self.zoneDisplayItemsMiddleWare);
                     zone.itemIdToCoords = _self.mapZoneCoords;
                     _self.mapZones[code] = zone;
                 });
             });
+        },
+        updateMapZones: function()
+        {
+            for (let code in this.mapZones) {
+                if (this.mapZones.hasOwnProperty(code)) {
+                    this.mapZones[code].updateDisplay();
+                }
+            }
+        },
+
+        /**
+         * @param {Object}   object         Object
+         * @param {String}   method         Method of object on witch condition is applied
+         * @param {function} conditional    Conditional method
+         */
+        addConditionalCheck: function(object, method, conditional)
+        {
+            const existingMethod = object[method];
+            object[method] = function () {
+                if (conditional()) {
+                    existingMethod.call(object);
+                }
+            };
         },
 
         /**
          * @param {Object}   object     Object to override
          * @param {String}   method     Method of object to override
          * @param {function} extended   Extended method for object
+         * @param {Boolean}  before     Execute middleware method before
          */
-        createProxy: function(object, method, extended)
+        addMiddleware: function(object, method, extended, before = true)
         {
             const existingMethod = object[method];
             object[method] = function () {
-                existingMethod.call(object);
-                extended.call(object);
+                before ? extended.call(object) : existingMethod.call(object);
+                before ? existingMethod.call(object) : extended.call(object);
             };
         },
 
@@ -354,23 +385,52 @@ function (dojo, on, declare) {
                 }
             }
         },
+        postInitCardUpdate: function()
+        {
+            if (this.cardZones.invention.deck.items.length) {
+                this.cardZones.invention.deck.updateDisplay();
+            }
+            if (this.cardZones.invention.onTable.items.length) {
+                this.cardZones.invention.onTable.updateDisplay();
+            }
+            if (this.cardZones.invention.hand.items.length) {
+                this.cardZones.invention.hand.updateDisplay();
+            }
+            if (this.cardZones.spell.deck.items.length) {
+                this.cardZones.spell.deck.updateDisplay();
+            }
+            if (this.cardZones.spell.onTable.items.length) {
+                this.cardZones.spell.onTable.updateDisplay();
+            }
+            if (this.cardZones.spell.onTable.items.length) {
+                this.cardZones.spell.onTable.updateDisplay();
+            }
+            if (this.cardZones.outside.items.length) {
+                this.cardZones.outside.updateDisplay();
+            }
+        },
         createCardZone: function(code)
         {
+            const _self = this;
             let zone = new ebg.zone();
             zone.create(this, code);
             zone.setPattern('custom');
-            zone.itemIdToCoords = this.cardZoneCoords;
+            zone.itemIdToCoords = code.includes('deck') ?
+                function() {return {x: 0, y: 0, w: 155, h: 245};} : this.cardZoneCoords;
+            this.addConditionalCheck(zone, 'updateDisplay', () => !_self.isInitializing);
 
             return zone;
         },
-        cardZoneCoords: function(i, width, maxWidth, count) {
-            const item = this.items[i];
-
+        cardZoneCoords: function(i, zoneWidth, zoneHeight, count) {
+            let cardWidth = 155;
+            let pileCnt = Math.floor((zoneWidth + this.item_margin) / (cardWidth + this.item_margin));
+            let modulo = i % pileCnt;
+            let line = Math.floor(i / pileCnt);
             return {
-                x: 0,
-                y: item.weight * (width - this.item_margin),
-                w: width,
-                h: width
+                x: modulo * (cardWidth + this.item_margin) + (this.item_margin * (line - 1)),
+                y: line * 30,
+                w: cardWidth,
+                h: 245
             };
         },
         initLocation: function(cardLocation, type)
@@ -430,8 +490,8 @@ function (dojo, on, declare) {
 
                 dojo.place(cardContent, 'new-card');
                 useOutsideZone ?
-                    _self.cardZones[type][location].placeInZone(card.id, _self.getPriorityByCard(card)) :
-                    _self.cardZones.outside.placeInZone(card.id, _self.getPriorityByCard(card))
+                    _self.cardZones.outside.placeInZone(card.id, _self.getPriorityByCard(card)) :
+                    _self.cardZones[type][location].placeInZone(card.id, _self.getPriorityByCard(card))
                 ;
             });
         },

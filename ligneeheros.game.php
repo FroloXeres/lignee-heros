@@ -319,7 +319,7 @@ class ligneeheros extends Table
                 'people-mage' => clienttranslate('Mage(s)'),
                 'military-power' => clienttranslate('Warrior fight power'),
                 'military-defense' => clienttranslate('Warrior defense'),
-                'city-life' => clienttranslate('Growth (x/8 chance to become adult)'),
+                'city-life' => clienttranslate('Growth (%count%/8 chance to produce new unit)'),
                 'city-defense' => clienttranslate('City defense'),
                 'harvest-food' => clienttranslate('Food to harvest (at the end of turn)'),
                 'harvest-science' => clienttranslate('Science to harvest (at the end of turn)'),
