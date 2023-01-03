@@ -58,9 +58,10 @@ class Objective extends AbstractCard
     public const NEED_SUB_WARRIOR      = 15;
     public const NEED_SUB_WORKER       = 16;
 
-    protected int    $need;
-    protected int    $subNeed;
-    protected int    $needCount;
+    protected int  $need;
+    protected int  $subNeed;
+    protected int  $needCount;
+    protected bool $completed = false;
 
     /**
      * @param int $code
@@ -163,6 +164,18 @@ class Objective extends AbstractCard
         return $entityAsText?? parent::getDescription();
     }
 
+    public function isCompleted(): bool
+    {
+        return $this->completed;
+    }
+
+    public function setCompleted(bool $completed): self
+    {
+        $this->completed = $completed;
+
+        return $this;
+    }
+
     /**
      * Return data for Card module
      *
@@ -192,6 +205,7 @@ class Objective extends AbstractCard
         $tpl = parent::toTpl($deck);
 
         $tpl[self::TPL_ICON] = Deck::TYPE_OBJECTIVE;
+        $tpl[self::TPL_COMPLETED] = $this->isCompleted() ? 'completed' : '';
 
         return $tpl;
     }
