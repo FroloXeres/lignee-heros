@@ -59,7 +59,7 @@ class ChooseLineageState extends AbstractState
                     clienttranslate('${player_name} will play with ${lineage}'),
                     [
                         'i18n' => ['player_name', 'lineage'],
-                        'player_name' => $this->getActivePlayerName(),
+                        'player_name' => $this->getCurrentPlayerId(),
                         'lineage' => ($card ? $card->getName() : '')
                     ]
                 );
