@@ -8,7 +8,7 @@
     </div>
     <ul class="map-hex-grid">
         <!-- BEGIN MAP_TILES -->
-        <li id="tile-{TILE_ID}" data-coord="{COORD}" class="map-hex-item" style="z-index: {INDEX}">
+        <li id="tile-{TILE_ID}" data-coord="{COORD}" class="map-hex-item">
             <div class="map-hex-content {CLASS}">
                 <div class="map-explore" id="map-explore-{TILE_ID}">
                     <div class="space" id="map-explore-{TILE_ID}-lineage"></div>
@@ -17,6 +17,7 @@
                     <div class="space" id="map-explore-{TILE_ID}-worker"></div>
                     <div class="space" id="map-explore-{TILE_ID}-warrior"></div>
                 </div>
+                <svg id="explore" class="svg-icon explore-bg" xmlns="http://www.w3.org/2000/svg" width="50" height="50" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 50 50"><g><path d="M22.52,29.54c-3.26,2.87-6.47,5.69-9.69,8.52-.01-.01-.02-.02-.03-.03,2.51-3.48,5.01-6.96,7.56-10.49-5.96-.65-11.87-1.29-17.77-1.93,0-.02,0-.04,0-.06,6.07-.97,12.13-1.93,18.26-2.91-2.45-3.33-4.87-6.61-7.28-9.89,.01-.02,.03-.03,.04-.05,3,2.34,6,4.68,9.05,7.05,.6-6.29,1.19-12.52,1.78-18.76h.06c.88,6.35,1.76,12.69,2.65,19.11,3.56-2.85,7.09-5.67,10.61-8.49,.02,.02,.03,.03,.05,.05-2.83,3.62-5.66,7.24-8.52,10.91,6.09,1,12.13,1.99,18.17,2.98v.05c-5.85,.65-11.7,1.31-17.62,1.97,2.07,3.16,4.11,6.27,6.15,9.39-.01,.01-.03,.03-.04,.04-2.88-2.47-5.75-4.95-8.67-7.46-.93,6.52-1.85,12.99-2.78,19.45-.02,0-.04,0-.06,0-.63-6.46-1.26-12.92-1.9-19.46Zm-1.07-5.1c0,.11,0,.22,0,.33,.15,2.05,2,3.5,3.96,3.13,1.78-.34,3-2.21,2.65-4.07-.34-1.82-1.9-3.02-3.67-2.82-1.67,.19-2.95,1.67-2.94,3.44Z"/><path d="M4.75,24.35c.22-5.46,2.26-10.05,6.13-13.87,.91,1.23,1.8,2.44,2.69,3.65-.42,.51-.86,.98-1.25,1.49-1.71,2.23-2.73,4.75-3.04,7.55-.05,.48-.05,.47-.53,.55-1.18,.19-2.36,.38-3.54,.56-.14,.02-.27,.04-.47,.07Z"/><path d="M36.25,14.68c.93-1.19,1.85-2.37,2.8-3.58,3.47,3.72,5.31,8.07,5.52,13.17-.63-.1-1.21-.19-1.78-.28-.82-.13-1.63-.27-2.45-.4-.16-.03-.27-.06-.29-.26-.32-3.2-1.56-6.01-3.65-8.45-.05-.05-.09-.11-.15-.19Z"/><path d="M13.59,35.46c-.88,1.22-1.75,2.44-2.65,3.69-3.54-3.46-5.58-7.61-6.1-12.57,.54,.06,1.03,.11,1.52,.17,.93,.1,1.86,.2,2.79,.3,.15,.02,.23,.05,.26,.22,.53,3.13,1.93,5.82,4.12,8.1,.02,.02,.03,.05,.06,.09Z"/><path d="M35.8,35.45c.55-.69,1.11-1.34,1.6-2.03,1.27-1.78,2.09-3.75,2.47-5.9,.05-.28,.15-.38,.44-.41,1.33-.13,2.65-.29,3.98-.44,.05,0,.1,0,.18,0-.2,2.17-.74,4.22-1.62,6.19-1.09,2.43-2.6,4.55-4.57,6.39-.85-1.29-1.67-2.55-2.48-3.78Z"/><path d="M25.72,4.99c2.02,.1,3.98,.51,5.88,1.21,2.42,.91,4.6,2.22,6.52,4-1.2,.96-2.38,1.91-3.53,2.83-.73-.48-1.41-.98-2.14-1.41-1.82-1.07-3.79-1.71-5.88-1.97-.15-.02-.26-.04-.28-.23-.19-1.44-.39-2.88-.59-4.32,0-.03,0-.06,.02-.11Z"/><path d="M34.36,36.69c1.15,.99,2.29,1.97,3.46,2.97-3.47,2.99-7.47,4.63-12.07,4.93,.09-.64,.17-1.25,.26-1.86,.11-.8,.24-1.6,.33-2.4,.03-.28,.12-.41,.44-.45,2.69-.36,5.12-1.37,7.29-3,.06-.05,.13-.1,.19-.14,.02-.02,.05-.03,.1-.06Z"/><path d="M23.19,5.01c-.15,1.57-.29,3.08-.44,4.63-2.86,.37-5.44,1.45-7.73,3.23-1.21-.95-2.41-1.88-3.63-2.84,3.38-2.97,7.29-4.64,11.81-5.02Z"/><path d="M23.13,44.57c-4.3-.37-8.07-1.93-11.38-4.69,1.16-1.02,2.29-2.02,3.37-2.97,.97,.56,1.88,1.13,2.83,1.62,1.36,.7,2.81,1.12,4.32,1.33,.29,.04,.44,.12,.46,.46,.1,1.3,.24,2.6,.37,3.9,0,.1,.01,.2,.02,.35Z"/><path d="M24.67,26.46c-1.07,0-1.97-.89-1.98-1.98,0-1.09,.88-2,1.95-2.01,1.13-.01,2.02,.86,2.04,1.98,.01,1.11-.87,2-2.01,2.01Z"/></g></svg>
                 <div class="map-dist-bg"><label data-dist="{HOW_FAR}"></label></div>
                 <div class="map-content" id="tile-content-{TILE_ID}"></div>
             </div>
@@ -221,17 +222,17 @@
 
     var jstpl_tile =
        '<div class="resources resources_${count}">\
-            <div class="resource resource-1 ${resource1Class}" id="resource-${id}-1">${resource1}</div>\
-            <div class="resource resource-2 ${resource2Class}" id="resource-${id}-2">${resource2}</div>\
-            <div class="resource resource-3 ${resource3Class}" id="resource-${id}-3">${resource3}</div>\
+            <div class="resource interactive resource-1 ${resource1Class}" id="resource-${id}-1">${resource1}</div>\
+            <div class="resource interactive resource-2 ${resource2Class}" id="resource-${id}-2">${resource2}</div>\
+            <div class="resource interactive resource-3 ${resource3Class}" id="resource-${id}-3">${resource3}</div>\
         </div>\
         <div class="name" id="tile-name-${id}">\
             <div class="bonus">${bonus}</div>\
             ${name}\
         </div>\
         <div class="harvest">\
-            <div class="resource food ${food}" id="resource-food-${id}" data-count="${foodCount}">${foodIcon}</div>\
-            <div class="resource science ${science}" id="resource-science-${id}">${scienceIcon}</div>\
+            <div class="resource interactive food ${food}" id="resource-food-${id}" data-count="${foodCount}">${foodIcon}</div>\
+            <div class="resource interactive science ${science}" id="resource-science-${id}">${scienceIcon}</div>\
         </div>'
     ;
 

@@ -588,7 +588,7 @@ function (dojo, on, declare) {
         },
         getWrappedIcon(iconId, wrapId, cssClass = '')
         {
-            return '<div id="' + wrapId + '" class="wrapped-icon ' + iconId + ' ' + cssClass + '">' + this.getIconAsText(iconId, cssClass) + '</div>';
+            return '<div id="' + wrapId + '" class="wrapped-icon interactive ' + iconId + ' ' + cssClass + '">' + this.getIconAsText(iconId, cssClass) + '</div>';
         },
         getIconAsText(iconId, cssClass = '')
         {

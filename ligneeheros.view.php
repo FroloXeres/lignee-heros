@@ -53,7 +53,6 @@ class view_ligneeheros_ligneeheros extends game_view
                 'COORD'   => $tile->getX() . '_' . $tile->getY(),
                 'CLASS'   => MapService::getClass($tile),
                 'HOW_FAR' => MapService::getDistanceToDisplay($tile),
-                'INDEX'   => ($maxIndex - $id),
             ]);
         }
     }

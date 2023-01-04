@@ -949,6 +949,10 @@ svg.svg-icon {
     -webkit-filter: drop-shadow(0 0 3px rgba(68,68,68,.08));
     filter: drop-shadow(0 0 0.1em rgba(68,68,68,.08));
     margin: 0.1em 0.1em;
+    pointer-events: none;
+}
+.interactive {
+    pointer-events: initial;
 }
 .map-hex-content {
     position: absolute;
@@ -969,11 +973,11 @@ svg.svg-icon {
 }
 .map-explore {
     position: absolute;
-    width: 80%;
-    height: 50%;
-    left: 10%;
-    top: 20%;
-    z-index: 5;
+    width: 76%;
+    height: 48%;
+    left: 12%;
+    top: 25%;
+    z-index: 3;
 }
 .map-explore .space {
     width: 20%;
@@ -1057,13 +1061,6 @@ svg.svg-icon {
     background: url('img/card-bg.jpg') 0 0 no-repeat;
     background-size: 200% 100%;
 }
-.tile::before {
-    content: "";
-    background: url("img/icons.svg") 40% 40% no-repeat;
-    background-size: 1100% 600%;
-    width: 65%;
-    aspect-ratio: 1;
-}
 
 .tile.tile_reveal {background: none;}
 .tile.tile_reveal::before {display: none;}
@@ -1071,7 +1068,21 @@ svg.svg-icon {
 .tile.explorable {
     cursor: pointer;
 }
-.tile.tile_reveal .map-dist-bg {display: none;}
+.tile.tile_reveal .map-dist-bg,
+.tile.tile_reveal .explore-bg {display: none;}
+.tile .explore-bg {
+    border-radius: 100%;
+    position: absolute;
+    top: 10%;
+    left: 10%;
+    width: 80%;
+    height: 80%;
+}
+.tile .explore-bg:hover {
+    fill: #222;
+    filter: drop-shadow(3px 5px 2px rgb(0 0 0 / 0.4));
+    transition: .2s ;
+}
 .tile .map-content {display: none;}
 .tile.tile_reveal .map-content {
     display: flex;
