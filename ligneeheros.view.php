@@ -44,13 +44,16 @@ class view_ligneeheros_ligneeheros extends game_view
         $this->page->begin_block('ligneeheros_ligneeheros', 'MAP_TILES');
 
         // Prepare HTML/CSS map
-        foreach ($this->game->mapService->getMapTiles() as $tile) {
+        $tiles = $this->game->mapService->getMapTiles();
+        $maxIndex = count($tiles);
+        foreach ($tiles as $id => $tile) {
             /** @var Tile $tile */
             $this->page->insert_block('MAP_TILES', [
                 'TILE_ID' => $tile->getId(),
                 'COORD'   => $tile->getX() . '_' . $tile->getY(),
                 'CLASS'   => MapService::getClass($tile),
                 'HOW_FAR' => MapService::getDistanceToDisplay($tile),
+                'INDEX'   => ($maxIndex - $id),
             ]);
         }
     }

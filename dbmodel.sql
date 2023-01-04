@@ -37,6 +37,8 @@ CREATE TABLE IF NOT EXISTS `lineage` (
     `card_type_arg` int(11) NOT NULL,
     `card_location` varchar(16) NOT NULL,
     `card_location_arg` int(11) NOT NULL,
+    `card_completed` tinyint(1) DEFAULT 0,
+    `card_leader` tinyint(1) DEFAULT 0,
     PRIMARY KEY (`card_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
@@ -73,6 +75,7 @@ CREATE TABLE IF NOT EXISTS `spell` (
     `card_type_arg` int(11) NOT NULL,
     `card_location` varchar(16) NOT NULL,
     `card_location_arg` int(11) NOT NULL,
+    `card_activated` tinyint(1) DEFAULT 0,
     PRIMARY KEY (`card_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
@@ -82,6 +85,7 @@ CREATE TABLE IF NOT EXISTS `invention` (
     `card_type_arg` int(11) NOT NULL,
     `card_location` varchar(16) NOT NULL,
     `card_location_arg` int(11) NOT NULL,
+    `card_activated` tinyint(1) DEFAULT 0,
     PRIMARY KEY (`card_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
@@ -91,6 +95,7 @@ CREATE TABLE IF NOT EXISTS `objective` (
     `card_type_arg` int(11) NOT NULL,
     `card_location` varchar(16) NOT NULL,
     `card_location_arg` int(11) NOT NULL,
+    `card_completed` tinyint(1) DEFAULT 0,
     PRIMARY KEY (`card_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 

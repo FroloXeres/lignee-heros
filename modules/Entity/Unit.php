@@ -4,7 +4,7 @@ namespace LdH\Entity;
 
 use LdH\Entity\Cards\Disease;
 
-class Unit
+class Unit implements \JsonSerializable
 {
     public const STATUS_FREE  = 'free';
     public const STATUS_MOVED = 'moved';
@@ -14,8 +14,8 @@ class Unit
     public const LOCATION_SPELL     = 'spell';
     public const LOCATION_INVENTION = 'invention';
 
-    protected int      $id;
-    protected string   $type;
+    protected int      $id          = 0;
+    protected string   $type        = Meeple::ALL;
     protected string   $location    = self::LOCATION_MAP;
     protected ?int     $locationArg = null;
     protected string   $status      = self::STATUS_FREE;
@@ -96,9 +96,20 @@ class Unit
     public function toArray(): array
     {
         return [
+            'id' => $this->id,
             'type' => $this->type,
             'type_arg' => null,
             'nbr' => 1
+        ];
+    }
+    public function jsonSerialize(): array
+    {
+        return [
+            'id' => $this->id,
+            'type' => $this->type,
+            'location' => $this->locationArg,
+            'status' => $this->status,
+            'disease' => $this->disease,
         ];
     }
 }

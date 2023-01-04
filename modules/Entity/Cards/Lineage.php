@@ -18,6 +18,9 @@ class Lineage extends AbstractCard
     protected int        $leadingType    = self::LEADING_TYPE_EVERY3TURN;
     protected ?Bonus     $leadingBonus   = null;
 
+    protected bool $objectiveCompleted = false;
+    protected bool $leader = false;
+
     /**
      * @param string $code
      */
@@ -52,20 +55,12 @@ class Lineage extends AbstractCard
         $this->setType($code);
     }
 
-    /**
-     * @return Meeple|null
-     */
     public function getMeeple(): ?Meeple
     {
         return $this->meeple;
     }
 
-    /**
-     * @param Meeple|null $meeple
-     *
-     * @return Lineage
-     */
-    public function setMeeple(?Meeple $meeple): Lineage
+    public function setMeeple(?Meeple $meeple): self
     {
         $this->meeple = $meeple;
 
@@ -76,111 +71,91 @@ class Lineage extends AbstractCard
         return $this;
     }
 
-    /**
-     * @return Bonus
-     */
     public function getMeeplePower(): Bonus
     {
         return $this->meeplePower;
     }
 
-    /**
-     * @param Bonus $meeplePower
-     *
-     * @return Lineage
-     */
-    public function setMeeplePower(Bonus $meeplePower): Lineage
+    public function setMeeplePower(Bonus $meeplePower): self
     {
         $this->meeplePower = $meeplePower;
 
         return $this;
     }
 
-    /**
-     * @return Objective|null
-     */
     public function getObjective(): ?Objective
     {
         return $this->objective;
     }
 
-    /**
-     * @param Objective $objective
-     *
-     * @return Lineage
-     */
-    public function setObjective(Objective $objective): Lineage
+    public function setObjective(Objective $objective): self
     {
         $this->objective = $objective;
 
         return $this;
     }
 
-    /**
-     * @return Bonus
-     */
     public function getObjectiveBonus(): Bonus
     {
         return $this->objectiveBonus;
     }
 
-    /**
-     * @param Bonus $objectiveBonus
-     *
-     * @return Lineage
-     */
-    public function setObjectiveBonus(Bonus $objectiveBonus): Lineage
+    public function setObjectiveBonus(Bonus $objectiveBonus): self
     {
         $this->objectiveBonus = $objectiveBonus;
 
         return $this;
     }
 
-    /**
-     * @return int
-     */
     public function getLeadingType(): int
     {
         return $this->leadingType;
     }
 
-    /**
-     * @param int $leadingType
-     *
-     * @return Lineage
-     */
-    public function setLeadingType(int $leadingType): Lineage
+    public function setLeadingType(int $leadingType): self
     {
         $this->leadingType = $leadingType;
 
         return $this;
     }
 
-    /**
-     * @return Bonus|null
-     */
     public function getLeadingBonus(): ?Bonus
     {
         return $this->leadingBonus;
     }
 
-    /**
-     * @param Bonus|null $leadingBonus
-     *
-     * @return Lineage
-     */
-    public function setLeadingBonus(?Bonus $leadingBonus): Lineage
+    public function setLeadingBonus(?Bonus $leadingBonus): self
     {
         $this->leadingBonus = $leadingBonus;
 
         return $this;
     }
 
-    /**
-     * Return data for Card module
-     *
-     * @return array
-     */
+    public function isObjectiveCompleted(): bool
+    {
+        return $this->objectiveCompleted;
+    }
+
+    public function setObjectiveCompleted(bool $objectiveCompleted): self
+    {
+        $this->objectiveCompleted = $objectiveCompleted;
+
+        return $this;
+    }
+
+    public function isLeader(): bool
+    {
+        return $this->leader;
+    }
+
+    public function setLeader(bool $leader): self
+    {
+        $this->leader = $leader;
+
+        return $this;
+    }
+
+    /** Return data for Card module */
     public function toArray(): array
     {
         return [
@@ -208,6 +183,8 @@ class Lineage extends AbstractCard
         $tpl[self::TPL_OBJECTIVE_BONUS] = (string) $this->getObjectiveBonus();
         $tpl[self::TPL_LEAD_TYPE]       = $this->getLeadingType() === self::LEADING_TYPE_EVERY3TURN ? 'end_turn' : 'fight';
         $tpl[self::TPL_LEAD_POWER]      = (string) $this->getLeadingBonus();
+        $tpl[self::TPL_COMPLETED]       = $this->isObjectiveCompleted() ? 'completed' : '';
+        $tpl[self::TPL_IS_LEADER]       = $this->isLeader();
 
         return $tpl;
     }

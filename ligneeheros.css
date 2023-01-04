@@ -54,11 +54,20 @@ html, body {
 
 /********* Cartridge **********/
 #cartridge {
+    padding: 0.5em 1em;
+}
+#cartridge, .player-board {
+    position: relative;
     margin: 0 auto .5em;
     background: url('img/card-bg.jpg') 0 0 no-repeat;
     background-size: 200% 100%;
-    padding: 0.5em 1em;
     box-shadow: 0 3px 8px rgba(0,0,0,.3);
+    z-index: 1;
+    border-radius: inherit;
+}
+#new-unit {
+    position: absolute;
+    z-index: 0;
 }
 h2#turn {
     text-align: center;
@@ -81,11 +90,19 @@ h2#turn::before {
     line-height: 2em;
 }
 #people-people::after, #people-worker::after, #people-warrior::after, #people-savant::after, #people-mage::after,
-#harvest-food::after, #harvest-science::after, #stock-food::after, #stock-science::after,
+#military-power::after, #military-defense::after,
+#city-life::after, #city-defense::after,
+#harvest-food::after, #harvest-science::after,
+#stock-science::after,
 #stock-wood::after, #stock-animal::after, #stock-gem::after, #stock-paper::after, #stock-metal::after, #stock-stone::after, #stock-clay::after, #stock-medic::after {
     content: attr(data-count);
     font-weight: bold;
 }
+#stock-food::after {
+    content: attr(data-count)" / "attr(data-stock);
+    font-weight: bold;
+}
+
 #cartridge svg {margin-right: .5em;}
 
 #cartridge .people {
@@ -98,13 +115,19 @@ h2#turn::before {
     margin-left: 1em;
 }
 #cartridge .people-types,
-#cartridge .harvest, #cartridge .stock {
+#cartridge .harvest,
+#cartridge .military,
+#cartridge .city,
+#cartridge .stock {
     display: flex;
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
 }
-#cartridge .harvest > div:first-child, #cartridge .stock > div:first-child {
+#cartridge .harvest > div:first-child,
+#cartridge .military > div:first-child,
+#cartridge .city > div:first-child,
+#cartridge .stock > div:first-child {
     width: 30%;
 }
 
@@ -113,29 +136,36 @@ h2#turn::before {
     align-items: center;
     flex-wrap: wrap;
     justify-content: space-evenly;
+    margin-bottom: .2em;
 }
 #cartridge .people > div,
 #cartridge .people-types > div,
 #cartridge .harvest > div,
+#cartridge .military > div,
+#cartridge .city > div,
 #cartridge .stock > div:not(.stock-resources),
 #cartridge .stock-resources .group > div {
     display: flex;
     align-items: center;
     min-width: 3em;
 }
-#stock-food::before {background-position: 40% 100%;}
-#stock-science::before {background-position: 50% 100%;}
+.stock-resources svg {
+    border: .15em solid #065009;
+    border-radius: 50%;
+    padding: .15em;
+    background: white;
+}
 
-#stock-wood::before {background-position: 0% 60%;}
-#stock-animal::before {background-position: 10% 60%;}
-#stock-stone::before {background-position: 50% 60%;}
-#stock-metal::before {background-position: 40% 60%;}
-#stock-clay::before {background-position: 60% 60%;}
-#stock-paper::before {background-position: 30% 60%;}
-#stock-medic::before {background-position: 70% 60%;}
-#stock-gem::before {background-position: 20% 60%;}
 
 /********* Card zones **********/
+#cards-zone {
+    position: relative;
+    z-index: 0;
+}
+#new-card {
+    position: absolute;
+    z-index: -1;
+}
 #cards-zone > div {
     padding-left: 1em;
     margin-top: 1em;
@@ -143,6 +173,37 @@ h2#turn::before {
     display: flex;
     justify-content: flex-start;
     flex-wrap: wrap;
+}
+#cards-zone #invention > .deck, #cards-zone #spell > .deck {
+    width: 11em;
+}
+#cards-zone .deck::before {
+    position: absolute;
+    content: "";
+}
+#cards-zone .onTable {
+    min-width: 23em;
+    flex-grow: 1;
+}
+#cards-zone .hand {
+    width: 100%;
+    min-height: 1em;
+    margin-top: .5em;
+}
+#cards-zone .hand .card {
+
+}
+#invention-hand .card .cost {
+    color: #f5ebb8;
+}
+#invention-hand .card .cost svg {
+    display: none;
+}
+#invention-hand .card .cost::before {
+    font-family: "FontAwesome";
+    content: "\f00c";
+    color: #065009;
+    position: absolute;
 }
 #floating-cards {
     position: absolute;
@@ -169,10 +230,13 @@ h2#turn::before {
 
 }
 #cards-zone .card {
-    margin-bottom: 1em;
+    position: absolute;
 }
-#cards-zone .card:not(:last-child) {
+#floating-cards .card {
     margin-right: 1em;
+}
+#tile-43, #tile-45, #tile-47, #tile-49 {
+    display: none;
 }
 
 /********* Cards **********/
@@ -846,11 +910,20 @@ svg.svg-icon {
 #page-title .action-button.hidden {display: none;}
 
 /********* MAP **********/
+#zoom {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 100;
+}
+#zoom i {
+    font-size: 2em;
+    cursor: pointer;
+}
 #map-zone {
-    width: 85%;
     min-width: 320px;
-    margin: -13% 4% 0;
-    transform: rotate(90deg);
+    width: 100%;
+    overflow-x: scroll;
 }
 
 .map-hex-grid {
@@ -860,13 +933,15 @@ svg.svg-icon {
 
 .map-hex-grid {
     position: relative;
-    width: 100%;
+    width: 91em;
     list-style-type: none;
     display: grid;
     grid-template-columns: repeat(var(--amount),1fr 2fr) 1fr;
+    margin: 0 auto;
 }
 .map-hex-item {
     position: relative;
+    z-index: 0;
     height: 0;
     padding-bottom: 90%;
     grid-column: 1/span 3;
@@ -891,6 +966,47 @@ svg.svg-icon {
     text-decoration: none;
     text-align: center;
     transition: transform .24s ease-out;
+}
+.map-explore {
+    position: absolute;
+    width: 80%;
+    height: 50%;
+    left: 10%;
+    top: 20%;
+    z-index: 5;
+}
+.map-explore .space {
+    width: 20%;
+    height: 100% !important;
+    float: left;
+}
+.map-explore svg.svg-icon {
+    width: 80%;
+    height: inherit;
+    aspect-ratio: 1;
+}
+.map-explore .wrapped-icon:last-of-type svg.svg-icon {
+    filter: drop-shadow(3px 5px 2px rgb(0 0 0 / 0.4));
+}
+.wrapped-icon {
+    cursor: pointer;
+}
+.wrapped-icon::after {visibility: hidden;}
+.wrapped-icon[data-count]::after {visibility: visible;}
+.wrapped-icon::after {
+    position: absolute;
+    z-index: 1;
+    content: attr(data-count);
+    font-size: 0.8em;
+    width: 1em;
+    height: 1em;
+    border: .1em solid #000;
+    background-color: #fff;
+    border-radius: .5em;
+    bottom: -10%;
+    right: -10%;
+    text-align: center;
+    line-height: 1em;
 }
 
 .map-hex-item:nth-of-type(7n+1) {
@@ -940,7 +1056,6 @@ svg.svg-icon {
 .tile {
     background: url('img/card-bg.jpg') 0 0 no-repeat;
     background-size: 200% 100%;
-    cursor: not-allowed;
 }
 .tile::before {
     content: "";
@@ -965,48 +1080,42 @@ svg.svg-icon {
     align-content: space-around;
     width: 100%;
     height: 100%;
-    transform: rotate(-90deg);
-    margin-left: -10%;
 }
 .tile.tile_disabled {display: none;}
 
 .tile.tile_reveal .resources {
     display: flex;
     justify-content: center;
-    align-items: center;
-    height: 40%;
-    padding-top: 2%;
+    align-items: flex-start;
+    height: 20%;
+    padding-top: 3%;
     flex-wrap: wrap;
 }
 .tile .resources.resources_0 .resource-1 {display: none}
 .tile .resources.resources_0 .resource-2 {display: none}
 .tile .resources.resources_0 .resource-3 {display: none}
-.tile .resources.resources_1 {margin-top: -5%;}
 .tile .resources.resources_1 .resource-2 {display: none}
 .tile .resources.resources_1 .resource-3 {display: none}
-.tile .resources.resources_2 {margin-top: 0%;}
 .tile .resources.resources_2 .resource-3 {display: none}
 .tile .resource {
-    background: url("img/icons.svg") 0 0 no-repeat #FFF;
-    background-size: 1100% 600%;
-    height: 32.5%;
+    background-color: #FFF;
+    height: 60%;
     aspect-ratio: 1;
-    border: 1px solid #000;
+    border: .1em solid #000;
+    padding: .1em;
+    z-index: 2;
 }
-.tile .resource-2, .tile .resource-3 {margin-left: 3%;}
-.tile .resources.resources_3 {margin-top: 4%;}
-.tile .resources.resources_3 .resource-2 {margin-left: 3%; margin-top: -15%;}
-
-.tile .resource.food {background-position: 80% 20%;}
-.tile .resource.science {background-position: 90% 20%;}
-.tile .resources .resource.wood {background-position: 0% 60%;}
-.tile .resources .resource.gem {background-position: 20% 60%;}
-.tile .resources .resource.paper {background-position: 30% 60%;}
-.tile .resources .resource.metal {background-position: 40% 60%;}
-.tile .resources .resource.stone {background-position: 50% 60%;}
-.tile .resources .resource.animal {background-position: 10% 60%;}
-.tile .resources .resource.clay {background-position: 60% 60%;}
-.tile .resources .resource.medic {background-position: 70% 60%;}
+.tile .resource:not(.food):not(.science) {
+    border: .15em solid #065009;
+    border-radius: 50%;
+    padding: .15em;
+    cursor: pointer;
+    margin: 0 0.1em;
+}
+.tile .resource svg.svg-icon {
+    width: 100%;
+    height: 100%;
+}
 
 .tile.tile_reveal .name {
     font-weight: bold;
@@ -1014,6 +1123,18 @@ svg.svg-icon {
     display: flex;
     justify-content: center;
     align-items: flex-end;
+    padding: 0 .5em;
+}
+.tile.tile_reveal .name .bonus {
+    font-size: .9em;
+    font-weight: normal;
+    position: absolute;
+    top: 45%;
+    display: flex;
+    align-items: center;
+}
+.tile.tile_reveal .name .bonus svg {
+
 }
 .tile .harvest {
     display: flex;
@@ -1029,16 +1150,16 @@ svg.svg-icon {
     position: absolute;
     z-index: 1;
     content: attr(data-count);
-    font-size: 0.6rem;
-    width: 50%;
-    height: 50%;
-    border: 1px solid #000;
+    font-size: 0.8em;
+    width: 1em;
+    height: 1em;
+    border: .1em solid #000;
     background-color: #fff;
-    border-radius: 50%;
-    bottom: -25%;
-    right: -25%;
+    border-radius: .5em;
+    bottom: -.4em;
+    right: -.5em;
     text-align: center;
-    line-height: 150%;
+    line-height: 1em;
 }
 .tile.tile_reveal .science {
     height: 65%;
@@ -1087,7 +1208,7 @@ svg.svg-icon {
     width: 10%;
     height: 10%;
     background: #f0e094;
-    transform: rotate(-135deg);
+    transform: rotate(-45deg);
 }
 .tile .map-dist-bg label {
     display: inline-block;
@@ -1114,8 +1235,6 @@ svg.svg-icon {
     }
 
     #map-zone {
-        width: 86%;
-        margin-left: 3.5%;
         font-size: 1em;
     }
 
@@ -1130,8 +1249,6 @@ svg.svg-icon {
 
 @media all and (min-width: 721px) and (max-width: 1100px) {
     #map-zone {
-        width: 86%;
-        margin-left: 3.5%;
         font-size: 1em;
     }
     #map-zone .tile .name {

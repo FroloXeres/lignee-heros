@@ -18,7 +18,8 @@
 define([
     "dojo", "dojo/on", "dojo/_base/declare",
     "ebg/core/gamegui",
-    "ebg/counter"
+    "ebg/counter",
+    "ebg/zone"
 ],
 function (dojo, on, declare) {
     return declare("bgagame.ligneeheros", ebg.core.gamegui, {
@@ -53,23 +54,26 @@ function (dojo, on, declare) {
                 // TODO: Setting up players boards if needed
             }
 
+            this.isInitializing = true;
             this.setupGameState(gamedatas);
             this.setupGameData(gamedatas);
+            this.initCards(gamedatas);
+
             this.setupMap();
+            this.initPeople(gamedatas.people);
+            this.initTooltips(gamedatas.tooltips);
 
             // Setup game notifications to handle (see "setupNotifications" method below)
             this.setupNotifications();
+            this.isInitializing = false;
+
+            this.postInitCardUpdate();
         },
 
         setupGameState: function(gamedatas)
         {
             this.currentState  = gamedatas.currentState;
-            this.decks         = gamedatas.decks;
-            this.cards         = gamedatas.cards;
-            this.selectedCards = [];
-
             this.initCartridge();
-            this.initCards();
             this.initEvents()
         },
 
@@ -91,6 +95,7 @@ function (dojo, on, declare) {
             }
 
             this.map       = gamedatas.map;
+            this.mapZones  = {};
         },
 
         setupMap: function()
@@ -99,23 +104,250 @@ function (dojo, on, declare) {
             let tileTerrain = {};
             let tileContent = null;
             _self.map.forEach(function(tile) {
-                tileTerrain = _self.terrains[tile.terrain];
+                tileTerrain = _self.replaceIconsInObject(
+                    _self.terrains[tile.terrain]
+                );
                 tileContent = _self.format_block('jstpl_tile', {
+                    id: tile.id,
                     count: tileTerrain.resources.length,
-                    resource1: tileTerrain.resources[0]? tileTerrain.resources[0] : '',
-                    resource2: tileTerrain.resources[1]? tileTerrain.resources[1] : '',
-                    resource3: tileTerrain.resources[2]? tileTerrain.resources[2] : '',
+                    resource1: tileTerrain.resources[0]? _self.getIconAsText(tileTerrain.resources[0]) : '',
+                    resource2: tileTerrain.resources[1]? _self.getIconAsText(tileTerrain.resources[1]) : '',
+                    resource3: tileTerrain.resources[2]? _self.getIconAsText(tileTerrain.resources[2]) : '',
+                    resource1Class: tileTerrain.resources[0]? tileTerrain.resources[0] : '',
+                    resource2Class: tileTerrain.resources[1]? tileTerrain.resources[1] : '',
+                    resource3Class: tileTerrain.resources[2]? tileTerrain.resources[2] : '',
                     name: tileTerrain.name,
+                    bonus: tileTerrain.bonusAsTxt,
                     food: tileTerrain.food? '' : 'none',
                     foodCount: tileTerrain.food,
-                    science: tileTerrain.science? '' : 'none'
+                    foodIcon: _self.getIconAsText('food'),
+                    science: tileTerrain.science? '' : 'none',
+                    scienceIcon: _self.getIconAsText('science')
                 });
                 dojo.place(tileContent, 'tile-content-'+tile.id);
                 dojo.query('#tile-' + tile.id + ' .map-hex-content')
                     .addClass('tile_reveal tile_' + tileTerrain.code);
             });
+
+            _self.initMapZones();
+            _self.initZoom();
+            _self.scrollToTile(0, 0);
         },
 
+        initZoom: function()
+        {
+            this.ZOOMS = [50, 70, 90, 110, 130];
+            this.MAX_ZOOM = 4;
+            this.MIN_ZOOM = 0;
+            this.$mapZone = dojo.query('.map-hex-grid')[0];
+            this.$zoom = dojo.query('#zoom')[0];
+            this.$zoomOut = dojo.query('#zoom_out_icon')[0];
+            this.$zoomIn = dojo.query('#zoom_in_icon')[0];
+            on(this.$zoomIn, 'click', this.onZoomIn.bind(this));
+            on(this.$zoomOut, 'click', this.onZoomOut.bind(this));
+        },
+
+        onZoomIn: function()
+        {
+            if (this.getZoom() < this.MAX_ZOOM) {
+                this.incDecZoom();
+                this.applyZoom();
+                this.toggleZoom();
+            }
+        },
+        onZoomOut: function()
+        {
+            if (this.getZoom() > this.MIN_ZOOM) {
+                this.incDecZoom(false);
+                this.applyZoom();
+                this.toggleZoom();
+            }
+        },
+        toggleZoom: function () {
+            this.$zoomIn.style.color = (this.getZoom() === this.MAX_ZOOM) ? '#666' : '#000';
+            this.$zoomOut.style.color = (this.getZoom() === this.MIN_ZOOM) ? '#666' : '#000';
+        },
+        applyZoom: function() {
+            this.$mapZone.style.width = this.ZOOMS[this.getZoom()]+'em';
+            this.updateMapZones();
+        },
+        getZoom: function() {return parseInt(this.$zoom.dataset.zoom);},
+        incDecZoom: function(inc = true) {this.$zoom.dataset.zoom = this.getZoom() + (inc ? 1 : -1);},
+
+        initMapZones: function()
+        {
+            const _self = this;
+            const tiles = dojo.query('.tile:not(.tile_disabled)');
+            tiles.forEach(function(tile) {
+                let item = tile.closest('.map-hex-item');
+                let id = item.id.replace('tile-', '');
+
+                ['warrior', 'worker', 'mage', 'savant', 'lineage'].forEach(function(unitType) {
+                    let zone = new ebg.zone();
+                    let code = _self.getZoneIdByTileIdAndType(id, unitType);
+                    zone.create(_self, code);
+                    zone.setPattern('custom');
+
+                    _self.addMiddleware(zone, 'updateDisplay', _self.zoneDisplayItemsMiddleWare);
+                    zone.itemIdToCoords = _self.mapZoneCoords;
+                    _self.mapZones[code] = zone;
+                });
+            });
+        },
+        updateMapZones: function()
+        {
+            for (let code in this.mapZones) {
+                if (this.mapZones.hasOwnProperty(code)) {
+                    this.mapZones[code].updateDisplay();
+                }
+            }
+        },
+
+        /**
+         * @param {Object}   object         Object
+         * @param {String}   method         Method of object on witch condition is applied
+         * @param {function} conditional    Conditional method
+         */
+        addConditionalCheck: function(object, method, conditional)
+        {
+            const existingMethod = object[method];
+            object[method] = function () {
+                if (conditional()) {
+                    existingMethod.call(object);
+                }
+            };
+        },
+
+        /**
+         * @param {Object}   object     Object to override
+         * @param {String}   method     Method of object to override
+         * @param {function} extended   Extended method for object
+         * @param {Boolean}  before     Execute middleware method before
+         */
+        addMiddleware: function(object, method, extended, before = true)
+        {
+            const existingMethod = object[method];
+            object[method] = function () {
+                before ? extended.call(object) : existingMethod.call(object);
+                before ? existingMethod.call(object) : extended.call(object);
+            };
+        },
+
+        zoneDisplayItemsMiddleWare: function()
+        {
+            const countByWeight = [0, 0, 0];
+            const idByWeight = [null, null, null];
+            this.items.forEach(function(item) {
+                countByWeight[item.weight]++;
+                idByWeight[item.weight] = item.id;
+            });
+            countByWeight.forEach(function(count, weight) {
+                const $units = dojo.query('#'+idByWeight[weight]);
+                if (!$units.length) return ;
+                if (countByWeight[weight] > 1) {
+                    $units[0].setAttribute('data-count', count);
+                } else {
+                    $units[0].removeAttribute('data-count');
+                }
+            });
+        },
+        mapZoneCoords: function(i, width, maxWidth, count) {
+            const item = this.items[i];
+
+            return {
+                x: 0,
+                y: item.weight * (width - this.item_margin),
+                w: width,
+                h: width
+            };
+        },
+        getZoneIdByTileIdAndType: function(id, type)
+        {
+            let zoneType = 'lineage';
+            switch (type) {
+                case 'warrior':
+                case 'worker':
+                case 'mage':
+                case 'savant':
+                    zoneType = type;
+                    break;
+            }
+
+            return 'map-explore-' + id + '-' + zoneType;
+        },
+
+        // All about People/Unit
+        initPeople: function(people)
+        {
+            this.initMapPeople(people.byPlace.map, people.units);
+            this.initInventionPeople(people.byPlace.invention, people.units);
+            this.initSpellPeople(people.byPlace.spell, people.units);
+        },
+        initInventionPeople: function(byInvention, units)
+        {
+
+        },
+        initSpellPeople: function(bySpell, units)
+        {
+
+        },
+        getDomIdByUnit: function(unit)
+        {
+            return 'unit-' + unit.id;
+        },
+        initMapPeople: function(byMap, units)
+        {
+            for (let location in byMap) {
+                let key = byMap[location];
+                let unit = units[key];
+
+                let zone = this.mapZones[this.getZoneIdByTileIdAndType(unit.location, unit.type)];
+                const domUnitId = this.getDomIdByUnit(unit);
+                let domUnits = dojo.query(domUnitId);
+                if (domUnits.length) {
+                    // TODO: Move to new place ?
+                    //zone.move
+
+                    this.updateUnitStatus(domUnits[0], unit.status);
+                } else {
+                    // Add new unit to map
+                    this.createUnit(unit.type, domUnitId, unit.status);
+                    zone.placeInZone(domUnitId, this.getPriorityByUnitStatus(unit.status));
+                }
+            }
+        },
+        getPriorityByUnitStatus: function(status)
+        {
+            switch (status) {
+                case 'acted': return 0;
+                case 'moved': return 1;
+                default: return 2;
+            }
+        },
+        updateUnitStatus: function(domUnit, status)
+        {
+            domUnit.classList.remove('free');
+            domUnit.classList.remove('moved');
+            domUnit.classList.remove('acted');
+
+            domUnit.classList.add(status);
+        },
+        createUnit: function(iconId, domUnitId, unitStatus)
+        {
+            const newUnit = this.getWrappedIcon(iconId, domUnitId, unitStatus);
+            dojo.place(newUnit, 'new-unit');
+        },
+
+        scrollToTile: function(x, y)
+        {
+            const map = dojo.query('#map-zone');
+            const tile = dojo.query('[data-coord="'+x+'_'+y+'"]');
+            if (map.length && tile.length) {
+                map[0].scrollTo(tile[0].offsetLeft / 2, tile[0].offsetTop / 2);
+            }
+        },
+
+        // All about cards
         getCard: function(type, location, id)
         {
             if (
@@ -126,13 +358,80 @@ function (dojo, on, declare) {
             }
             return {};
         },
-        initCards: function()
+        initCards: function(gamedatas)
         {
+            this.decks         = gamedatas.decks;
+            this.selectedCards = [];
+
+            // Init zones
+            this.cardZones = {
+                invention: {deck: null, onTable: null, hand: null},
+                spell: {deck: null, onTable: null, hand: null},
+                outside: null
+            };
+            for (let type in this.cardZones) {
+                for (let location in this.cardZones[type]) {
+                    this.cardZones[type][location] = this.createCardZone(type+'-'+location);
+                }
+            }
+            // Floating-cards
+            this.cardZones.outside = this.createCardZone('floating-cards', true);
+
+            // Init cards
+            this.cards = gamedatas.cards;
             for (let type in this.cards) {
                 if (this.cards.hasOwnProperty(type)) {
                     this.initLocation(this.cards[type], type);
                 }
             }
+        },
+        postInitCardUpdate: function()
+        {
+            if (this.cardZones.invention.deck.items.length) {
+                this.cardZones.invention.deck.updateDisplay();
+            }
+            if (this.cardZones.invention.onTable.items.length) {
+                this.cardZones.invention.onTable.updateDisplay();
+            }
+            if (this.cardZones.invention.hand.items.length) {
+                this.cardZones.invention.hand.updateDisplay();
+            }
+            if (this.cardZones.spell.deck.items.length) {
+                this.cardZones.spell.deck.updateDisplay();
+            }
+            if (this.cardZones.spell.onTable.items.length) {
+                this.cardZones.spell.onTable.updateDisplay();
+            }
+            if (this.cardZones.spell.onTable.items.length) {
+                this.cardZones.spell.onTable.updateDisplay();
+            }
+            if (this.cardZones.outside.items.length) {
+                this.cardZones.outside.updateDisplay();
+            }
+        },
+        createCardZone: function(code, isOutside = false)
+        {
+            const _self = this;
+            let zone = new ebg.zone();
+            zone.create(this, code);
+            zone.setPattern('custom');
+            zone.itemIdToCoords = (isOutside || code.includes('deck')) ?
+                function() {return {x: 0, y: 0, w: 155, h: 245};} : this.cardZoneCoords;
+            this.addConditionalCheck(zone, 'updateDisplay', () => !_self.isInitializing);
+
+            return zone;
+        },
+        cardZoneCoords: function(i, zoneWidth, zoneHeight, count) {
+            let cardWidth = 155;
+            let pileCnt = Math.floor((zoneWidth + this.item_margin) / (cardWidth + this.item_margin));
+            let modulo = i % pileCnt;
+            let line = Math.floor(i / pileCnt);
+            return {
+                x: modulo * (cardWidth + this.item_margin) + (this.item_margin * (line - 1)),
+                y: line * 30,
+                w: cardWidth,
+                h: 245
+            };
         },
         initLocation: function(cardLocation, type)
         {
@@ -146,15 +445,14 @@ function (dojo, on, declare) {
         {
             if (cards.length) {
                 let visibleDeck = ['invention', 'spell'].includes(type);
-                let domQuery    = visibleDeck ? type : 'floating-cards';
                 if (location === 'deck' && visibleDeck) {
-                    this.createDeck(type, domQuery, cards.length);
+                    this.createDeck(type, cards.length);
                 } else {
-                    this.createCardsInLocation(cards, type, location, domQuery);
+                    this.createCardsInLocation(cards, type, location, !visibleDeck);
                 }
             }
         },
-        createDeck: function(type, domQuery, count)
+        createDeck: function(type, count)
         {
             let deck        = this.decks[type];
             let deckContent = this.format_block('jstpl_card_verso', {
@@ -164,9 +462,10 @@ function (dojo, on, declare) {
                 name: deck.name,
                 count: count
             });
-            dojo.place(deckContent, domQuery);
+            dojo.place(deckContent, 'new-card');
+            this.cardZones[type]['deck'].placeInZone('deck-' + type, 0);
         },
-        createCardsInLocation: function(cards, type, location, domQuery)
+        createCardsInLocation: function(cards, type, location, useOutsideZone)
         {
             let _self = this;
             cards.forEach(function(card) {
@@ -189,8 +488,59 @@ function (dojo, on, declare) {
                     );
                 }
 
-                dojo.place(cardContent, domQuery);
+                dojo.place(cardContent, 'new-card');
+                useOutsideZone ?
+                    _self.cardZones.outside.placeInZone(card.id, _self.getPriorityByCard(card)) :
+                    _self.cardZones[type][location].placeInZone(card.id, _self.getPriorityByCard(card))
+                ;
             });
+        },
+        getPriorityByCard: function(card)
+        {
+            let priority = 0;
+            switch (card.type) {
+                default: priority = 10;
+            }
+            priority += parseInt(card.name[0]);
+
+            return priority;
+        },
+
+        // Tooltips
+        initTooltips: function(tooltips)
+        {
+            for (let domId in tooltips.id) {
+                if (tooltips.id.hasOwnProperty(domId)) {
+                    this.addTooltipToId(domId, tooltips.id[domId]);
+                }
+            }
+            for (let cssClass in tooltips.class) {
+                if (tooltips.class.hasOwnProperty(cssClass)) {
+                    this.addTooltipByClass(cssClass, tooltips.class[cssClass]);
+                }
+            }
+        },
+        addTooltipByClass: function(key, data)
+        {
+            const _self = this;
+            let targets = dojo.query(key);
+            targets.forEach(function(target) {
+                _self.addTooltipToId(target.id, data);
+            });
+        },
+        addTooltipToId: function (key, data) {
+            let hasAction = data instanceof Array;
+            let info = hasAction ? _(data[0]) : _(data);
+            let action = hasAction ? _(data[1]) : '';
+
+            let target = document.getElementById(key);
+            if (target !== null && (info.includes('%count%') || action.includes('%count%'))) {
+                let count = target.dataset.count ? target.dataset.count : 1;
+                info = info.replace('%count%', count);
+                action = action.replace('%count%', count);
+            }
+
+            this.addTooltip(key, info, action);
         },
 
         initEvents: function()
@@ -236,11 +586,15 @@ function (dojo, on, declare) {
 
             return $clone;
         },
-        getIconAsText(iconId)
+        getWrappedIcon(iconId, wrapId, cssClass = '')
         {
-            let addClass = '';
+            return '<div id="' + wrapId + '" class="wrapped-icon ' + iconId + ' ' + cssClass + '">' + this.getIconAsText(iconId, cssClass) + '</div>';
+        },
+        getIconAsText(iconId, cssClass = '')
+        {
+            let addClass = cssClass.length ? [cssClass] : [];
             if (['worker', 'warrior', 'savant', 'mage', 'all', 'monster'].includes(iconId)) {
-                addClass = iconId;
+                addClass.push(iconId);
                 iconId = 'unit';
             }
 
@@ -248,7 +602,7 @@ function (dojo, on, declare) {
             if ($icon !== null) {
                 const $clone = $icon.cloneNode(true);
                 if (addClass.length) {
-                    $clone.classList.add(addClass);
+                    addClass.forEach((cssClass) => $clone.classList.add(cssClass));
                 }
                 return $clone.outerHTML;
             } else return iconId;
@@ -278,6 +632,18 @@ function (dojo, on, declare) {
             this.$scienceHarvest = document.querySelector('#harvest-science');
             dojo.place(this.getIcon('food'), this.$foodHarvest, 'first');
             dojo.place(this.getIcon('science'), this.$scienceHarvest, 'first');
+
+            this.$militaryTitle = document.querySelector('#military-title');
+            this.$powerMilitary = document.querySelector('#military-power');
+            this.$defenseMilitary = document.querySelector('#military-defense');
+            dojo.place(this.getIcon('power'), this.$powerMilitary, 'first');
+            dojo.place(this.getIcon('defense_warrior'), this.$defenseMilitary, 'first');
+
+            this.$cityTitle = document.querySelector('#city-title');
+            this.$cityLife = document.querySelector('#city-life');
+            this.$cityDefense = document.querySelector('#city-defense');
+            dojo.place(this.getIcon('growth'), this.$cityLife, 'first');
+            dojo.place(this.getIcon('defense_city'), this.$cityDefense, 'first');
 
             this.$stockTitle = document.querySelector('#stock-title');
             this.$foodStock = document.querySelector('#stock-food');
@@ -309,6 +675,8 @@ function (dojo, on, declare) {
             this.updateTurn();
             this.updatePeople();
             this.updateHarvest();
+            this.updateMilitary();
+            this.updateCity();
             this.updateStock();
         },
 
@@ -337,12 +705,29 @@ function (dojo, on, declare) {
             this.$scienceHarvest.dataset.count = this.currentState.scienceProduction;
         },
 
+        updateMilitary: function()
+        {
+            this.$militaryTitle.innerHTML = this.currentState.title.military;
+
+            this.$powerMilitary.dataset.count = this.currentState.warriorPower;
+            this.$defenseMilitary.dataset.count = this.currentState.warriorDefense;
+        },
+
+        updateCity: function()
+        {
+            this.$cityTitle.innerHTML = this.currentState.title.city;
+
+            this.$cityLife.dataset.count = this.currentState.life;
+            this.$cityDefense.dataset.count = this.currentState.cityDefense;
+        },
+
         updateStock: function()
         {
             this.$stockTitle.innerHTML = this.currentState.title.stock;
 
-            this.$foodStock.dataset.count = this.currentState.foodStock;
-            this.$scienceStock.dataset.count = this.currentState.scienceStock;
+            this.$foodStock.dataset.count = this.currentState.food;
+            this.$scienceStock.dataset.count = this.currentState.science;
+            this.$foodStock.dataset.stock = this.currentState.foodStock;
 
             this.$woodStock.dataset.count = this.currentState.woodStock;
             this.$animalStock.dataset.count = this.currentState.animalStock;
@@ -549,8 +934,6 @@ function (dojo, on, declare) {
         */
         setupNotifications: function()
         {
-            console.log( 'notifications subscriptions setup' );
-
             dojo.subscribe( 'debug', this, "onDebug" );
 
             // TODO: here, associate your game notifications with local methods

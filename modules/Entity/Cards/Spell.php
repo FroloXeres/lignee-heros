@@ -93,6 +93,8 @@ class Spell extends AbstractCard
      */
     protected array $gives;
 
+    protected bool $completed = false;
+
     /**
      * @param string $type
      * @param int    $code
@@ -311,6 +313,18 @@ class Spell extends AbstractCard
     public function setGives(array $gives): Spell
     {
         $this->gives = $gives;
+
+        return $this;
+    }
+
+    public function isCompleted(): bool
+    {
+        return $this->completed;
+    }
+
+    public function setCompleted(bool $completed): self
+    {
+        $this->completed = $completed;
 
         return $this;
     }

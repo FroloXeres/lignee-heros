@@ -29,12 +29,12 @@ use LdH\Service\CurrentStateService;
 use LdH\Service\MapService;
 use LdH\Service\CardService;
 use LdH\Service\StateService;
+use \LdH\Service\PeopleService;
 use LdH\Entity\Cards\Deck;
 use LdH\Entity\Cards\AbstractCard;
 use LdH\Entity\Map\Resource;
 use LdH\Entity\Map\Terrain;
 use LdH\Entity\Meeple;
-use \LdH\Entity\PeopleService;
 
 class ligneeheros extends Table
 {
@@ -293,15 +293,102 @@ class ligneeheros extends Table
 
         // Game states
         $result['currentState'] = $this->getCurrentState();
+        $result['tooltips'] = $this->getTooltips();
 
         // Cards
         $currentStateId  = $this->gamestate->state_id();
         $result['cards'] = $this->cardService->getPublicCards($this->cards, $currentStateId, $currentPlayerId);
         $result['decks'] = $this->cardService->getPublicDecks($this->cards);
 
+        // Meeples
+        $result['meeples'] = $this->meeples;
+        $result['people'] = $this->getPeople();
+
         // TODO: Gather all information about current game situation (visible by player $current_player_id).
 
         return $result;
+    }
+
+    function getTooltips(): array
+    {
+        return [
+            'id' => [
+                'people-worker' => clienttranslate('Worker(s)'),
+                'people-warrior' => clienttranslate('Warrior(s)'),
+                'people-savant' => clienttranslate('Savant(s)'),
+                'people-mage' => clienttranslate('Mage(s)'),
+                'military-power' => clienttranslate('Warrior fight power'),
+                'military-defense' => clienttranslate('Warrior defense'),
+                'city-life' => clienttranslate('Growth (%count%/8 chance to produce new unit)'),
+                'city-defense' => clienttranslate('City defense'),
+                'harvest-food' => clienttranslate('Food to harvest (at the end of turn)'),
+                'harvest-science' => clienttranslate('Science to harvest (at the end of turn)'),
+                'stock-food' => clienttranslate('Food harvested / Food stock available'),
+                'stock-science' => clienttranslate('Science harvested'),
+                'stock-wood' => clienttranslate('Wood (resource harvested)'),
+                'stock-animal' => clienttranslate('Animals (resource harvested)'),
+                'stock-stone' => clienttranslate('Stone (resource harvested)'),
+                'stock-metal' => clienttranslate('Metal (resource harvested)'),
+                'stock-clay' => clienttranslate('Clay (resource harvested)'),
+                'stock-paper' => clienttranslate('Paper (resource harvested)'),
+                'stock-medic' => clienttranslate('Medicinal herbs  (resource harvested)'),
+                'stock-gem' => clienttranslate('Gems (resource harvested)'),
+            ],
+            'class' => [
+                '.tile .resource.wood' => [
+                    clienttranslate('Resource: Wood'),
+                    clienttranslate('Use 1 free worker to harvest'),
+                ],
+                '.tile .resource.animal' => [
+                    clienttranslate('Resource: Animal'),
+                    clienttranslate('Use 1 free worker to harvest'),
+                ],
+                '.tile .resource.stone' => [
+                    clienttranslate('Resource: Stone'),
+                    clienttranslate('Use 1 free worker to harvest'),
+                ],
+                '.tile .resource.metal' => [
+                    clienttranslate('Resource: Metal'),
+                    clienttranslate('Use 1 free worker to harvest'),
+                ],
+                '.tile .resource.clay' => [
+                    clienttranslate('Resource: Clay'),
+                    clienttranslate('Use 1 free worker to harvest'),
+                ],
+                '.tile .resource.paper' => [
+                    clienttranslate('Resource: Paper'),
+                    clienttranslate('Use 1 free worker to harvest'),
+                ],
+                '.tile .resource.medic' => [
+                    clienttranslate('Resource: Medicinal herbs'),
+                    clienttranslate('Use 1 free worker to harvest'),
+                ],
+                '.tile .resource.gem' => [
+                    clienttranslate('Resource: Gems'),
+                    clienttranslate('Use 1 free worker to harvest'),
+                ],
+                '.tile .resource.food' => [
+                    clienttranslate('Food'),
+                    clienttranslate('Keep free worker(s) (Max. %count%) on this tile to harvest at the end of turn'),
+                ],
+                '.tile .resource.science' => [
+                    clienttranslate('Science'),
+                    clienttranslate('Keep free savant(s) on this tile to harvest at the end of turn'),
+                ],
+                '.wrapped-icon.free.worker' => clienttranslate('%count% free worker(s)'),
+                '.wrapped-icon.moved.worker' => clienttranslate('%count% moved worker(s) (No more move possible)'),
+                '.wrapped-icon.acted.worker' => clienttranslate('%count% acted worker(s) (No more action possible)'),
+                '.wrapped-icon.free.warrior' => clienttranslate('%count% free warrior(s)'),
+                '.wrapped-icon.moved.warrior' => clienttranslate('%count% moved warrior(s) (No more move possible)'),
+                '.wrapped-icon.acted.warrior' => clienttranslate('%count% acted warrior(s) (No more action possible)'),
+                '.wrapped-icon.free.savant' => clienttranslate('%count% free savant(s)'),
+                '.wrapped-icon.moved.savant' => clienttranslate('%count% moved savant(s) (No more move possible)'),
+                '.wrapped-icon.acted.savant' => clienttranslate('%count% acted savant(s) (No more action possible)'),
+                '.wrapped-icon.free.mage' => clienttranslate('%count% free mage(s)'),
+                '.wrapped-icon.moved.mage' => clienttranslate('%count% moved mage(s) (No more move possible)'),
+                '.wrapped-icon.acted.mage' => clienttranslate('%count% acted mage(s) (No more action possible)'),
+            ],
+        ];
     }
 
     function getCurrentState(): array
@@ -311,8 +398,10 @@ class ligneeheros extends Table
                 'turn'    => clienttranslate('Turn'),
                 'people'  => clienttranslate('People:'),
                 'harvest' => clienttranslate('Harvest:'),
+                'military' => clienttranslate('Warrior:'),
+                'city' => clienttranslate('City:'),
                 'stock'   => clienttranslate('Stock:')
-            ]
+            ],
         ];
 
         foreach (array_keys(CurrentStateService::CURRENT_STATES) as $stateName) {

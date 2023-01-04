@@ -78,6 +78,8 @@ class Invention extends AbstractCard
     /** @var Bonus[] */
     protected array $gives = [];
 
+    protected bool $completed = false;
+
     /**
      * @param string $type
      * @param int    $code
@@ -240,9 +242,18 @@ class Invention extends AbstractCard
         $this->gives = $gives;
     }
 
-    /**
-     * @return string
-     */
+    public function isCompleted(): bool
+    {
+        return $this->completed;
+    }
+
+    public function setCompleted(bool $completed): self
+    {
+        $this->completed = $completed;
+
+        return $this;
+    }
+
     public static function getTypeName(string $type): string
     {
         return clienttranslate(ucfirst($type));
@@ -298,6 +309,7 @@ class Invention extends AbstractCard
             $tpl[self::TPL_GAIN_TYPE] = '';
             $tpl[self::TPL_GAIN] = join(' ', $this->getGives());
         }
+        $tpl[self::TPL_COMPLETED] = $this->isCompleted() ? 'completed' : '';
 
         return $tpl;
     }

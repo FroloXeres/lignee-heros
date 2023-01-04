@@ -231,6 +231,8 @@ abstract class AbstractCard implements CardInterface
     public const TPL_LEAD_TYPE       = 'leadType';
     public const TPL_LEAD_POWER      = 'leadPower';
     public const TPL_TYPE_EMPTY      = 'empty';
+    public const TPL_COMPLETED       = 'completed';
+    public const TPL_IS_LEADER       = 'leader';
 
     public const BGA_TYPE         = 'type';
     public const BGA_TYPE_ARG     = 'type_arg';
@@ -289,6 +291,8 @@ abstract class AbstractCard implements CardInterface
             self::TPL_OBJECTIVE_BONUS => '',
             self::TPL_LEAD_POWER      => '',
             self::TPL_LEAD_TYPE       => '',
+            self::TPL_COMPLETED       => '',
+            self::TPL_IS_LEADER       => '',
             self::BGA_LOCATION        => $this->getLocation()
         ];
     }
