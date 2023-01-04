@@ -8,7 +8,7 @@
     </div>
     <ul class="map-hex-grid">
         <!-- BEGIN MAP_TILES -->
-        <li id="tile-{TILE_ID}" data-coord="{COORD}" class="map-hex-item">
+        <li id="tile-{TILE_ID}" data-coord="{COORD}" class="map-hex-item" style="z-index: {INDEX}">
             <div class="map-hex-content {CLASS}">
                 <div class="map-explore" id="map-explore-{TILE_ID}">
                     <div class="space" id="map-explore-{TILE_ID}-lineage"></div>

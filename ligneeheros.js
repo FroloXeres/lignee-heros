@@ -375,7 +375,7 @@ function (dojo, on, declare) {
                 }
             }
             // Floating-cards
-            this.cardZones.outside = this.createCardZone('floating-cards');
+            this.cardZones.outside = this.createCardZone('floating-cards', true);
 
             // Init cards
             this.cards = gamedatas.cards;
@@ -409,13 +409,13 @@ function (dojo, on, declare) {
                 this.cardZones.outside.updateDisplay();
             }
         },
-        createCardZone: function(code)
+        createCardZone: function(code, isOutside = false)
         {
             const _self = this;
             let zone = new ebg.zone();
             zone.create(this, code);
             zone.setPattern('custom');
-            zone.itemIdToCoords = code.includes('deck') ?
+            zone.itemIdToCoords = (isOutside || code.includes('deck')) ?
                 function() {return {x: 0, y: 0, w: 155, h: 245};} : this.cardZoneCoords;
             this.addConditionalCheck(zone, 'updateDisplay', () => !_self.isInitializing);
 
