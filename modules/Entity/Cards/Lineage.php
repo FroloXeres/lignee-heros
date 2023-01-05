@@ -185,6 +185,7 @@ class Lineage extends AbstractCard
         $tpl[self::TPL_LEAD_POWER]      = (string) $this->getLeadingBonus();
         $tpl[self::TPL_COMPLETED]       = $this->isObjectiveCompleted() ? 'completed' : '';
         $tpl[self::TPL_IS_LEADER]       = $this->isLeader();
+        $tpl[self::BGA_LOCATION_ARG]       = $this->getLocationArg();
 
         return $tpl;
     }

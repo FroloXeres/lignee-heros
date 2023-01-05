@@ -374,15 +374,21 @@ function (dojo, on, declare) {
                     this.cardZones[type][location] = this.createCardZone(type+'-'+location);
                 }
             }
+
             // Floating-cards
             this.cardZones.outside = this.createCardZone('floating-cards', true);
 
             // Init cards
             this.cards = gamedatas.cards;
             for (let type in this.cards) {
-                if (this.cards.hasOwnProperty(type)) {
+                if (['invention', 'spell'].includes(type) && this.cards.hasOwnProperty(type)) {
                     this.initLocation(this.cards[type], type);
                 }
+            }
+
+            // Lineage in hands // Others are displayed only on ChooseLineageState
+            if (this.cards['lineage']['hand'].length) {
+                this.initPlayerLineages(this.cards['lineage']['hand']);
             }
         },
         postInitCardUpdate: function()
@@ -408,6 +414,38 @@ function (dojo, on, declare) {
             if (this.cardZones.outside.items.length) {
                 this.cardZones.outside.updateDisplay();
             }
+        },
+        initPlayerLineages: function(lineages)
+        {
+            const _self = this;
+            lineages.forEach(function(lineage) {
+                lineage = _self.replaceIconsInObject(lineage);
+                const lineageBoard = _self.format_block('jstpl_lineage_board', {
+                    playerId: lineage.location_arg,
+                    name: lineage.name,
+                    lineageIcon: _self.getIconAsText('lineage'),
+                    meeple: _self.getIconAsText(lineage.meeple),
+                    meeplePower: lineage.meeplePower,
+                    objectiveIcon: _self.getIconAsText('objective'),
+                    objective: lineage.objective,
+                    leader: lineage.leader ? 'leader' : '',
+                    leadingIcon: _self.getIconAsText('leading'),
+                    leadTypeIcon: _self.getIconAsText(lineage.leadType),
+                    leadType: lineage.leadType,
+                    leadPower: lineage.leadPower
+                });
+
+                dojo.place(lineageBoard, 'overall_player_board_' + lineage.location_arg, 'end');
+            });
+        },
+        initLineageCards: function()
+        {
+            this.createCardsInLocation(
+                this.cards['lineage']['deck'],
+                'lineage',
+                'deck',
+                true
+            );
         },
         createCardZone: function(code, isOutside = false)
         {
@@ -772,6 +810,8 @@ function (dojo, on, declare) {
         {
             switch( stateName ) {
             case 'ChooseLineage' :
+                this.initLineageCards();
+
                 const chooseBtn = dojo.query('#chooseLineage');
                 const cancelBtn = dojo.query('#cancelChooseLineage');
                 if (chooseBtn.length && cancelBtn.length) {

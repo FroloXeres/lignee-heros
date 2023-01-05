@@ -227,6 +227,10 @@ class Deck implements \Iterator
                     AbstractCard::LOCATION_HAND
                 ];
             case AbstractCard::TYPE_LINEAGE:
+                return [
+                    AbstractCard::LOCATION_DEFAULT,
+                    AbstractCard::LOCATION_HAND
+                ];
             case AbstractCard::TYPE_OBJECTIVE:
             case AbstractCard::TYPE_DISEASE:
             case AbstractCard::TYPE_FIGHT:

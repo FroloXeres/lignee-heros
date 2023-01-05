@@ -169,6 +169,30 @@
 </div>
 <script type="text/javascript">
     // Javascript HTML templates
+    var jstpl_lineage_board =
+        '<div id="lineage_${playerId}" class="board-lineage">\
+            <div class="name">\
+                <picture>${lineageIcon}</picture>\
+                <label>${name}</label>\
+            </div>\
+            <div class="meeple">\
+                <picture>${meeple}</picture>\
+                <label>${meeplePower}</label>\
+            </div>\
+            <div class="objective">\
+                <picture>${objectiveIcon}</picture>\
+                <label>${objective}</label>\
+            </div>\
+            <div class="ldh-leading ${leader} ${leadType}">\
+                <picture>${leadingIcon}</picture>\
+                <label>\
+                    <span>${leadTypeIcon}</span>\
+                    ${leadPower}\
+                </label>\
+            </div>\
+        </div>'
+    ;
+
     var jstpl_cartridge =
         '<div id="cartridge">\
             <div id="new-unit"></div>\

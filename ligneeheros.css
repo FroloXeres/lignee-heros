@@ -52,6 +52,44 @@ html, body {
     font-size: 15px;
 }
 
+/******* Lineage Board ********/
+.board-lineage {
+    background-color: rgba(255, 255, 255, 0.25);
+    border-radius: 0.5em;
+    padding: .25em;
+    margin: .25em;
+    box-shadow: -1px 1px 5px 1px rgba(0, 0, 0, 0.2) inset;
+}
+.board-lineage .name,
+.board-lineage .meeple,
+.board-lineage .objective,
+.board-lineage .ldh-leading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0.2em 0;
+}
+.board-lineage picture {
+    width: 3em;
+    text-align: center;
+}
+.board-lineage .name label {
+    font-size: 1.1em;
+    font-weight: bold;
+    flex-grow: initial;
+}
+.board-lineage label {
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.board-lineage .ldh-leading {display: none;}
+.board-lineage .ldh-leading.leader {
+    display: flex;
+    transition: .5s;
+}
+
 /********* Cartridge **********/
 #cartridge {
     padding: 0.5em 1em;
@@ -635,26 +673,31 @@ h2#turn::before {
     margin-right: 2%;
     left: .2em;
 }
-.card.lineage .ldh-leading span {
+.card.lineage .ldh-leading span,
+.board-lineage .ldh-leading span {
     position: relative;
     aspect-ratio: 1;
     margin-right: 6%;
 }
-.card.lineage .ldh-leading span svg {
+.card.lineage .ldh-leading span svg,
+.board-lineage .ldh-leading span svg {
     width: 1.25em;
     height: 1.25em;
 }
-.card.lineage .ldh-leading.end_turn span::after {
+.card.lineage .ldh-leading.end_turn span::after,
+.board-lineage .ldh-leading .end_turn span::after {
     position: absolute;
     content: "/3";
     margin-left: -.2em;
     margin-top: .65em;
     font-size: .9em;
 }
-.card.lineage .ldh-leading.fight span {
+.card.lineage .ldh-leading.fight span,
+.board-lineage .ldh-leading.fight span {
     margin-right: 8%;
 }
-.card.lineage .ldh-leading.fight span::after {
+.card.lineage .ldh-leading.fight span::after,
+.board-lineage .ldh-leading.fight span::after {
     content: "x1";
     margin-left: 0;
     margin-top: .6em;
@@ -984,13 +1027,16 @@ svg.svg-icon {
     height: 100% !important;
     float: left;
 }
+.map-explore .space:first-of-type .wrapped-icon.acted:not(:last-of-type),
+.map-explore .space:first-of-type .wrapped-icon.moved:not(:last-of-type),
+.map-explore .space:first-of-type .wrapped-icon.free:not(:last-of-type) {display: none;}
 .map-explore svg.svg-icon {
     width: 80%;
     height: inherit;
     aspect-ratio: 1;
 }
 .map-explore .wrapped-icon:last-of-type svg.svg-icon {
-    filter: drop-shadow(3px 5px 2px rgb(0 0 0 / 0.4));
+    filter: drop-shadow(2px 1px 3px rgba(0, 0, 0, 0.4));
 }
 .wrapped-icon {
     cursor: pointer;

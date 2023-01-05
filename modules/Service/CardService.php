@@ -104,8 +104,18 @@ class CardService
             $codeTypeArg = $ldhDeck->getType() . '_' . $bgaCardData['type_arg'];
 
             if (array_key_exists($codeType, $ldhCardsData)) {
+                if ($ldhDeck->getType() === AbstractCard::TYPE_LINEAGE) {
+                    $ldhCardsData[$codeType][AbstractCard::BGA_LOCATION] = $bgaCardData['location'];
+                    $ldhCardsData[$codeType][AbstractCard::BGA_LOCATION_ARG] = $bgaCardData['location_arg'];
+                }
+
                 $bgaCardsData[] = $ldhCardsData[$codeType];
             } else if (array_key_exists($codeTypeArg, $ldhCardsData)) {
+                if ($ldhDeck->getType() === AbstractCard::TYPE_LINEAGE) {
+                    $ldhCardsData[$codeType][AbstractCard::BGA_LOCATION] = $bgaCardData['location'];
+                    $ldhCardsData[$codeTypeArg][AbstractCard::BGA_LOCATION_ARG] = $bgaCardData['location_arg'];
+                }
+
                 $bgaCardsData[] = $ldhCardsData[$codeTypeArg];
             }
         }
@@ -124,7 +134,7 @@ class CardService
                 // To update
                 return $stateId > ChooseLineageState::ID;
             case AbstractCard::TYPE_LINEAGE:
-                return $stateId === ChooseLineageState::ID;
+                return true;
             case AbstractCard::TYPE_OBJECTIVE:
                 // Needed ?
                 return \in_array($stateId, [DrawObjectiveState::ID], true);
