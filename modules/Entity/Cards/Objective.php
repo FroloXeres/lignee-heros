@@ -6,7 +6,7 @@ use LdH\Entity\Bonus;
 use LdH\Entity\Meeple;
 
 /**
- * @table ="objective"
+ * @table="objective"
  */
 class Objective extends AbstractCard
 {

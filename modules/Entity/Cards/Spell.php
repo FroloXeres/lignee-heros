@@ -99,7 +99,7 @@ class Spell extends AbstractCard
     /**
      * @column="card_activated"
      */
-    protected bool $completed = false;
+    protected bool $activated = false;
 
     /**
      * @param string $type
@@ -323,14 +323,14 @@ class Spell extends AbstractCard
         return $this;
     }
 
-    public function isCompleted(): bool
+    public function isActivated(): bool
     {
-        return $this->completed;
+        return $this->activated;
     }
 
-    public function setCompleted(bool $completed): self
+    public function setActivated(bool $activated): self
     {
-        $this->completed = $completed;
+        $this->activated = $activated;
 
         return $this;
     }
