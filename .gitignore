@@ -1,6 +1,7 @@
 .vscode
 .git
 .idea
+.phpunit.result.cache
 package-lock.json
 yarn.lock
 tsconfig.json

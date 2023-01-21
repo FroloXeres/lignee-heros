@@ -55,7 +55,7 @@ abstract class AbstractRepository extends \APP_DbObject
         $column = $entityKey = $enum = null;
 
         preg_match('#@isKey#s', $property->getDocComment(), $annotations);
-        if (isset($annotations[1])) {
+        if (isset($annotations[0])) {
             $isKey = true;
         }
 
@@ -83,7 +83,9 @@ abstract class AbstractRepository extends \APP_DbObject
             $field->entityKey = $entityKey;
             $field->enum = $enum;
 
-            $this->keys[]  = $property->getName();
+            if ($isKey) {
+                $this->keys[]  = $property->getName();
+            }
 
             return $field;
         }
@@ -200,14 +202,14 @@ abstract class AbstractRepository extends \APP_DbObject
             join(', ', $updates),
             $this->getKeysForQuery($entity),
         );
-        print_r($sql);
+
         $this->query($sql);
     }
 
     /**
      * Execute update/delete queries
      */
-    public function query(string $sql)
+    public function query(string $sql): array
     {
         return $this->DBQuery($sql);
     }
