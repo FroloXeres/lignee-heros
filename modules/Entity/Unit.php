@@ -4,21 +4,62 @@ namespace LdH\Entity;
 
 use LdH\Entity\Cards\Disease;
 
+/**
+ * @table="meeple"
+ */
 class Unit implements \JsonSerializable
 {
     public const STATUS_FREE  = 'free';
     public const STATUS_MOVED = 'moved';
     public const STATUS_ACTED = 'acted';
+    public const STATUS = [
+        self::STATUS_FREE,
+        self::STATUS_MOVED,
+        self::STATUS_ACTED
+    ];
 
     public const LOCATION_MAP       = 'map';
     public const LOCATION_SPELL     = 'spell';
     public const LOCATION_INVENTION = 'invention';
+    public const LOCATION = [
+        self::LOCATION_MAP,
+        self::LOCATION_SPELL,
+        self::LOCATION_INVENTION
+    ];
 
+    /**
+     * @isKey
+     * @column="card_id"
+     */
     protected int      $id          = 0;
-    protected string   $type        = Meeple::ALL;
+
+    /**
+     * @column="card_type"
+     * @entityKey="code"
+     */
+    protected ?Meeple   $type        = null;
+
+    /**
+     * @column="card_location"
+     * @enum="LOCATION"
+     */
     protected string   $location    = self::LOCATION_MAP;
+
+    /**
+     * @column="card_location_arg"
+     */
     protected ?int     $locationArg = null;
+
+    /**
+     * @column="meeple_status"
+     * @enum="STATUS"
+     */
     protected string   $status      = self::STATUS_FREE;
+
+    /**
+     * @column="meeple_sick"
+     * @entityKey="code"
+     */
     protected ?Disease $disease     = null;
 
     public function getId(): int
@@ -33,12 +74,12 @@ class Unit implements \JsonSerializable
         return $this;
     }
 
-    public function getType(): string
+    public function getType(): ?Meeple
     {
         return $this->type;
     }
 
-    public function setType(string $type): self
+    public function setType(?Meeple $type): self
     {
         $this->type = $type;
 
@@ -97,7 +138,7 @@ class Unit implements \JsonSerializable
     {
         return [
             'id' => $this->id,
-            'type' => $this->type,
+            'type' => $this->type ? $this->type->getCode() : null,
             'type_arg' => null,
             'nbr' => 1
         ];
@@ -106,10 +147,10 @@ class Unit implements \JsonSerializable
     {
         return [
             'id' => $this->id,
-            'type' => $this->type,
+            'type' => $this->type ? $this->type->getCode() : null,
             'location' => $this->locationArg,
-            'status' => $this->status,
-            'disease' => $this->disease,
+            'status' => $this->getStatus(),
+            'disease' => $this->disease ? $this->disease->getCode() : null,
         ];
     }
 }

@@ -2,6 +2,9 @@
 
 namespace LdH\Entity\Cards;
 
+/**
+ * @table="explore_disease"
+ */
 class Disease extends AbstractCard
 {
     public const LEVEL_1 = 1;

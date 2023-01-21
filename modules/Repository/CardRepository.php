@@ -2,10 +2,17 @@
 
 namespace LdH\Repository;
 
-use LdH\Entity\Cards\AbstractCard;
+use LdH\Service\CardService;
 
 class CardRepository extends AbstractRepository
 {
+    public function __construct(string $class)
+    {
+        parent::__construct($class);
+
+        //$this->table = CardService::getDeckTypeByCardClass($class);
+    }
+
     /**
      * @param string  $type
      * @param int[]   $typeArgs
@@ -54,6 +61,10 @@ class CardRepository extends AbstractRepository
 
     public function getPeopleData(): array
     {
-        return $this->selectAll('SELECT * FROM `meeple` ORDER BY `card_type`, `card_location`');
+        return $this->selectAll(sprintf(
+            'SELECT * FROM `%s` ORDER BY %s',
+            $this->table,
+            join(', ', $this->getFieldNames(['type', 'location']))
+        ));
     }
 }

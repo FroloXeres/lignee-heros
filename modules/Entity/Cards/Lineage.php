@@ -5,6 +5,9 @@ namespace LdH\Entity\Cards;
 use LdH\Entity\Meeple;
 use LdH\Entity\Bonus;
 
+/**
+ * @table="lineage"
+ */
 class Lineage extends AbstractCard
 {
     public const LEADING_TYPE_EVERY3TURN = 1;
@@ -18,7 +21,14 @@ class Lineage extends AbstractCard
     protected int        $leadingType    = self::LEADING_TYPE_EVERY3TURN;
     protected ?Bonus     $leadingBonus   = null;
 
+    /**
+     * @column="card_completed"
+     */
     protected bool $objectiveCompleted = false;
+
+    /**
+     * @column="card_leader"
+     */
     protected bool $leader = false;
 
     /**

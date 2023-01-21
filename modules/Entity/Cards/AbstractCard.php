@@ -23,9 +23,27 @@ abstract class AbstractCard implements CardInterface
     /** @var int[]  */
     protected ?array $ids          = [];
     protected string $code         = '';
+
+    /**
+     * @column="card_type"
+     * @isKey
+     */
     protected string $type;
+
+    /**
+     * @column="card_type_arg"
+     * @isKey
+     */
     protected ?int   $type_arg;
+
+    /**
+     * @column="card_location"
+     */
     protected string $location     = self::LOCATION_DEFAULT;
+
+    /**
+     * @column="card_location_arg"
+     */
     protected ?int   $location_arg;
     protected ?int   $nbr;
 

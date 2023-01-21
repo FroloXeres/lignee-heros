@@ -56,7 +56,7 @@ class GameInitState extends AbstractState
             // -> Draw city inventions (notify)
             /** @var Deck $inventions */
             $inventions = $this->getDeck(AbstractCard::TYPE_INVENTION);
-            $this->cardService->drawCards($inventions, $city->getInventions());
+            $this->getCardService()->drawCards($inventions, $city->getInventions());
 
             // Draw 1st invention card of the deck (notify)
             $inventions->getBgaDeck()->pickCardForLocation(AbstractCard::LOCATION_DEFAULT, AbstractCard::LOCATION_ON_TABLE);
@@ -66,7 +66,7 @@ class GameInitState extends AbstractState
             // -> Put city units on central tile (notify)
             foreach ($city->getUnits() as $meeple) {
                 $peopleService->birth(
-                    $meeple->getCode(),
+                    $meeple,
                     Unit::LOCATION_MAP,
                     PeopleService::CITY_ID
                 );
@@ -77,10 +77,10 @@ class GameInitState extends AbstractState
                 }
             }
 
-            // Put 8 Worker (- number of player) on central tile (notify)
+            // Put 10 Worker (- number of player - city units) on central tile (notify)
             $toAddCnt = CurrentStateService::START_PEOPLE - $this->getPlayersNumber() - count($city->getUnits());
             $peopleService->birth(
-                Meeple::WORKER,
+                $this->meeples[Meeple::WORKER],
                 Unit::LOCATION_MAP,
                 PeopleService::CITY_ID,
                 $toAddCnt

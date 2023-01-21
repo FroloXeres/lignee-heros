@@ -2,8 +2,6 @@
 
 namespace LdH\Entity\Cards;
 
-use LdH\Repository\CardRepository;
-
 class Deck implements \Iterator
 {
     public const TYPE_EXPLORE_DISEASE = 'explore_disease';

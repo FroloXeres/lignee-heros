@@ -2,6 +2,7 @@
 
 namespace LdH\Service;
 
+use LdH\Entity\Cards\AbstractCard;
 use LdH\Repository\CardRepository;
 use LdH\Entity\Unit;
 use LdH\Entity\Meeple;
@@ -42,11 +43,11 @@ class PeopleService implements \JsonSerializable
         Meeple::MONSTER => []
     ];
 
-    protected CardRepository $cardRepository;
+    protected CardService $cardService;
 
     public function __construct()
     {
-        $this->cardRepository = new CardRepository();
+        $this->cardService = new CardService();
     }
 
     public function getPopulation(): int
@@ -93,14 +94,14 @@ class PeopleService implements \JsonSerializable
         $this->units[$this->population] = $unit;
         $this->byIds[$unit->getId()] = $this->population;
         $this->byPlace[$unit->getLocation()][] = $this->population;
-        $this->byType[$unit->getType()][] = $this->population;
+        $this->byType[$unit->getType()->getCode()][] = $this->population;
 
         $this->population++;
 
         return $this;
     }
 
-    public function birth(string $type, string $location = Unit::LOCATION_MAP, int $locationArg = null, int $count = 1): void
+    public function birth(Meeple $type, string $location = Unit::LOCATION_MAP, int $locationArg = null, int $count = 1): void
     {
         for ($i = 0; $i < $count; $i++) {
             $baby = (new Unit())
@@ -112,7 +113,8 @@ class PeopleService implements \JsonSerializable
             ;
             if ($this->getBgaDeck() !== null) {
                 $this->getBgaDeck()->createCards([$baby->toArray()], $location, $locationArg);
-                $baby->setId($this->cardRepository->getLastId());
+
+                $baby->setId($this->cardService->getCardRepository(Unit::class)->getLastId());
 
                 $this->addUnit($baby);
             }
@@ -120,11 +122,16 @@ class PeopleService implements \JsonSerializable
 
     }
 
-    public static function buildUnit(array $data): Unit
+    /**
+     * @param array<string, mixed> $data
+     * @param array<string, Meeple> $meeples
+     * @return Unit
+     */
+    public static function buildUnit(array $data, array $meeples): Unit
     {
         return (new Unit())
             ->setId((int) $data['card_id'])
-            ->setType($data['card_type'])
+            ->setType($meeples[$data['card_type']])
             ->setLocation($data['card_location'])
             ->setLocationArg($data['card_location_arg'])
             ->setStatus($data['meeple_status'])
@@ -141,9 +148,9 @@ class PeopleService implements \JsonSerializable
         $this->setBgaDeck($bgaMeeple);
         $this->setMeeples($meeples);
 
-        foreach ($this->cardRepository->getPeopleData() as $unitData) {
+        foreach ($this->cardService->getCardRepository(Unit::class)->getPeopleData() as $unitData) {
             $this->addUnit(
-                self::buildUnit($unitData)
+                self::buildUnit($unitData, $meeples)
             );
         }
     }

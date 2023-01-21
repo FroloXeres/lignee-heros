@@ -4,13 +4,45 @@
 namespace LdH\Entity\Map;
 
 
+/**
+ * @table="map"
+ */
 class Tile implements \JsonSerializable {
+    /**
+     * @column="tile_id"
+     * @isKey
+     */
     protected ?int     $id       = null;
+
+    /**
+     * @column="tile_x"
+     */
     protected int      $x        = 0;
+
+    /**
+     * @column="tile_y"
+     */
     protected int      $y        = 0;
+
+    /**
+     * @column="tile_far"
+     */
     protected int      $howFar   = 0;
+
+    /**
+     * @column="tile_revealed"
+     */
     protected bool     $flip     = false;
+
+    /**
+     * @column="tile_disabled"
+     */
     protected bool     $disabled = false;
+
+    /**
+     * @column="tile_terrain"
+     * @entityKey="code"
+     */
     protected ?Terrain $terrain = null;
 
     public function __construct(int $id, int $x, int $y, int $howFar = 0, bool $disabled = false, bool $flip = false)

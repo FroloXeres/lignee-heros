@@ -6,6 +6,9 @@ use LdH\Entity\Map\Resource;
 use LdH\Entity\Meeple;
 use LdH\Entity\Bonus;
 
+/**
+ * @table="invention"
+ */
 class Invention extends AbstractCard
 {
     public const TYPE_START       = 'start';
@@ -78,7 +81,10 @@ class Invention extends AbstractCard
     /** @var Bonus[] */
     protected array $gives = [];
 
-    protected bool $completed = false;
+    /**
+     * @column="card_activated"
+     */
+    protected bool $activated = false;
 
     /**
      * @param string $type
@@ -242,14 +248,14 @@ class Invention extends AbstractCard
         $this->gives = $gives;
     }
 
-    public function isCompleted(): bool
+    public function isActivated(): bool
     {
-        return $this->completed;
+        return $this->activated;
     }
 
-    public function setCompleted(bool $completed): self
+    public function setActivated(bool $activated): self
     {
-        $this->completed = $completed;
+        $this->activated = $activated;
 
         return $this;
     }
@@ -309,7 +315,7 @@ class Invention extends AbstractCard
             $tpl[self::TPL_GAIN_TYPE] = '';
             $tpl[self::TPL_GAIN] = join(' ', $this->getGives());
         }
-        $tpl[self::TPL_COMPLETED] = $this->isCompleted() ? 'completed' : '';
+        $tpl[self::TPL_COMPLETED] = $this->isActivated() ? 'completed' : '';
 
         return $tpl;
     }

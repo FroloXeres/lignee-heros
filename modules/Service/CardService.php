@@ -4,6 +4,13 @@ namespace LdH\Service;
 
 use LdH\Entity\Cards\AbstractCard;
 use LdH\Entity\Cards\Deck;
+use LdH\Entity\Cards\Disease;
+use LdH\Entity\Cards\Fight;
+use LdH\Entity\Cards\Invention;
+use LdH\Entity\Cards\Lineage;
+use LdH\Entity\Cards\Objective;
+use LdH\Entity\Cards\Other;
+use LdH\Entity\Cards\Spell;
 use LdH\Repository\CardRepository;
 use LdH\State\ChooseLineageState;
 use LdH\State\DeadEndState;
@@ -11,11 +18,29 @@ use LdH\State\DrawObjectiveState;
 
 class CardService
 {
-    protected CardRepository $cardRepository;
+    /**
+     * @var array<string, CardRepository>
+     */
+    protected array $cardRepositories = [];
 
-    public function __construct()
+    public function getCardRepoByCard(AbstractCard $card): ?CardRepository
     {
-        $this->cardRepository = new CardRepository();
+        return $this->getCardRepository(get_class($card));
+    }
+
+    public function getCardRepoByType(string $cardType): ?CardRepository
+    {
+        return $this->getCardRepository(self::getCardClassByCardType($cardType));
+    }
+
+    public function getCardRepository(string $class): ?CardRepository
+    {
+        $cardType = self::getDeckTypeByCardClass($class);
+        if (!isset($this->cardRepositories[$cardType])) {
+            $this->cardRepositories[$cardType] = new CardRepository($class);
+        }
+
+        return $this->cardRepositories[$cardType] ?? null;
     }
 
     /**
@@ -24,7 +49,7 @@ class CardService
      */
     public function drawCards(Deck $deck, array $cards): void
     {
-        $cardIds = $this->cardRepository->getCardIds(
+        $cardIds = $this->getCardRepoByType($deck->getType())->getCardIds(
             $deck->getType(),
             array_map(function(AbstractCard $card) {return $card->getTypeArg();}, $cards),
             AbstractCard::LOCATION_DEFAULT,
@@ -37,9 +62,47 @@ class CardService
         );
     }
 
+    public function updateCard(AbstractCard $card, array $filters = []): void
+    {
+        $this->getCardRepoByCard($card)->update($card, $filters);
+    }
+
+    public static function getTypeByCard(AbstractCard $card): string
+    {
+        return self::getDeckTypeByCardClass(get_class($card));
+    }
+
+    public static function getCardClassByCardType(string $cardType): string
+    {
+        switch ($cardType) {
+            case AbstractCard::TYPE_LINEAGE: return Lineage::class;
+            case AbstractCard::TYPE_OBJECTIVE: return Objective::class;
+            case AbstractCard::TYPE_INVENTION: return Invention::class;
+            case AbstractCard::TYPE_MAGIC: return Spell::class;
+            case AbstractCard::TYPE_FIGHT: return Fight::class;
+            case AbstractCard::TYPE_OTHER: return Other::class;
+            case AbstractCard::TYPE_DISEASE: return Disease::class;
+            default: return '';
+        }
+    }
+
+    public static function getDeckTypeByCardClass(string $class): string
+    {
+        switch ($class) {
+            case Lineage::class: return Deck::TYPE_LINEAGE;
+            case Objective::class: return Deck::TYPE_OBJECTIVE;
+            case Invention::class: return Deck::TYPE_INVENTION;
+            case Spell::class: return Deck::TYPE_MAGIC;
+            case Fight::class: return Deck::TYPE_EXPLORE_FIGHT;
+            case Other::class: return Deck::TYPE_EXPLORE_OTHER;
+            case Disease::class: return Deck::TYPE_EXPLORE_DISEASE;
+            default: return '';
+        }
+    }
+
     protected function populateDeckWithIds(Deck $deck)
     {
-        $cardIds = $this->cardRepository->getCardIds(
+        $cardIds = $this->getCardRepoByType($deck->getType())->getCardIds(
             $deck->getType(),
             array_map(function(AbstractCard $card) {return $card->getTypeArg();}, $deck->getCards())
         );

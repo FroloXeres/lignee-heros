@@ -53,6 +53,9 @@ class ChooseLineageState extends AbstractState
                 $this->checkAction(ChooseLineageState::ACTION_SELECT_LINEAGE);
 
                 $card = $this->getDeck(AbstractCard::TYPE_LINEAGE)->getCardByCode($lineage);
+                $card->setLocation(AbstractCard::LOCATION_HAND);
+                $card->setLocationArg($this->getCurrentPlayerId());
+                $this->getCardService()->updateCard($card, ['location', 'location_arg']);
 
                 $this->notifyAllPlayers(
                     ChooseLineageState::NOTIFY_PLAYER_CHOSEN,

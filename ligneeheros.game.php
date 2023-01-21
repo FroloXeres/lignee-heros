@@ -297,8 +297,8 @@ class ligneeheros extends Table
 
         // Cards
         $currentStateId  = $this->gamestate->state_id();
-        $result['cards'] = $this->cardService->getPublicCards($this->cards, $currentStateId, $currentPlayerId);
-        $result['decks'] = $this->cardService->getPublicDecks($this->cards);
+        $result['cards'] = $this->getCardService()->getPublicCards($this->cards, $currentStateId, $currentPlayerId);
+        $result['decks'] = $this->getCardService()->getPublicDecks($this->cards);
 
         // Meeples
         $result['meeples'] = $this->meeples;
@@ -654,6 +654,18 @@ class ligneeheros extends Table
     public function getStateService():? StateService
     {
         return $this->stateService;
+    }
+
+    /**
+     * @return CardService|null
+     */
+    public function getCardService():? CardService
+    {
+        if ($this->cardService === null) {
+            $this->cardService = $this->getService(CardService::class);
+        }
+
+        return $this->cardService;
     }
 
     /**

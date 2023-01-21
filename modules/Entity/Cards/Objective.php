@@ -5,6 +5,9 @@ namespace LdH\Entity\Cards;
 use LdH\Entity\Bonus;
 use LdH\Entity\Meeple;
 
+/**
+ * @table ="objective"
+ */
 class Objective extends AbstractCard
 {
     public const ABUNDANCE         = 501;
@@ -61,11 +64,12 @@ class Objective extends AbstractCard
     protected int  $need;
     protected int  $subNeed;
     protected int  $needCount;
-    protected bool $completed = false;
 
     /**
-     * @param int $code
+     * @column="card_completed"
      */
+    protected bool $completed = false;
+
     public function __construct(int $code, bool $lineage = false)
     {
         $this->setCode($code);

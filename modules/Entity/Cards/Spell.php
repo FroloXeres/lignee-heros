@@ -5,6 +5,9 @@ namespace LdH\Entity\Cards;
 use LdH\Entity\Bonus;
 use LdH\Entity\Map\Resource;
 
+/**
+ * @table="spell"
+ */
 class Spell extends AbstractCard
 {
     public const WHEN_FIGHT_START_ROUND = 1;
@@ -93,6 +96,9 @@ class Spell extends AbstractCard
      */
     protected array $gives;
 
+    /**
+     * @column="card_activated"
+     */
     protected bool $completed = false;
 
     /**

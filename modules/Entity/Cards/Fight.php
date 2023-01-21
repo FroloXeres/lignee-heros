@@ -4,6 +4,9 @@ namespace LdH\Entity\Cards;
 
 use LdH\Entity\Bonus;
 
+/**
+ * @table="explore_fight"
+ */
 class Fight extends AbstractCard
 {
     public const PIC_BULL      = 201;

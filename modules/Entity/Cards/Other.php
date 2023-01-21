@@ -4,6 +4,9 @@ namespace LdH\Entity\Cards;
 
 use LdH\Entity\Bonus;
 
+/**
+ * @table="explore_other"
+ */
 class Other extends AbstractCard
 {
     public const ABANDONED_GEM_MINE   = 401;

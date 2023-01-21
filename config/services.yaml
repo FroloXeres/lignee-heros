@@ -19,6 +19,9 @@ services:
     LdH\Repository\CardRepository:
         public: true
 
+    LdH\Repository\Field:
+        public: true
+
     # States
     LdH\State\AbstractState:
         public: true
@@ -38,3 +41,4 @@ services:
     LdH\State\DeadEndState:
         public: true
         tags: ['ldh.state']
+
