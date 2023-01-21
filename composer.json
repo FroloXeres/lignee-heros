@@ -32,5 +32,8 @@
     "psr-4": {
       "LdH\\Tests\\": "tests/"
     }
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^9.5"
   }
 }
