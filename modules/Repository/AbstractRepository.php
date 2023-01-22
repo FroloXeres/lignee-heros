@@ -248,16 +248,46 @@ abstract class AbstractRepository extends \APP_DbObject
         return $this->DbGetLastId();
     }
 
-    /** @var array<string, AbstractCard> $cards */
-    public function updateCardsWithIds(array $cards)
+    /**
+     * @var array<string, AbstractCard> $cards
+     * @throws ReflectionException
+     */
+    public function updateCardsWithIds(array $cards): void
     {
         $sql = sprintf(
             'SELECT `%s`, %s FROM `%s`',
             self::CARD_UNIQ_ID,
-            join(', ', []),
+            join(', ', $this->getFieldNames($this->keys)),
             $this->table,
         );
+        $dbCards = $this->getObjectListFromDB($sql);
+        $indexed = [];
+        foreach ($dbCards as $dbCard) {
+            $ref = &$indexed;
 
+            foreach ($this->keys as $key) {
+                $index = $this->mappedFields[$key]->dbName;
+                $dbIndex = $dbCard[$index];
+
+                if (!array_key_exists($dbIndex, $ref)) {
+                    $ref[$dbIndex] = [];
+                }
+                $ref = &$ref[$dbIndex];
+            }
+            $ref[] = $dbCard['card_id'];
+        }
+
+        foreach ($cards as $card) {
+            $ref = &$indexed;
+            foreach ($this->keys as $key) {
+                $reflexion = new \ReflectionObject($card);
+                $keyProd = $reflexion->getProperty($key);
+                $keyProd->setAccessible(true);
+
+                $ref = &$ref[$keyProd->getValue($card)];
+            }
+            $card->setIds($ref);
+        }
     }
 
     public function updateCardWithIds(AbstractCard $card)

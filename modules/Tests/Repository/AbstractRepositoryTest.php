@@ -168,6 +168,28 @@ class AbstractRepositoryTest extends TestCase
         $this->assertEquals([1, 2], $lineage->getIds());
     }
 
+    public function testUpdateCardsWithIds()
+    {
+        $this->repository = new class(Objective::class) extends AbstractRepository {
+            public function getObjectListFromDB(string $sql, bool $bUniqueValue = false ): array {
+                return [
+                    ['card_id' => 1, 'card_type' => Objective::DA_VINCI, 'card_type_arg' => 0],
+                    ['card_id' => 2, 'card_type' => Objective::DA_VINCI, 'card_type_arg' => 0],
+                    ['card_id' => 3, 'card_type' => Objective::ARCHMAGE, 'card_type_arg' => 0],
+                ];
+            }
+        };
+
+        $objectives = [
+            new Objective(Objective::DA_VINCI),
+            new Objective(Objective::ARCHMAGE),
+        ];
+        $this->repository->updateCardsWithIds($objectives);
+
+        $this->assertEquals([1, 2], $objectives[0]->getIds());
+        $this->assertEquals([3], $objectives[1]->getIds());
+    }
+
     protected function initRepository(string $class): \ReflectionObject
     {
         $this->repository = new class($class) extends AbstractRepository {};
