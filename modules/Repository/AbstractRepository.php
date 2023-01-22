@@ -2,16 +2,23 @@
 
 namespace LdH\Repository;
 
+use DateTime;
+use LdH\Entity\Cards\AbstractCard;
 use ReflectionException;
 
 abstract class AbstractRepository extends \APP_DbObject
 {
+    protected const CARD_UNIQ_ID = 'card_id';
+
     protected string $class;
     protected string $table = '';
     protected array $keys = [];
 
     /** @var array<string, Field> */
     protected array $mappedFields = [];
+
+    /** @var array<string, string> */
+    protected array $history = [];
 
     /**
      * @throws ReflectionException
@@ -211,6 +218,8 @@ abstract class AbstractRepository extends \APP_DbObject
      */
     public function query(string $sql): array
     {
+        $this->historize($sql);
+
         return $this->DBQuery($sql);
     }
 
@@ -219,6 +228,8 @@ abstract class AbstractRepository extends \APP_DbObject
      */
     public function selectAll(string $sql): array
     {
+        $this->historize($sql);
+
         return $this->getCollectionFromDb($sql);
     }
 
@@ -227,11 +238,55 @@ abstract class AbstractRepository extends \APP_DbObject
      */
     public function selectAsObject(string $sql): array
     {
+        $this->historize($sql);
+
         return $this->getObjectListFromDB($sql);
     }
 
     public function getLastId(): int
     {
         return $this->DbGetLastId();
+    }
+
+    /** @var array<string, AbstractCard> $cards */
+    public function updateCardsWithIds(array $cards)
+    {
+        $sql = sprintf(
+            'SELECT `%s`, %s FROM `%s`',
+            self::CARD_UNIQ_ID,
+            join(', ', []),
+            $this->table,
+        );
+
+    }
+
+    public function updateCardWithIds(AbstractCard $card)
+    {
+        $sql = sprintf(
+            'SELECT `%s` FROM `%s` WHERE %s',
+            self::CARD_UNIQ_ID,
+            $this->table,
+            $this->getKeysForQuery($card),
+        );
+        $card->setIds(
+            $this->getObjectListFromDB($sql, true)
+        );
+    }
+
+    // Method for history
+    protected function historize(string $sql)
+    {
+        $this->history[date('Y-m-d H:i:s')] = $sql;
+    }
+
+    /** @return array<string, string> */
+    public function getHistory(): array
+    {
+        return $this->history;
+    }
+
+    public function getLastQuery(): string
+    {
+        return end($this->history);
     }
 }

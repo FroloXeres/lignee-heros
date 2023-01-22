@@ -65,7 +65,10 @@ abstract class AbstractCard implements CardInterface
      */
     public function setIds(array $ids): void
     {
-        $this->ids = $ids;
+        $this->ids = [];
+        foreach ($ids as $id) {
+            $this->ids[] = (int) $id;
+        }
     }
 
     /**

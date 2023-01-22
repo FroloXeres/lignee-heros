@@ -2,7 +2,6 @@
 
 namespace LdH\Tests\Repository;
 
-use LdH\Entity\Cards\AbstractCard;
 use LdH\Entity\Cards\Disease;
 use LdH\Entity\Cards\Fight;
 use LdH\Entity\Cards\Invention;
@@ -12,38 +11,36 @@ use LdH\Entity\Cards\Other;
 use LdH\Entity\Cards\Spell;
 use LdH\Entity\Map\Terrain;
 use LdH\Entity\Map\Tile;
+use LdH\Entity\Meeple;
 use LdH\Repository\AbstractRepository;
 use LdH\Repository\Field;
 use PHPUnit\Framework\TestCase;
-use SebastianBergmann\Diff\Line;
 
 require_once "./../Dummy/APP_DbObject.php";
 
 class AbstractRepositoryTest extends TestCase
 {
-    protected AbstractRepository $mapRepository;
-    protected AbstractRepository $cardRepository;
+    protected AbstractRepository $repository;
 
     public function testMapRepositoryMetadata()
     {
-        $this->mapRepository = new class(Tile::class) extends AbstractRepository {};
-        $reflexion = new \ReflectionObject($this->mapRepository);
+        $reflexion = $this->initRepository(Tile::class);
 
         $classProp = $reflexion->getProperty('class');
         $classProp->setAccessible(true);
-        $this->assertEquals(Tile::class, $classProp->getValue($this->mapRepository));
+        $this->assertEquals(Tile::class, $classProp->getValue($this->repository));
 
         $tableProp = $reflexion->getProperty('table');
         $tableProp->setAccessible(true);
-        $this->assertEquals('map', $tableProp->getValue($this->mapRepository));
+        $this->assertEquals('map', $tableProp->getValue($this->repository));
 
         $keysProp = $reflexion->getProperty('keys');
         $keysProp->setAccessible(true);
-        $this->assertEquals(['id'], $keysProp->getValue($this->mapRepository));
+        $this->assertEquals(['id'], $keysProp->getValue($this->repository));
 
         $mappedProp = $reflexion->getProperty('mappedFields');
         $mappedProp->setAccessible(true);
-        $mapped = $mappedProp->getValue($this->mapRepository);
+        $mapped = $mappedProp->getValue($this->repository);
         $this->assertEquals(['id', 'x', 'y', 'howFar', 'flip', 'disabled', 'terrain'], array_keys($mapped));
 
         foreach ($mapped as $field) {
@@ -111,24 +108,23 @@ class AbstractRepositoryTest extends TestCase
         ];
 
         foreach ($cardClasses as $cardClass => $testData) {
-            $this->cardRepository = new class($cardClass) extends AbstractRepository {};
-            $reflexion = new \ReflectionObject($this->cardRepository);
+            $reflexion = $this->initRepository($cardClass);
 
             $classProp = $reflexion->getProperty('class');
             $classProp->setAccessible(true);
-            $this->assertEquals($cardClass, $classProp->getValue($this->cardRepository));
+            $this->assertEquals($cardClass, $classProp->getValue($this->repository));
 
             $tableProp = $reflexion->getProperty('table');
             $tableProp->setAccessible(true);
-            $this->assertEquals($testData['table'], $tableProp->getValue($this->cardRepository));
+            $this->assertEquals($testData['table'], $tableProp->getValue($this->repository));
 
             $keysProp = $reflexion->getProperty('keys');
             $keysProp->setAccessible(true);
-            $this->assertEquals(['type', 'type_arg'], $keysProp->getValue($this->cardRepository));
+            $this->assertEquals(['type', 'type_arg'], $keysProp->getValue($this->repository));
 
             $mappedProp = $reflexion->getProperty('mappedFields');
             $mappedProp->setAccessible(true);
-            $mapped = $mappedProp->getValue($this->cardRepository);
+            $mapped = $mappedProp->getValue($this->repository);
             $this->assertEquals(array_merge($testData['mapped'], ['type', 'type_arg', 'location', 'location_arg']), array_keys($mapped));
 
             foreach ($mapped as $field) {
@@ -145,9 +141,39 @@ class AbstractRepositoryTest extends TestCase
                 $this->extractFields($mapped, 'type'),
             );
         }
-
     }
 
+    public function testQueryBuilderUpdateTile()
+    {
+        $this->initRepository(Tile::class);
+        $tile = new Tile(1, 0, 0, 0, false, true);
+        $this->repository->update($tile, ['x', 'y', 'howFar', 'disabled', 'flip']);
+        $this->assertEquals(
+            'UPDATE `map` SET `tile_x` = 0, `tile_y` = 0, `tile_far` = 0, `tile_disabled` = 0, `tile_revealed` = 1 WHERE `tile_id` = 1',
+            $this->repository->getLastQuery()
+        );
+    }
+
+    public function testUpdateCardWithIds()
+    {
+        $this->repository = new class(Lineage::class) extends AbstractRepository {
+            public function getObjectListFromDB(string $sql, bool $bUniqueValue = false): array {return [1, 2];}
+        };
+
+        $lineage = (new Lineage(Meeple::HUMANI_MAGE))
+            ->setObjectiveCompleted(true)
+        ;
+        $this->repository->updateCardWithIds($lineage);
+
+        $this->assertEquals([1, 2], $lineage->getIds());
+    }
+
+    protected function initRepository(string $class): \ReflectionObject
+    {
+        $this->repository = new class($class) extends AbstractRepository {};
+
+        return new \ReflectionObject($this->repository);
+    }
 
     protected function extractFields(array $mapped, $fieldName): array
     {
