@@ -910,7 +910,12 @@ function (dojo, on, declare) {
         */
         onSelectLineage: function()  {
             if (this.selectedCards[0] !== 'undefined' && this.checkAction('selectLineage')) {
-                this.ajaxCallWrapper('selectLineage', {lineage: this.selectedCards[0]});
+                this.ajaxCallWrapper(
+                    'selectLineage',
+                    {lineage: this.selectedCards[0]},
+                    (response) => {},
+                    (isError) => {},
+                );
             }
         },
 
@@ -977,7 +982,7 @@ function (dojo, on, declare) {
             dojo.subscribe( 'debug', this, "onDebug" );
 
             // TODO: here, associate your game notifications with local methods
-            
+            dojo.subscribe('playerChooseLineage', this, 'onLineageChosen');
             // Example 1: standard notification handling
             // dojo.subscribe( 'cardPlayed', this, "notif_cardPlayed" );
             
@@ -992,8 +997,13 @@ function (dojo, on, declare) {
         onDebug: function(sentData)
         {
             console.log(sentData);
-        }
+        },
         // TODO: from this point and below, you can write your game notifications handling methods
+
+        onLineageChosen: function (notif)
+        {
+             console.log(notif);
+        },
 
         /*
         Example:

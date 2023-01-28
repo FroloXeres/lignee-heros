@@ -5,6 +5,10 @@ namespace LdH\State;
 use LdH\Entity\Cards\AbstractCard;
 use LdH\Entity\Cards\Lineage;
 use LdH\Entity\Map\City;
+use LdH\Entity\Meeple;
+use LdH\Entity\Unit;
+use LdH\Service\PeopleService;
+
 
 class ChooseLineageState extends AbstractState
 {
@@ -52,10 +56,24 @@ class ChooseLineageState extends AbstractState
                 /** @var \ligneeheros $this */
                 $this->checkAction(ChooseLineageState::ACTION_SELECT_LINEAGE);
 
+                /** @var Lineage $card */
                 $card = $this->getDeck(AbstractCard::TYPE_LINEAGE)->getCardByCode($lineage);
                 $card->setLocation(AbstractCard::LOCATION_HAND);
                 $card->setLocationArg($this->getCurrentPlayerId());
                 $this->getCardService()->updateCard($card, ['location', 'location_arg']);
+
+                // Add meeple to city
+                $this->getPeople()->birth(
+                    $card->getMeeple(),
+                    Unit::LOCATION_MAP,
+                    PeopleService::CITY_ID
+                );
+
+                // Add lineage objective
+                $objective = $card->getObjective();
+                $objective->setLocation(AbstractCard::LOCATION_HAND);
+                $objective->setLocationArg($this->getCurrentPlayerId());
+                $this->getCardService()->updateCard($objective, ['location', 'location_arg']);
 
                 $this->notifyAllPlayers(
                     ChooseLineageState::NOTIFY_PLAYER_CHOSEN,
@@ -63,7 +81,8 @@ class ChooseLineageState extends AbstractState
                     [
                         'i18n' => ['player_name', 'lineage'],
                         'player_name' => $this->getCurrentPlayerName(),
-                        'lineage' => ($card ? $card->getName() : '')
+                        'lineage' => ($card ? $card->getName() : ''),
+                        'id' => $card->getCode(),
                     ]
                 );
 

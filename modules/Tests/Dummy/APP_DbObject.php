@@ -1,8 +1,8 @@
 <?php
 
 class APP_DbObject {
-    public function DBQuery(string $sql): array {
-        return [];
+    public function DBQuery(string $sql): bool {
+        return true;
     }
 
     public function getCollectionFromDb(string $sql): array {

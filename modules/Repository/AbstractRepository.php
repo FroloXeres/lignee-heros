@@ -216,7 +216,7 @@ abstract class AbstractRepository extends \APP_DbObject
     /**
      * Execute update/delete queries
      */
-    public function query(string $sql): array
+    public function query(string $sql): bool
     {
         $this->historize($sql);
 

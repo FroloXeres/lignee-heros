@@ -9,8 +9,6 @@ class CardRepository extends AbstractRepository
     public function __construct(string $class)
     {
         parent::__construct($class);
-
-        //$this->table = CardService::getDeckTypeByCardClass($class);
     }
 
     /**
