@@ -7,6 +7,7 @@ use LdH\Entity\Meeple;
 
 /**
  * @table="objective"
+ * @entityLinked="\LdH\Entity\Cards\ObjectiveBoardCard"
  */
 class Objective extends AbstractCard
 {
@@ -65,12 +66,7 @@ class Objective extends AbstractCard
     protected int  $subNeed;
     protected int  $needCount;
 
-    /**
-     * @column="card_completed"
-     */
-    protected bool $completed = false;
-
-    public function __construct(int $code, bool $lineage = false)
+    public function __construct(int $code)
     {
         $this->setCode($code);
         $this->need      = self::NEED_EXPLORE;
@@ -78,10 +74,33 @@ class Objective extends AbstractCard
         $this->needCount = 1;
 
         // Card specific
-        $this->type_arg     = 0;
+        $this->type_arg = 0;
+    }
 
-        $this->location     = $lineage? self::LOCATION_HIDDEN : self::LOCATION_DEFAULT;
-        $this->location_arg = 0;
+    protected function isLineageObjective(): bool
+    {
+        switch ($this->getCode()) {
+        case self::HUMANI_WORKER:
+        case self::HUMANI_MAGE:
+        case self::NANI_SAVANT:
+        case self::NANI_WARRIOR:
+        case self::ELVEN_MAGE:
+        case self::ELVEN_SAVANT:
+        case self::ORK_WARRIOR:
+        case self::ORK_WORKER:
+            return true;
+        default:
+            return false;
+        }
+    }
+
+    public function addBoardCard(BoardCardInterface $boardCard): void
+    {
+        if ($this->isLineageObjective()) {
+            $boardCard->setLocation(BoardCardInterface::LOCATION_HIDDEN);
+        }
+
+        parent::addBoardCard($boardCard);
     }
 
     /**
@@ -168,16 +187,9 @@ class Objective extends AbstractCard
         return $entityAsText?? parent::getDescription();
     }
 
-    public function isCompleted(): bool
+    public static function getBoardCardClassByCard(): string
     {
-        return $this->completed;
-    }
-
-    public function setCompleted(bool $completed): self
-    {
-        $this->completed = $completed;
-
-        return $this;
+        return ObjectiveBoardCard::class;
     }
 
     /**
@@ -209,7 +221,7 @@ class Objective extends AbstractCard
         $tpl = parent::toTpl($deck);
 
         $tpl[self::TPL_ICON] = Deck::TYPE_OBJECTIVE;
-        $tpl[self::TPL_COMPLETED] = $this->isCompleted() ? 'completed' : '';
+        //$tpl[self::TPL_COMPLETED] = $this->isCompleted() ? 'completed' : '';
 
         return $tpl;
     }

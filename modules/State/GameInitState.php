@@ -3,6 +3,7 @@
 namespace LdH\State;
 
 use LdH\Entity\Cards\AbstractCard;
+use LdH\Entity\Cards\BoardCardInterface;
 use LdH\Entity\Cards\Deck;
 use LdH\Entity\Map\City;
 use LdH\Entity\Map\Terrain;
@@ -59,7 +60,7 @@ class GameInitState extends AbstractState
             $this->getCardService()->drawCards($inventions, $city->getInventions());
 
             // Draw 1st invention card of the deck (notify)
-            $inventions->getBgaDeck()->pickCardForLocation(AbstractCard::LOCATION_DEFAULT, AbstractCard::LOCATION_ON_TABLE);
+            $inventions->getBgaDeck()->pickCardForLocation(BoardCardInterface::LOCATION_DEFAULT, BoardCardInterface::LOCATION_ON_TABLE);
 
             $peopleService = $this->getPeople();
 

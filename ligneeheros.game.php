@@ -19,6 +19,7 @@
 require_once( APP_GAMEMODULE_PATH.'module/table/table.game.php' );
 require_once('vendor/autoload.php');
 
+use LdH\Entity\Cards\BoardCardInterface;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -31,7 +32,6 @@ use LdH\Service\CardService;
 use LdH\Service\StateService;
 use \LdH\Service\PeopleService;
 use LdH\Entity\Cards\Deck;
-use LdH\Entity\Cards\AbstractCard;
 use LdH\Entity\Map\Resource;
 use LdH\Entity\Map\Terrain;
 use LdH\Entity\Meeple;
@@ -255,10 +255,10 @@ class ligneeheros extends Table
         if (!empty($this->cards)) {
             foreach ($this->cards as $deck) {
                 $bgaDeck = $deck->getBgaDeck();
-                $bgaDeck->createCards($deck->getBgaDeckData(), AbstractCard::LOCATION_DEFAULT);
+                $bgaDeck->createCards($deck->getBgaDeckData(), BoardCardInterface::LOCATION_DEFAULT);
 
                 if (!$deck->isPublic()) {
-                    $bgaDeck->shuffle(AbstractCard::LOCATION_DEFAULT);
+                    $bgaDeck->shuffle(BoardCardInterface::LOCATION_DEFAULT);
                 }
             }
         }

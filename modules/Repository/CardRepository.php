@@ -2,9 +2,7 @@
 
 namespace LdH\Repository;
 
-use LdH\Service\CardService;
-
-class CardRepository extends AbstractRepository
+class CardRepository extends AbstractCardRepository
 {
     public function __construct(string $class)
     {

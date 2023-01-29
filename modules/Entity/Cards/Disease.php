@@ -4,6 +4,7 @@ namespace LdH\Entity\Cards;
 
 /**
  * @table="explore_disease"
+ * @entityLinked="\LdH\Entity\Cards\DefaultBoardCard"
  */
 class Disease extends AbstractCard
 {

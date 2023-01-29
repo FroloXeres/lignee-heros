@@ -6,6 +6,7 @@ use LdH\Entity\Bonus;
 
 /**
  * @table="explore_other"
+ * @entityLinked="\LdH\Entity\Cards\DefaultBoardCard"
  */
 class Other extends AbstractCard
 {

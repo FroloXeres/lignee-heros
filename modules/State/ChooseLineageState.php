@@ -3,6 +3,7 @@
 namespace LdH\State;
 
 use LdH\Entity\Cards\AbstractCard;
+use LdH\Entity\Cards\BoardCardInterface;
 use LdH\Entity\Cards\Lineage;
 use LdH\Entity\Map\City;
 use LdH\Entity\Meeple;
@@ -56,13 +57,17 @@ class ChooseLineageState extends AbstractState
                 /** @var \ligneeheros $this */
                 $this->checkAction(ChooseLineageState::ACTION_SELECT_LINEAGE);
 
+                $playerId = (int) $this->getCurrentPlayerId();
+
+                // Check if this lineage is free
+
+
                 /** @var Lineage $card */
                 $card = $this->getDeck(AbstractCard::TYPE_LINEAGE)->getCardByCode($lineage);
-                $card->setLocation(AbstractCard::LOCATION_HAND);
-                $card->setLocationArg($this->getCurrentPlayerId());
-                $this->getCardService()->updateCard($card, ['location', 'location_arg']);
+                $card->moveCardsTo(BoardCardInterface::LOCATION_HAND, $playerId);
+                $this->getCardService()->updateCard($card, [BoardCardInterface::BGA_LOCATION, BoardCardInterface::BGA_LOCATION_ARG]);
 
-                // Add meeple to city
+                // Add lineage meeple to city
                 $this->getPeople()->birth(
                     $card->getMeeple(),
                     Unit::LOCATION_MAP,
@@ -71,9 +76,8 @@ class ChooseLineageState extends AbstractState
 
                 // Add lineage objective
                 $objective = $card->getObjective();
-                $objective->setLocation(AbstractCard::LOCATION_HAND);
-                $objective->setLocationArg($this->getCurrentPlayerId());
-                $this->getCardService()->updateCard($objective, ['location', 'location_arg']);
+                $objective->moveCardsTo(BoardCardInterface::LOCATION_HAND, $playerId);
+                $this->getCardService()->updateCard($objective, [BoardCardInterface::BGA_LOCATION, BoardCardInterface::BGA_LOCATION_ARG]);
 
                 $this->notifyAllPlayers(
                     ChooseLineageState::NOTIFY_PLAYER_CHOSEN,

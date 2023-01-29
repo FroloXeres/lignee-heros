@@ -23,9 +23,6 @@ class Deck implements \Iterator
     protected array $cards   = [];
     protected ?int  $current = null;
 
-    /** @var int[] */
-    protected array $copies = [];
-
     /** @var \Deck */
     protected $bgaDeck = null;
 
@@ -93,7 +90,11 @@ class Deck implements \Iterator
         else $this->current++;
 
         $this->cards[$this->current]  = $card;
-        $this->copies[$this->current] = $count;
+
+        $boardCardType = $card->getBoardCardClassByCard();
+        for ($i = 0; $i < $count; $i++) {
+            $card->addBoardCard($boardCardType::buildBoardCard());
+        }
 
         return $this;
     }
@@ -203,7 +204,7 @@ class Deck implements \Iterator
         $cards = [];
         for ($i = 0; $i <= $this->current; $i++) {
             $card        = $this->cards[$i]->toArray();
-            $card['nbr'] = $this->copies[$i];
+            $card['nbr'] = $this->cards[$i]->getCardCount();
             $cards[]     = $card;
         }
         return $cards;
@@ -220,21 +221,21 @@ class Deck implements \Iterator
             case AbstractCard::TYPE_INVENTION:
             case AbstractCard::TYPE_MAGIC:
                 return [
-                    AbstractCard::LOCATION_DEFAULT,
-                    AbstractCard::LOCATION_ON_TABLE,
-                    AbstractCard::LOCATION_HAND
+                    BoardCardInterface::LOCATION_DEFAULT,
+                    BoardCardInterface::LOCATION_ON_TABLE,
+                    BoardCardInterface::LOCATION_HAND
                 ];
             case AbstractCard::TYPE_LINEAGE:
                 return [
-                    AbstractCard::LOCATION_DEFAULT,
-                    AbstractCard::LOCATION_HAND
+                    BoardCardInterface::LOCATION_DEFAULT,
+                    BoardCardInterface::LOCATION_HAND
                 ];
             case AbstractCard::TYPE_OBJECTIVE:
             case AbstractCard::TYPE_DISEASE:
             case AbstractCard::TYPE_FIGHT:
             case AbstractCard::TYPE_OTHER:
                 return [
-                    AbstractCard::LOCATION_DEFAULT
+                    BoardCardInterface::LOCATION_DEFAULT
                 ];
             default:
                 return [];

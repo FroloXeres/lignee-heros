@@ -3,6 +3,7 @@
 namespace LdH\Service;
 
 use LdH\Entity\Cards\AbstractCard;
+use LdH\Entity\Cards\BoardCardInterface;
 use LdH\Entity\Cards\Deck;
 use LdH\Entity\Cards\Disease;
 use LdH\Entity\Cards\Fight;
@@ -52,13 +53,13 @@ class CardService
         $cardIds = $this->getCardRepoByType($deck->getType())->getCardIds(
             $deck->getType(),
             array_map(function(AbstractCard $card) {return $card->getTypeArg();}, $cards),
-            AbstractCard::LOCATION_DEFAULT,
+            BoardCardInterface::LOCATION_DEFAULT,
             true
         );
 
         $deck->getBgaDeck()->moveCards(
             array_keys($cardIds),
-            AbstractCard::LOCATION_HAND
+            BoardCardInterface::LOCATION_HAND
         );
     }
 
@@ -117,7 +118,7 @@ class CardService
         }
 
         foreach ($deck->getCards() as $card) {
-            $card->setIds(
+            $card->setBoardCards(
                 $cardsIdsByTypeArg[$card->getTypeArg()] ?? []
             );
         }
@@ -168,15 +169,15 @@ class CardService
 
             if (array_key_exists($codeType, $ldhCardsData)) {
                 if ($ldhDeck->getType() === AbstractCard::TYPE_LINEAGE) {
-                    $ldhCardsData[$codeType][AbstractCard::BGA_LOCATION] = $bgaCardData['location'];
-                    $ldhCardsData[$codeType][AbstractCard::BGA_LOCATION_ARG] = $bgaCardData['location_arg'];
+                    $ldhCardsData[$codeType][BoardCardInterface::BGA_LOCATION] = $bgaCardData['location'];
+                    $ldhCardsData[$codeType][BoardCardInterface::BGA_LOCATION_ARG] = $bgaCardData['location_arg'];
                 }
 
                 $bgaCardsData[] = $ldhCardsData[$codeType];
             } else if (array_key_exists($codeTypeArg, $ldhCardsData)) {
                 if ($ldhDeck->getType() === AbstractCard::TYPE_LINEAGE) {
-                    $ldhCardsData[$codeType][AbstractCard::BGA_LOCATION] = $bgaCardData['location'];
-                    $ldhCardsData[$codeTypeArg][AbstractCard::BGA_LOCATION_ARG] = $bgaCardData['location_arg'];
+                    $ldhCardsData[$codeType][BoardCardInterface::BGA_LOCATION] = $bgaCardData['location'];
+                    $ldhCardsData[$codeTypeArg][BoardCardInterface::BGA_LOCATION_ARG] = $bgaCardData['location_arg'];
                 }
 
                 $bgaCardsData[] = $ldhCardsData[$codeTypeArg];

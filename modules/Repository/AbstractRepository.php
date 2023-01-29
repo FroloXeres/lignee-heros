@@ -53,6 +53,11 @@ abstract class AbstractRepository extends \APP_DbObject
         if (isset($annotations[1])) {
             $this->table = $annotations[1];
         }
+
+        preg_match('#@entityLinked="(.*?)"#s', $doc, $annotations);
+        if (isset($annotations[1])) {
+            $this->entityLinked = $annotations[1];
+        }
     }
 
     protected function buildField(\ReflectionClass $class, \ReflectionProperty $property): ?Field
@@ -246,61 +251,6 @@ abstract class AbstractRepository extends \APP_DbObject
     public function getLastId(): int
     {
         return $this->DbGetLastId();
-    }
-
-    /**
-     * @var array<string, AbstractCard> $cards
-     * @throws ReflectionException
-     */
-    public function updateCardsWithIds(array $cards): void
-    {
-        $sql = sprintf(
-            'SELECT `%s`, %s FROM `%s`',
-            self::CARD_UNIQ_ID,
-            join(', ', $this->getFieldNames($this->keys)),
-            $this->table,
-        );
-        $dbCards = $this->getObjectListFromDB($sql);
-        $indexed = [];
-        foreach ($dbCards as $dbCard) {
-            $ref = &$indexed;
-
-            foreach ($this->keys as $key) {
-                $index = $this->mappedFields[$key]->dbName;
-                $dbIndex = $dbCard[$index];
-
-                if (!array_key_exists($dbIndex, $ref)) {
-                    $ref[$dbIndex] = [];
-                }
-                $ref = &$ref[$dbIndex];
-            }
-            $ref[] = $dbCard['card_id'];
-        }
-
-        foreach ($cards as $card) {
-            $ref = &$indexed;
-            foreach ($this->keys as $key) {
-                $reflexion = new \ReflectionObject($card);
-                $keyProd = $reflexion->getProperty($key);
-                $keyProd->setAccessible(true);
-
-                $ref = &$ref[$keyProd->getValue($card)];
-            }
-            $card->setIds($ref);
-        }
-    }
-
-    public function updateCardWithIds(AbstractCard $card)
-    {
-        $sql = sprintf(
-            'SELECT `%s` FROM `%s` WHERE %s',
-            self::CARD_UNIQ_ID,
-            $this->table,
-            $this->getKeysForQuery($card),
-        );
-        $card->setIds(
-            $this->getObjectListFromDB($sql, true)
-        );
     }
 
     // Method for history

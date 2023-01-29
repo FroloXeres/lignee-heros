@@ -2,16 +2,23 @@
 
 namespace LdH\Tests\Repository;
 
+use LdH\Entity\Cards\AbstractCard;
+use LdH\Entity\Cards\BoardCardInterface;
+use LdH\Entity\Cards\DefaultBoardCard;
 use LdH\Entity\Cards\Disease;
 use LdH\Entity\Cards\Fight;
 use LdH\Entity\Cards\Invention;
 use LdH\Entity\Cards\Lineage;
+use LdH\Entity\Cards\LineageBoardCard;
 use LdH\Entity\Cards\Objective;
+use LdH\Entity\Cards\ObjectiveBoardCard;
 use LdH\Entity\Cards\Other;
 use LdH\Entity\Cards\Spell;
+use LdH\Entity\Cards\SpellBoardCard;
 use LdH\Entity\Map\Terrain;
 use LdH\Entity\Map\Tile;
 use LdH\Entity\Meeple;
+use LdH\Repository\AbstractCardRepository;
 use LdH\Repository\AbstractRepository;
 use LdH\Repository\Field;
 use PHPUnit\Framework\TestCase;
@@ -125,20 +132,36 @@ class AbstractRepositoryTest extends TestCase
             $mappedProp = $reflexion->getProperty('mappedFields');
             $mappedProp->setAccessible(true);
             $mapped = $mappedProp->getValue($this->repository);
-            $this->assertEquals(array_merge($testData['mapped'], ['type', 'type_arg', 'location', 'location_arg']), array_keys($mapped));
+            $this->assertEquals(['type', 'type_arg'], array_keys($mapped));
+
+            $boardProp = $reflexion->getProperty('boardCardFields');
+            $boardProp->setAccessible(true);
+            $boards = $boardProp->getValue($this->repository);
+            $this->assertEquals(array_merge($testData['mapped'], ['id', 'location', 'location_arg']), array_keys($boards));
 
             foreach ($mapped as $field) {
                 $this->assertInstanceOf(Field::class, $field);
             }
+            foreach ($boards as $field) {
+                $this->assertInstanceOf(Field::class, $field);
+            }
 
             $this->assertEquals(
-                array_merge($testData['dbName'], ['card_type', 'card_type_arg', 'card_location', 'card_location_arg']),
-                $this->extractFields($mapped, 'dbName'),
+                ['card_type', 'card_type_arg'],
+                $this->extractFields($mapped, 'dbName')
+            );
+            $this->assertEquals(
+                array_merge($testData['dbName'], ['card_id', 'card_location', 'card_location_arg']),
+                $this->extractFields($boards, 'dbName'),
             );
 
             $this->assertEquals(
-                array_merge($testData['type'], ['string', 'int', 'string', 'int']),
+                ['string', 'int'],
                 $this->extractFields($mapped, 'type'),
+            );
+            $this->assertEquals(
+                array_merge($testData['type'], ['int', 'string', 'int']),
+                $this->extractFields($boards, 'type'),
             );
         }
     }
@@ -154,45 +177,147 @@ class AbstractRepositoryTest extends TestCase
         );
     }
 
-    public function testUpdateCardWithIds()
+    public function testUpdateCardFromDbForSpell()
     {
-        $this->repository = new class(Lineage::class) extends AbstractRepository {
-            public function getObjectListFromDB(string $sql, bool $bUniqueValue = false): array {return [1, 2];}
+        $this->repository = new class(Lineage::class) extends AbstractCardRepository {
+            private int $index = 0;
+            public function getObjectListFromDB(string $sql, bool $bUniqueValue = false): array {
+                $values = [
+                    ['card_completed' => "0", 'card_leader' => "0", 'card_id' => "1", 'card_location' => BoardCardInterface::LOCATION_DEFAULT, 'card_location_arg' => "0"],
+                    ['card_completed' => "1", 'card_leader' => "1", 'card_id' => "2", 'card_location' => BoardCardInterface::LOCATION_HAND, 'card_location_arg' => "456789"],
+                ];
+                return $values[$this->index++];
+            }
         };
 
-        $lineage = (new Lineage(Meeple::HUMANI_MAGE))
-            ->setObjectiveCompleted(true)
-        ;
-        $this->repository->updateCardWithIds($lineage);
+        $lineage = (new Lineage(Meeple::HUMANI_MAGE));
+        $this->repository->updateCardFromDb($lineage);
 
-        $this->assertEquals([1, 2], $lineage->getIds());
+        $boardLineage = $lineage->getBoardCard(1);
+        $this->assertEquals(1, $lineage->getCardCount());
+        $this->assertInstanceOf(LineageBoardCard::class, $boardLineage);
+        $this->assertEquals(false, $boardLineage->isObjectiveCompleted());
+        $this->assertEquals(false, $boardLineage->isLeader());
+        $this->assertEquals(BoardCardInterface::LOCATION_DEFAULT, $boardLineage->getLocation());
+        $this->assertEquals(0, $boardLineage->getLocationArg());
+
+        $lineage2 = (new Lineage(Meeple::HUMANI_WORKER));
+        $this->repository->updateCardFromDb($lineage2);
+
+        $boardLineage = $lineage2->getBoardCard(2);
+        $this->assertEquals(1, $lineage2->getCardCount());
+        $this->assertInstanceOf(LineageBoardCard::class, $boardLineage);
+        $this->assertEquals(true, $boardLineage->isObjectiveCompleted());
+        $this->assertEquals(true, $boardLineage->isLeader());
+        $this->assertEquals(BoardCardInterface::LOCATION_HAND, $boardLineage->getLocation());
+        $this->assertEquals(456789, $boardLineage->getLocationArg());
     }
 
-    public function testUpdateCardsWithIds()
+    public function testUpdateCardFromDbForLineage()
     {
-        $this->repository = new class(Objective::class) extends AbstractRepository {
+        $this->repository = new class(Spell::class) extends AbstractCardRepository {
+            private int $index = 0;
+            public function getObjectListFromDB(string $sql, bool $bUniqueValue = false): array {
+                $values = [
+                    ['card_activated' => "0", 'card_id' => "1", 'card_location' => BoardCardInterface::LOCATION_DEFAULT, 'card_location_arg' => "0"],
+                    ['card_activated' => "1", 'card_id' => "2", 'card_location' => BoardCardInterface::LOCATION_HAND, 'card_location_arg' => "456789"],
+                ];
+                return $values[$this->index++];
+            }
+        };
+
+        $fireControl = (new Spell(Spell::TYPE_COMBAT, Spell::FIRE_CONTROL));
+        $this->repository->updateCardFromDb($fireControl);
+
+        $boardSpell = $fireControl->getBoardCard(1);
+        $this->assertEquals(1, $fireControl->getCardCount());
+        $this->assertInstanceOf(SpellBoardCard::class, $boardSpell);
+        $this->assertEquals(false, $boardSpell->isActivated());
+        $this->assertEquals(BoardCardInterface::LOCATION_DEFAULT, $boardSpell->getLocation());
+        $this->assertEquals(0, $boardSpell->getLocationArg());
+
+        $animalFriend = (new Spell(Spell::TYPE_NATURE, Spell::ANIMAL_FRIENDSHIP));
+        $this->repository->updateCardFromDb($animalFriend);
+
+        $boardSpell = $animalFriend->getBoardCard(2);
+        $this->assertEquals(1, $animalFriend->getCardCount());
+        $this->assertInstanceOf(SpellBoardCard::class, $boardSpell);
+        $this->assertEquals(true, $boardSpell->isActivated());
+        $this->assertEquals(BoardCardInterface::LOCATION_HAND, $boardSpell->getLocation());
+        $this->assertEquals(456789, $boardSpell->getLocationArg());
+    }
+
+    public function testUpdateCardFromDbForFight()
+    {
+        $this->repository = new class(Fight::class) extends AbstractCardRepository {
+            public function getObjectListFromDB(string $sql, bool $bUniqueValue = false): array {
+                return ['card_activated' => "0", 'card_id' => "1", 'card_location' => BoardCardInterface::LOCATION_ON_TABLE, 'card_location_arg' => "0"];
+            }
+        };
+
+        $centaurs = (new Fight(Fight::CENTAURS, 10, false));
+        $this->repository->updateCardFromDb($centaurs);
+
+        $boardSpell = $centaurs->getBoardCard(1);
+        $this->assertEquals(1, $centaurs->getCardCount());
+        $this->assertInstanceOf(DefaultBoardCard::class, $boardSpell);
+        $this->assertEquals(BoardCardInterface::LOCATION_ON_TABLE, $boardSpell->getLocation());
+        $this->assertEquals(0, $boardSpell->getLocationArg());
+    }
+
+    public function testUpdateCardsFromDb()
+    {
+        $this->repository = new class(Objective::class) extends AbstractCardRepository {
             public function getObjectListFromDB(string $sql, bool $bUniqueValue = false ): array {
                 return [
-                    ['card_id' => 1, 'card_type' => Objective::DA_VINCI, 'card_type_arg' => 0],
-                    ['card_id' => 2, 'card_type' => Objective::DA_VINCI, 'card_type_arg' => 0],
-                    ['card_id' => 3, 'card_type' => Objective::ARCHMAGE, 'card_type_arg' => 0],
+                    ['card_type' => Objective::DA_VINCI, 'card_type_arg' => '0', 'card_completed' => "0", 'card_id' => "1", 'card_location' => BoardCardInterface::LOCATION_DEFAULT, 'card_location_arg' => "0"],
+                    ['card_type' => Objective::DA_VINCI, 'card_type_arg' => '0', 'card_completed' => "1", 'card_id' => "2", 'card_location' => BoardCardInterface::LOCATION_HAND, 'card_location_arg' => "12345679"],
+                    ['card_type' => Objective::ARCHMAGE, 'card_type_arg' => '0', 'card_completed' => "1", 'card_id' => "3", 'card_location' => BoardCardInterface::LOCATION_HAND, 'card_location_arg' => "12345678"],
                 ];
             }
         };
 
         $objectives = [
-            new Objective(Objective::DA_VINCI),
-            new Objective(Objective::ARCHMAGE),
+            Objective::DA_VINCI => new Objective(Objective::DA_VINCI),
+            Objective::ARCHMAGE => new Objective(Objective::ARCHMAGE),
         ];
-        $this->repository->updateCardsWithIds($objectives);
+        $this->repository->updateCardsFromDb($objectives);
 
-        $this->assertEquals([1, 2], $objectives[0]->getIds());
-        $this->assertEquals([3], $objectives[1]->getIds());
+        /** @var Objective $daVinciObj */
+        $daVinciObj = $objectives[Objective::DA_VINCI];
+        $this->assertEquals(2, $daVinciObj->getCardCount());
+
+        /** @var ObjectiveBoardCard $daVinciBoardCard1 */
+        $daVinciBoardCard1 = $daVinciObj->getBoardCard(1);
+        $this->assertInstanceOf(ObjectiveBoardCard::class, $daVinciBoardCard1);
+        $this->assertEquals(false, $daVinciBoardCard1->isCompleted());
+        $this->assertEquals(BoardCardInterface::LOCATION_DEFAULT, $daVinciBoardCard1->getLocation());
+        $this->assertEquals(0, $daVinciBoardCard1->getLocationArg());
+
+        $daVinciBoardCard2 = $daVinciObj->getBoardCard(2);
+        $this->assertInstanceOf(ObjectiveBoardCard::class, $daVinciBoardCard2);
+        $this->assertEquals(true, $daVinciBoardCard2->isCompleted());
+        $this->assertEquals(BoardCardInterface::LOCATION_HAND, $daVinciBoardCard2->getLocation());
+        $this->assertEquals(12345679, $daVinciBoardCard2->getLocationArg());
+
+        /** @var Objective $archmageObj */
+        $archmageObj = $objectives[Objective::ARCHMAGE];
+        $this->assertEquals(1, $archmageObj->getCardCount());
+
+        $archmageBoardCard = $archmageObj->getBoardCard(3);
+        $this->assertInstanceOf(ObjectiveBoardCard::class, $archmageBoardCard);
+        $this->assertEquals(true, $archmageBoardCard->isCompleted());
+        $this->assertEquals(BoardCardInterface::LOCATION_HAND, $archmageBoardCard->getLocation());
+        $this->assertEquals(12345678, $archmageBoardCard->getLocationArg());
     }
 
     protected function initRepository(string $class): \ReflectionObject
     {
-        $this->repository = new class($class) extends AbstractRepository {};
+        if ($class !== Tile::class) {
+            $this->repository = new class($class) extends AbstractCardRepository {};
+        } else {
+            $this->repository = new class($class) extends AbstractRepository {};
+        }
 
         return new \ReflectionObject($this->repository);
     }

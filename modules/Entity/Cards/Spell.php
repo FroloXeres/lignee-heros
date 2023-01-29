@@ -7,6 +7,7 @@ use LdH\Entity\Map\Resource;
 
 /**
  * @table="spell"
+ * @entityLinked="\LdH\Entity\Cards\SpellBoardCard"
  */
 class Spell extends AbstractCard
 {
@@ -97,11 +98,6 @@ class Spell extends AbstractCard
     protected array $gives;
 
     /**
-     * @column="card_activated"
-     */
-    protected bool $activated = false;
-
-    /**
      * @param string $type
      * @param int    $code
      */
@@ -109,9 +105,6 @@ class Spell extends AbstractCard
     {
         $this->setType($type);
         $this->setCode($code);
-
-        // Card specific
-        $this->location_arg = 0;
     }
 
     /**
@@ -323,18 +316,6 @@ class Spell extends AbstractCard
         return $this;
     }
 
-    public function isActivated(): bool
-    {
-        return $this->activated;
-    }
-
-    public function setActivated(bool $activated): self
-    {
-        $this->activated = $activated;
-
-        return $this;
-    }
-
     /**
      * @param string $type
      *
@@ -360,6 +341,11 @@ class Spell extends AbstractCard
                 '[mage]'
             )
         );
+    }
+
+    public static function getBoardCardClassByCard(): string
+    {
+        return SpellBoardCard::class;
     }
 
     /**

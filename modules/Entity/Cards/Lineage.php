@@ -7,6 +7,7 @@ use LdH\Entity\Bonus;
 
 /**
  * @table="lineage"
+ * @entityLinked="\LdH\Entity\Cards\LineageBoardCard"
  */
 class Lineage extends AbstractCard
 {
@@ -20,16 +21,6 @@ class Lineage extends AbstractCard
     protected ?Bonus     $objectiveBonus = null;
     protected int        $leadingType    = self::LEADING_TYPE_EVERY3TURN;
     protected ?Bonus     $leadingBonus   = null;
-
-    /**
-     * @column="card_completed"
-     */
-    protected bool $objectiveCompleted = false;
-
-    /**
-     * @column="card_leader"
-     */
-    protected bool $leader = false;
 
     /**
      * @param string $code
@@ -141,28 +132,9 @@ class Lineage extends AbstractCard
         return $this;
     }
 
-    public function isObjectiveCompleted(): bool
+    public static function getBoardCardClassByCard(): string
     {
-        return $this->objectiveCompleted;
-    }
-
-    public function setObjectiveCompleted(bool $objectiveCompleted): self
-    {
-        $this->objectiveCompleted = $objectiveCompleted;
-
-        return $this;
-    }
-
-    public function isLeader(): bool
-    {
-        return $this->leader;
-    }
-
-    public function setLeader(bool $leader): self
-    {
-        $this->leader = $leader;
-
-        return $this;
+        return LineageBoardCard::class;
     }
 
     /** Return data for Card module */
@@ -193,9 +165,8 @@ class Lineage extends AbstractCard
         $tpl[self::TPL_OBJECTIVE_BONUS] = (string) $this->getObjectiveBonus();
         $tpl[self::TPL_LEAD_TYPE]       = $this->getLeadingType() === self::LEADING_TYPE_EVERY3TURN ? 'end_turn' : 'fight';
         $tpl[self::TPL_LEAD_POWER]      = (string) $this->getLeadingBonus();
-        $tpl[self::TPL_COMPLETED]       = $this->isObjectiveCompleted() ? 'completed' : '';
-        $tpl[self::TPL_IS_LEADER]       = $this->isLeader();
-        $tpl[self::BGA_LOCATION_ARG]       = $this->getLocationArg();
+        //$tpl[self::TPL_COMPLETED]       = $this->isObjectiveCompleted() ? 'completed' : '';
+        //$tpl[self::TPL_IS_LEADER]       = $this->isLeader();
 
         return $tpl;
     }

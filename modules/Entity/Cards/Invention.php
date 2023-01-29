@@ -8,6 +8,7 @@ use LdH\Entity\Bonus;
 
 /**
  * @table="invention"
+ * @entityLinked="\LdH\Entity\Cards\InventionBoardCard"
  */
 class Invention extends AbstractCard
 {
@@ -80,11 +81,6 @@ class Invention extends AbstractCard
 
     /** @var Bonus[] */
     protected array $gives = [];
-
-    /**
-     * @column="card_activated"
-     */
-    protected bool $activated = false;
 
     /**
      * @param string $type
@@ -248,21 +244,14 @@ class Invention extends AbstractCard
         $this->gives = $gives;
     }
 
-    public function isActivated(): bool
-    {
-        return $this->activated;
-    }
-
-    public function setActivated(bool $activated): self
-    {
-        $this->activated = $activated;
-
-        return $this;
-    }
-
     public static function getTypeName(string $type): string
     {
         return clienttranslate(ucfirst($type));
+    }
+
+    public static function getBoardCardClassByCard(): string
+    {
+        return InventionBoardCard::class;
     }
 
     /**

@@ -6,6 +6,7 @@ use LdH\Entity\Bonus;
 
 /**
  * @table="explore_fight"
+ * @entityLinked="\LdH\Entity\Cards\DefaultBoardCard"
  */
 class Fight extends AbstractCard
 {
@@ -47,7 +48,6 @@ class Fight extends AbstractCard
 
         // Card specific
         $this->type_arg     = 0;
-        $this->location_arg = 0;
     }
 
     /**
