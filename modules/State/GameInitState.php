@@ -57,7 +57,7 @@ class GameInitState extends AbstractState
             // -> Draw city inventions (notify)
             /** @var Deck $inventions */
             $inventions = $this->getDeck(AbstractCard::TYPE_INVENTION);
-            $this->getCardService()->drawCards($inventions, $city->getInventions());
+            $this->getCardService()->moveTheseCardsTo($city->getInventions());
 
             // Draw 1st invention card of the deck (notify)
             $inventions->getBgaDeck()->pickCardForLocation(BoardCardInterface::LOCATION_DEFAULT, BoardCardInterface::LOCATION_ON_TABLE);

@@ -154,6 +154,50 @@ abstract class AbstractCardRepository extends AbstractRepository
         }
     }
 
+    /** @param array<AbstractCard> $cards */
+    public function moveCardsTo(
+        array $cards,
+        string $location = BoardCardInterface::LOCATION_DEFAULT,
+        int $locationArg = BoardCardInterface::LOCATION_ARG_DEFAULT
+    ): bool {
+        $cardIds = [];
+        foreach ($cards as $card) {
+            foreach ($card->getBoardCards() as $boardCard) {
+                $cardIds[] = $boardCard->getId();
+
+                $boardCard->setLocation($location);
+                $boardCard->setLocationArg($locationArg);
+            }
+        }
+
+        $sql = sprintf(
+            'UPDATE `%s` SET `card_location` = "%s", `card_location_arg` = %s WHERE `%s` IN (%s)',
+            $this->table,
+            $location,
+            $locationArg,
+            self::CARD_UNIQ_ID,
+            join(', ', $cardIds)
+        );
+        return $this->DBQuery($sql);
+    }
+
+    /**
+     * @param array<AbstractCard> $cards
+     *
+     * @return array<int>
+     */
+    public function getCardIds(array $cards): array
+    {
+        $cardIds = [];
+        foreach ($cards as $card) {
+            foreach ($card->getBoardCards() as $boardCard) {
+                $cardIds[] = $boardCard->getId();
+            }
+        }
+
+        return $cardIds;
+    }
+
     public function updateCardFromDb(AbstractCard $card)
     {
         $sql = sprintf(

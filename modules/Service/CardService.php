@@ -48,19 +48,17 @@ class CardService
      * @param Deck           $deck
      * @param AbstractCard[] $cards
      */
-    public function drawCards(Deck $deck, array $cards): void
-    {
-        $cardIds = $this->getCardRepoByType($deck->getType())->getCardIds(
-            $deck->getType(),
-            array_map(function(AbstractCard $card) {return $card->getTypeArg();}, $cards),
-            BoardCardInterface::LOCATION_DEFAULT,
-            true
-        );
+    public function moveTheseCardsTo(
+        array $cards,
+        string $location = BoardCardInterface::LOCATION_HAND,
+        int $locationArg = BoardCardInterface::LOCATION_ARG_DEFAULT
+    ): void {
+        $firstOne = reset($cards);
+        if (!$firstOne instanceof AbstractCard) return;
 
-        $deck->getBgaDeck()->moveCards(
-            array_keys($cardIds),
-            BoardCardInterface::LOCATION_HAND
-        );
+        $repository = $this->getCardRepoByCard($firstOne);
+        $repository->updateCardsFromDb($cards);
+        $repository->moveCardsTo($cards, $location, $locationArg);
     }
 
     public function updateCard(AbstractCard $card, array $filters = []): void
@@ -101,29 +99,6 @@ class CardService
         }
     }
 
-    protected function populateDeckWithIds(Deck $deck)
-    {
-        $cardIds = $this->getCardRepoByType($deck->getType())->getCardIds(
-            $deck->getType(),
-            array_map(function(AbstractCard $card) {return $card->getTypeArg();}, $deck->getCards())
-        );
-
-        $cardsIdsByTypeArg = [];
-        foreach ($cardIds as $cardId => $typeArg) {
-            if (array_key_exists($typeArg, $cardsIdsByTypeArg)) {
-                $cardsIdsByTypeArg[$typeArg][] = $cardId;
-            } else {
-                $cardsIdsByTypeArg[$typeArg] = [$cardId];
-            }
-        }
-
-        foreach ($deck->getCards() as $card) {
-            $card->setBoardCards(
-                $cardsIdsByTypeArg[$card->getTypeArg()] ?? []
-            );
-        }
-    }
-
     public function getPublicDecks(array $decks): array
     {
         return array_combine(
@@ -149,8 +124,11 @@ class CardService
             if ($this->canSendDeckByStateAndPlayer($type, $stateId, $currentPlayerId)) {
                 $cards[$type] = [];
 
+                $cardRepository = $this->getCardRepoByType($type);
+                $cardRepository->updateCardsFromDb($deck->getCards());
+
                 foreach ($deck->getPublicLocations() as $location) {
-                    $cards[$type][$location] = $this->preparePublicData($deck->getBgaDeck(), $deck, $location);
+                    $cards[$type][$location] = $this->preparePublicData($deck, $location);
                 }
             }
         }
@@ -158,29 +136,30 @@ class CardService
         return $cards;
     }
 
-    private function preparePublicData(\Deck $bgaDeck, Deck $ldhDeck, string $location): array
+    private function preparePublicData(Deck $ldhDeck, string $location): array
     {
         $bgaCardsData = [];
         $ldhCardsData = $ldhDeck->cardsDataByCode();
 
-        foreach ($bgaDeck->getCardsInLocation($location) as $bgaCardData) {
-            $codeType    = $ldhDeck->getType() . '_' . $bgaCardData['type'];
-            $codeTypeArg = $ldhDeck->getType() . '_' . $bgaCardData['type_arg'];
+        foreach ($ldhDeck->getCards() as $card) {
+            $boardCards = $card->getBoardCardsByLocation($location);
+            if (empty($boardCards)) {
+                continue;
+            }
 
-            if (array_key_exists($codeType, $ldhCardsData)) {
+            $codeType    = $ldhDeck->getType() . '_' . $card->getType();
+            $codeTypeArg = $ldhDeck->getType() . '_' . $card->getTypeArg();
+            $ldhCode     = array_key_exists($codeTypeArg, $ldhCardsData) ? $codeTypeArg : $codeType;
+
+            foreach ($boardCards as $boardCard) {
                 if ($ldhDeck->getType() === AbstractCard::TYPE_LINEAGE) {
-                    $ldhCardsData[$codeType][BoardCardInterface::BGA_LOCATION] = $bgaCardData['location'];
-                    $ldhCardsData[$codeType][BoardCardInterface::BGA_LOCATION_ARG] = $bgaCardData['location_arg'];
+                    $ldhCardsData[$codeType][BoardCardInterface::BGA_LOCATION] = $boardCard ?
+                        $boardCard->getLocation() : BoardCardInterface::LOCATION_DEFAULT;
+                    $ldhCardsData[$ldhCode][BoardCardInterface::BGA_LOCATION_ARG] = $boardCard ?
+                        $boardCard->getLocationArg() : BoardCardInterface::LOCATION_ARG_DEFAULT;
                 }
 
-                $bgaCardsData[] = $ldhCardsData[$codeType];
-            } else if (array_key_exists($codeTypeArg, $ldhCardsData)) {
-                if ($ldhDeck->getType() === AbstractCard::TYPE_LINEAGE) {
-                    $ldhCardsData[$codeType][BoardCardInterface::BGA_LOCATION] = $bgaCardData['location'];
-                    $ldhCardsData[$codeTypeArg][BoardCardInterface::BGA_LOCATION_ARG] = $bgaCardData['location_arg'];
-                }
-
-                $bgaCardsData[] = $ldhCardsData[$codeTypeArg];
+                $bgaCardsData[] = $ldhCardsData[$ldhCode];
             }
         }
 

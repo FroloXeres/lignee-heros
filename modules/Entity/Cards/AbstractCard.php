@@ -51,9 +51,24 @@ abstract class AbstractCard implements CardInterface
         return $this->boardCards;
     }
 
-    public function getBoardCard(int $id): ?BoardCardInterface
+    public function getBoardCardsByLocation(string $location): array
     {
-        for ($i = 0; $i < count($this->boardCards); $i++) {
+        return array_filter(
+            $this->boardCards,
+            function (BoardCardInterface $boardCard) use ($location) {
+                return $boardCard->getLocation() === $location;
+            },
+        );
+    }
+
+    public function getBoardCard(?int $id = null): ?BoardCardInterface
+    {
+        $nbBoardCard = $this->getCardCount();
+        if ($id === null && $nbBoardCard === 1) {
+            return reset($this->boardCards);
+        }
+
+        for ($i = 0; $i < $nbBoardCard; $i++) {
             if ($this->boardCards[$i]->getId() === $id) {
                 return $this->boardCards[$i];
             }

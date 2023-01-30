@@ -304,7 +304,7 @@ class Invention extends AbstractCard
             $tpl[self::TPL_GAIN_TYPE] = '';
             $tpl[self::TPL_GAIN] = join(' ', $this->getGives());
         }
-        $tpl[self::TPL_COMPLETED] = $this->isActivated() ? 'completed' : '';
+        //$tpl[self::TPL_COMPLETED] = $this->isActivated() ? 'completed' : '';
 
         return $tpl;
     }
