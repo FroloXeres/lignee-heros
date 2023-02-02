@@ -96,7 +96,7 @@ abstract class AbstractRepository extends \APP_DbObject
             $field->enum = $enum;
 
             if ($isKey) {
-                $this->keys[]  = $property->getName();
+                $this->keys[] = $property->getName();
             }
 
             return $field;
@@ -109,7 +109,7 @@ abstract class AbstractRepository extends \APP_DbObject
     protected function getFieldNames(array $filters = [], array $excludes = []): array
     {
         $fieldNames = array_keys($this->mappedFields);
-        $filters    = !empty($filters) ? array_intersect($filters, $fieldNames) : $fieldNames;
+        $filters = !empty($filters) ? array_intersect($filters, $fieldNames) : $fieldNames;
 
         // todo: Use excludes
 
@@ -118,7 +118,7 @@ abstract class AbstractRepository extends \APP_DbObject
 
     protected function protectFieldName(string $fieldName): string
     {
-        return '`'.$this->mappedFields[$fieldName]->dbName.'`';
+        return '`' . $this->mappedFields[$fieldName]->dbName . '`';
     }
 
     /**
@@ -133,7 +133,8 @@ abstract class AbstractRepository extends \APP_DbObject
 
         $reflect = new \ReflectionObject($object);
         foreach ($filters as $fieldName) {
-            if (array_key_exists($fieldName, $filters)) continue;
+            if (array_key_exists($fieldName, $filters))
+                continue;
 
             $values[] = $this->getFieldValue($reflect->getProperty($fieldName), $this->mappedFields[$fieldName], $object);
         }
@@ -147,38 +148,38 @@ abstract class AbstractRepository extends \APP_DbObject
         $propertyValue = $property->getValue($object);
 
         switch ($field->type) {
-            case null :
+        case null :
+            $value = 'NULL';
+            break;
+        case 'int' :
+            $value = $propertyValue !== null ? (string) $propertyValue : 'NULL';
+            break;
+        case 'float' :
+            $value = $propertyValue !== null ? number_format($propertyValue, 2, '.', '') : 'NULL';
+            break;
+        case 'bool' :
+            $value = $propertyValue === null ? 'NULL' : ($propertyValue ? '1' : '0');
+            break;
+        case 'string' :
+            if ($field->enum !== null && !isset($field->enum[$propertyValue])) {
+                throw new \InvalidArgumentException('Try to set a forbidden value for ' . $property->getName());
+            }
+
+            $value = $propertyValue !== null ? "'" . self::escapeStringForDB($propertyValue) . "'" : 'NULL';
+            break;
+        default :
+            if ($field->entityKey && $propertyValue) {
+                $reflexionEntity = new \ReflectionObject($propertyValue);
+                $key = $reflexionEntity->getProperty($field->entityKey);
+
+                // todo: Protected this key value (Get repository for it)
+                $key->setAccessible(true);
+                $keyValue = $key->getValue($propertyValue);
+                $value = $keyValue !== null ? "'" . self::escapeStringForDB($keyValue) . "'" : 'NULL';
+            } else {
                 $value = 'NULL';
-                break;
-            case 'int' :
-                $value = $propertyValue !== null ? (string) $propertyValue : 'NULL';
-                break;
-            case 'float' :
-                $value = $propertyValue !== null ? number_format($propertyValue, 2, '.', '') : 'NULL' ;
-                break;
-            case 'bool' :
-                $value = $propertyValue === null ? 'NULL' : ($propertyValue ? '1' : '0');
-                break;
-            case 'string' :
-                if ($field->enum !== null && !isset($field->enum[$propertyValue])) {
-                    throw new \InvalidArgumentException('Try to set a forbidden value for ' . $property->getName());
-                }
-
-                $value = $propertyValue !== null ? "'".self::escapeStringForDB($propertyValue)."'" : 'NULL';
-                break;
-            default :
-                if ($field->entityKey && $propertyValue) {
-                    $reflexionEntity = new \ReflectionObject($propertyValue);
-                    $key = $reflexionEntity->getProperty($field->entityKey);
-
-                    // todo: Protected this key value (Get repository for it)
-                    $key->setAccessible(true);
-                    $keyValue = $key->getValue($propertyValue);
-                    $value = $keyValue !== null ? "'".self::escapeStringForDB($keyValue)."'" : 'NULL';
-                } else {
-                    $value = 'NULL';
-                }
-                break;
+            }
+            break;
         }
 
         return $value;
@@ -200,6 +201,7 @@ abstract class AbstractRepository extends \APP_DbObject
 
     public function update($entity, array $filters = []): void
     {
+        // Todo: Update by Id for boardCards (in AbstractCard) if filters only boardFields (Update by key for card)
         $updates = [];
         $fields = $this->getFieldNames($filters, $this->keys);
         $values = $this->getFieldValues($entity, $filters);

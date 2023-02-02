@@ -2,7 +2,6 @@
 
 namespace LdH\Tests\Repository;
 
-use LdH\Entity\Cards\AbstractCard;
 use LdH\Entity\Cards\BoardCardInterface;
 use LdH\Entity\Cards\DefaultBoardCard;
 use LdH\Entity\Cards\Disease;
@@ -173,6 +172,23 @@ class AbstractRepositoryTest extends TestCase
         $this->repository->update($tile, ['x', 'y', 'howFar', 'disabled', 'flip']);
         $this->assertEquals(
             'UPDATE `map` SET `tile_x` = 0, `tile_y` = 0, `tile_far` = 0, `tile_disabled` = 0, `tile_revealed` = 1 WHERE `tile_id` = 1',
+            $this->repository->getLastQuery()
+        );
+    }
+
+    public function testQueryBuilderUpdateInvention()
+    {
+        $this->initRepository(Invention::class);
+        $invention = new Invention(Invention::TYPE_GROWTH, Invention::CLOTHES);
+        $this->repository->update($invention, ['location', 'location_arg', 'activated']);
+        $this->assertEquals(
+            sprintf(
+                'UPDATE `invention` SET `card_location` = "%s", `card_location_arg` = %s, `card_activated` = 0 WHERE `card_type` = "%" AND `card_type_arg` = %s',
+                BoardCardInterface::LOCATION_DEFAULT,
+                BoardCardInterface::LOCATION_ARG_DEFAULT,
+                Invention::TYPE_GROWTH,
+                Invention::CLOTHES
+            ),
             $this->repository->getLastQuery()
         );
     }

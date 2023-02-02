@@ -94,9 +94,12 @@ abstract class AbstractCardRepository extends AbstractRepository
 
         $reflect = new \ReflectionObject($object);
         foreach ($filters as $fieldName) {
-            if (array_key_exists($fieldName, $filters)) continue;
+            if (array_key_exists($fieldName, $this->keys)) continue;
 
-            $values[] = $this->getFieldValue($reflect->getProperty($fieldName), $this->mappedFields[$fieldName], $object);
+
+
+            $field = array_key_exists($fieldName, $this->mappedFields) ? $this->mappedFields[$fieldName] : $this->boardCardFields[$fieldName];
+            $values[] = $this->getFieldValue($reflect->getProperty($fieldName), $field, $object);
         }
 
         return $values;
@@ -160,14 +163,8 @@ abstract class AbstractCardRepository extends AbstractRepository
         string $location = BoardCardInterface::LOCATION_DEFAULT,
         int $locationArg = BoardCardInterface::LOCATION_ARG_DEFAULT
     ): bool {
-        $cardIds = [];
         foreach ($cards as $card) {
-            foreach ($card->getBoardCards() as $boardCard) {
-                $cardIds[] = $boardCard->getId();
-
-                $boardCard->setLocation($location);
-                $boardCard->setLocationArg($locationArg);
-            }
+            $card->moveCardsTo($location, $locationArg);
         }
 
         $sql = sprintf(
@@ -176,7 +173,7 @@ abstract class AbstractCardRepository extends AbstractRepository
             $location,
             $locationArg,
             self::CARD_UNIQ_ID,
-            join(', ', $cardIds)
+            join(', ', $this->getCardIds($cards))
         );
         return $this->DBQuery($sql);
     }

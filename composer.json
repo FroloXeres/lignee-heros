@@ -30,7 +30,7 @@
   },
   "autoload-dev": {
     "psr-4": {
-      "LdH\\Tests\\": "tests/"
+      "LdH\\Tests\\": "modules/Tests/"
     }
   },
   "require-dev": {
