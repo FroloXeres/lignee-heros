@@ -201,7 +201,6 @@ abstract class AbstractRepository extends \APP_DbObject
 
     public function update($entity, array $filters = []): void
     {
-        // Todo: Update by Id for boardCards (in AbstractCard) if filters only boardFields (Update by key for card)
         $updates = [];
         $fields = $this->getFieldNames($filters, $this->keys);
         $values = $this->getFieldValues($entity, $filters);

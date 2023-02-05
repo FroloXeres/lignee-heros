@@ -59,13 +59,20 @@ class PeopleService implements \JsonSerializable
     {
         $people = [];
         foreach ($this->byType as $type => $ids) {
-            if (count($ids)) {
-                $people[] = sprintf('%s %s', count($ids), $this->meeples[$type]->getName());
+            $count = count($ids);
+            if ($count) {
+                $people[] = sprintf(
+                    '%s %s',
+                    $count,
+                    $count === 1 ? $this->meeples[$type]->getName() : $this->meeples[$type]->getPlural()
+                );
             }
         }
 
-        return join(', ', $people);
+        return MessageHelper::formatList($people);
     }
+
+
 
     /**
      * @return \Deck|null

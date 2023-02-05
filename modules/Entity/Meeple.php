@@ -25,6 +25,7 @@ class Meeple
 
     public string  $code         = '';
     public string  $name         = '';
+    public string  $plural       = '';
     public string  $description  = '';
     public ?Lineage $lineage     = null;
 
@@ -72,6 +73,26 @@ class Meeple
     public function setName(string $name): Meeple
     {
         $this->name = $name;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getPlural(): string
+    {
+        return $this->plural;
+    }
+
+    /**
+     * @param string $plural
+     *
+     * @return Meeple
+     */
+    public function setPlural(string $plural): Meeple
+    {
+        $this->plural = $plural;
 
         return $this;
     }

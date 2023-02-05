@@ -7,6 +7,7 @@ use LdH\Entity\Cards\DefaultBoardCard;
 use LdH\Entity\Cards\Disease;
 use LdH\Entity\Cards\Fight;
 use LdH\Entity\Cards\Invention;
+use LdH\Entity\Cards\InventionBoardCard;
 use LdH\Entity\Cards\Lineage;
 use LdH\Entity\Cards\LineageBoardCard;
 use LdH\Entity\Cards\Objective;
@@ -180,14 +181,20 @@ class AbstractRepositoryTest extends TestCase
     {
         $this->initRepository(Invention::class);
         $invention = new Invention(Invention::TYPE_GROWTH, Invention::CLOTHES);
-        $this->repository->update($invention, ['location', 'location_arg', 'activated']);
+        $invention->setBoardCards([
+            (new InventionBoardCard())
+                ->setId(1)
+                ->setLocation(BoardCardInterface::LOCATION_DEFAULT)
+                ->setLocationArg(BoardCardInterface::LOCATION_ARG_DEFAULT)
+                ->setActivated(true)
+        ]);
+        $this->repository->updateAllCards($invention);
         $this->assertEquals(
             sprintf(
-                'UPDATE `invention` SET `card_location` = "%s", `card_location_arg` = %s, `card_activated` = 0 WHERE `card_type` = "%" AND `card_type_arg` = %s',
+                "UPDATE `invention` SET `card_activated` = 1, `card_location` = '%s', `card_location_arg` = %s WHERE `card_id` = %s",
                 BoardCardInterface::LOCATION_DEFAULT,
                 BoardCardInterface::LOCATION_ARG_DEFAULT,
-                Invention::TYPE_GROWTH,
-                Invention::CLOTHES
+                1
             ),
             $this->repository->getLastQuery()
         );

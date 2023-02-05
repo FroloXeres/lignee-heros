@@ -41,38 +41,52 @@ use LdH\Entity\Bonus;
 
 $worker = (new Meeple(Meeple::WORKER))
     ->setName(clienttranslate('Worker'))
+    ->setPlural(clienttranslate('Workers'))
     ->setDescription(clienttranslate("Whether farmers, fishermen or any type of craftsmen, they have to harvest enough food for everyone and to develop the infrastructure of Esperys"));
 $warrior = (new Meeple(Meeple::WARRIOR))
     ->setName(clienttranslate('Warrior'))
+    ->setPlural(clienttranslate('Warriors'))
     ->setDescription(clienttranslate("They have been trained to brave the worst dangers of Estiny. Their mission is to stand up for their peers, wherever they are. They are often at the forefront when exploring promising new lands."));
 $savant = (new Meeple(Meeple::SAVANT))
     ->setName(clienttranslate('Erudite'))
+    ->setPlural(clienttranslate('Erudites'))
     ->setDescription(clienttranslate("In all parts of society, scientists devote their time to testing and developing the inventions they have imagined in order to improve daily life for generations to come."));
 $mage = (new Meeple(Meeple::MAGE))
     ->setName(clienttranslate('Wizard'))
+    ->setPlural(clienttranslate('Wizards'))
     ->setDescription(clienttranslate("Estiny is a world filled with magic and mysteries. Thus, as long as we devote ourselves fully to it, it is possible to shape the primordial flows to cast powerful spells. Magic is capricious, but once tamed, wizards can cast spells that can help you in many ways."));
 $all = (new Meeple(Meeple::ALL))
     ->setName(clienttranslate('Any meeple'))
+    ->setPlural(clienttranslate('Any meeple'))
     ->setDescription(clienttranslate('Any meeple (Worker, Warrior, Savant or Mage)'));
 $monster = (new Meeple(Meeple::MONSTER))
     ->setName(clienttranslate('Creature'))
+    ->setPlural(clienttranslate('Creatures'))
     ->setDescription(clienttranslate(""));
 $elvenMage = (new Meeple(Meeple::ELVEN_MAGE))
-    ->setName(clienttranslate("Fal'san'in unit"));
+    ->setName(clienttranslate("Fal'san'in unit"))
+    ->setPlural(clienttranslate("Fal'san'in lineage"));
 $elvenSavant = (new Meeple(Meeple::ELVEN_SAVANT))
-    ->setName(clienttranslate('Reth\'los unit'));
+    ->setName(clienttranslate('Reth\'los unit'))
+    ->setPlural(clienttranslate("Reth\'los lineage"));
 $naniWarrior = (new Meeple(Meeple::NANI_WARRIOR))
-    ->setName(clienttranslate('Khazhan unit'));
+    ->setName(clienttranslate('Khazhan unit'))
+    ->setPlural(clienttranslate("Khazhan lineage"));
 $naniSavant = (new Meeple(Meeple::NANI_SAVANT))
-    ->setName(clienttranslate('Agrindorn unit'));
+    ->setName(clienttranslate('Agrindorn unit'))
+    ->setPlural(clienttranslate("Agrindorn lineage"));
 $humaniWorker = (new Meeple(Meeple::HUMANI_WORKER))
-    ->setName(clienttranslate('Mournmorning unit'));
+    ->setName(clienttranslate('Mournmorning unit'))
+    ->setPlural(clienttranslate("Mournmorning lineage"));
 $humaniMage = (new Meeple(Meeple::HUMANI_MAGE))
-    ->setName(clienttranslate('Mightmaster unit'));
+    ->setName(clienttranslate('Mightmaster unit'))
+    ->setPlural(clienttranslate("Mightmaster lineage"));
 $orkWarrior = (new Meeple(Meeple::ORK_WARRIOR))
-    ->setName(clienttranslate('Gorzog unit'));
+    ->setName(clienttranslate('Gorzog unit'))
+    ->setPlural(clienttranslate("Gorzog lineage"));
 $orkWorker = (new Meeple(Meeple::ORK_WORKER))
-    ->setName(clienttranslate('Dahkrum unit'));
+    ->setName(clienttranslate('Dahkrum unit'))
+    ->setPlural(clienttranslate("Dahkrum lineage"));
 $this->meeples = [
     $worker->getCode()  => $worker,
     $warrior->getCode() => $warrior,

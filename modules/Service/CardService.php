@@ -63,7 +63,20 @@ class CardService
 
     public function updateCard(AbstractCard $card, array $filters = []): void
     {
-        $this->getCardRepoByCard($card)->update($card, $filters);
+
+        $this->getCardRepoByCard($card)->updateAllCards($card, $filters);
+    }
+
+    public function updateCardFromDb(AbstractCard $card): void
+    {
+        $this->getCardRepoByCard($card)->updateCardFromDb($card);
+    }
+
+    public function updateCardsFromDb(Deck $deck): void
+    {
+        $this->getCardRepoByType($deck->getType())
+             ->updateCardsFromDb($deck->getCards())
+        ;
     }
 
     public static function getTypeByCard(AbstractCard $card): string

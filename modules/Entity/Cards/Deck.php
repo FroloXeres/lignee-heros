@@ -242,7 +242,7 @@ class Deck implements \Iterator
         }
     }
 
-    public function getCardByCode(string $code): ?AbstractCard
+    public function getFirstCardByCode(string $code): ?AbstractCard
     {
         foreach ($this->cards as $card) {
             if ($card->getCode() === $code) {
@@ -252,6 +252,23 @@ class Deck implements \Iterator
 
         return null;
     }
+
+    /** @return array<AbstractCard> */
+    public function getCardsOnLocation(string $location): array
+    {
+        return array_filter(
+            $this->cards,
+            function (AbstractCard $card) use ($location) {
+                return count(
+                    $card->getBoardCardsByLocation(
+                        $location
+                    )
+                );
+            }
+        );
+    }
+
+
 
     // Implement Traversable
     public function current()

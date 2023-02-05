@@ -72,8 +72,29 @@ abstract class AbstractCardRepository extends AbstractRepository
         $filters    = !empty($filters) ? array_intersect($filters, $fieldNames) : $fieldNames;
 
         // todo: Use excludes
+        foreach ($excludes as $exclude) {
+            if (($found = array_search($exclude, $filters)) !== false) {
+                unset($filters[$found]);
+            }
+        }
 
         return array_map([$this, 'protectFieldName'], $filters);
+    }
+
+    protected function getBoardFieldValues(BoardCardInterface $object, array $filters = []): array
+    {
+        $filters = empty($filters) ? array_keys($this->boardCardFields) : $filters;
+        $values = [];
+
+        $reflect = new \ReflectionObject($object);
+        foreach ($filters as $fieldName) {
+            if (array_key_exists($fieldName, $filters))
+                continue;
+
+            $values[] = $this->getFieldValue($reflect->getProperty($fieldName), $this->boardCardFields[$fieldName], $object);
+        }
+
+        return $values;
     }
 
     /**
@@ -103,6 +124,29 @@ abstract class AbstractCardRepository extends AbstractRepository
         }
 
         return $values;
+    }
+
+    public function updateAllCards(AbstractCard $entity, array $filters = []): void
+    {
+        $fields = $this->getBoardFieldNames($filters, ['id']);
+
+        foreach ($entity->getBoardCards() as $boardCard) {
+            $updates = [];
+            $values = $this->getBoardFieldValues($boardCard);
+            foreach ($fields as $key => $field) {
+                if ($field) {
+                    $updates[] = sprintf('%s = %s', $field, $values[$key]);
+                }
+            }
+
+            $sql = sprintf('UPDATE `%s` SET %s WHERE `%s` = %s',
+                $this->table,
+                join(', ', $updates),
+                self::CARD_UNIQ_ID,
+                $boardCard->getId(),
+            );
+            $this->query($sql);
+        }
     }
 
     /**
