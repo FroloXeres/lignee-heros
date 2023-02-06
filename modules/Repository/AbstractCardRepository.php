@@ -162,6 +162,7 @@ abstract class AbstractCardRepository extends AbstractRepository
             $this->table,
         );
         $dbCards = $this->getObjectListFromDB($sql);
+
         $indexed = [];
         foreach ($dbCards as $dbCard) {
             $ref = &$indexed;
@@ -247,13 +248,13 @@ abstract class AbstractCardRepository extends AbstractRepository
             $this->table,
             $this->getKeysForQuery($card),
         );
-        $dbCard = $this->getObjectListFromDB($sql, true);
+        $dbCard = $this->getObjectListFromDB($sql);
 
         $boardCardType = $card::getBoardCardClassByCard();
         $card->setBoardCards([
              $this->buildBoardCard(
                  $boardCardType,
-                 $dbCard
+                 $dbCard[0]
              )
         ]);
     }

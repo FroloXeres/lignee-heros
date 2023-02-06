@@ -63,6 +63,10 @@ class CardService
 
     public function updateCard(AbstractCard $card, array $filters = []): void
     {
+        $boardCards = $card->getBoardCards();
+        if(empty($boardCards) || !$boardCards[0]->getId()) {
+            throw new \BgaUserException('You try to update cards before initializing it');
+        }
 
         $this->getCardRepoByCard($card)->updateAllCards($card, $filters);
     }

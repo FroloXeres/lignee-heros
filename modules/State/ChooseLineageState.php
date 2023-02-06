@@ -58,32 +58,33 @@ class ChooseLineageState extends AbstractState
                 /** @var \ligneeheros $this */
                 $this->checkAction(ChooseLineageState::ACTION_SELECT_LINEAGE);
 
-                /** @var Lineage $card */
-                $card = $this->getDeck(AbstractCard::TYPE_LINEAGE)->getFirstCardByCode($lineage);
-                if ($card === null) {
+                /** @var Lineage $lineageCard */
+                $lineageCard = $this->getDeck(AbstractCard::TYPE_LINEAGE)->getFirstCardByCode($lineage);
+                if ($lineageCard === null) {
                     throw new \BgaUserException($this->_('This lineage does not exists'));
                 }
 
                 // Check if this lineage is free
-                $this->getCardService()->updateCardFromDb($card);
-                if (!empty($card->getBoardCardsByLocation(BoardCardInterface::LOCATION_HAND))) {
+                $this->getCardService()->updateCardFromDb($lineageCard);
+                if (!empty($lineageCard->getBoardCardsByLocation(BoardCardInterface::LOCATION_HAND))) {
                     throw new \BgaUserException($this->_('Sorry but this lineage has already been taken'));
                 }
 
                 // CurrentPlayer choose this lineage
                 $playerId = (int) $this->getCurrentPlayerId();
-                $card->moveCardsTo(BoardCardInterface::LOCATION_HAND, $playerId);
-                $this->getCardService()->updateCard($card);
+                $lineageCard->moveCardsTo(BoardCardInterface::LOCATION_HAND, $playerId);
+                $this->getCardService()->updateCard($lineageCard);
 
                 // Add lineage Meeple to city (auto-saved)
                 $this->getPeople()->birth(
-                    $card->getMeeple(),
+                    $lineageCard->getMeeple(),
                     Unit::LOCATION_MAP,
                     PeopleService::CITY_ID
                 );
 
                 // Add lineage objective to player's hand
-                $objective = $card->getObjective();
+                $objective = $lineageCard->getObjective();
+                $this->getCardService()->updateCardFromDb($objective);
                 $objective->moveCardsTo(BoardCardInterface::LOCATION_HAND, $playerId);
                 $this->getCardService()->updateCard($objective);
 
@@ -93,8 +94,8 @@ class ChooseLineageState extends AbstractState
                     [
                         'i18n' => ['player_name', 'lineage'],
                         'player_name' => $this->getCurrentPlayerName(),
-                        'lineage' => ($card ? $card->getName() : ''),
-                        'id' => $card->getCode(),
+                        'lineage' => ($lineageCard ? $lineageCard->getName() : ''),
+                        'id' => $lineageCard->getCode(),
                     ]
                 );
 
@@ -138,29 +139,22 @@ class ChooseLineageState extends AbstractState
             );
 
             $cityInventions = array_values($city->getInventions());
+            $inventions = $this->cards[AbstractCard::TYPE_INVENTION];
+            $this->getCardService()->updateCardsFromDb($inventions);
+
             $this->notifyAllPlayers(
                 GameInitState::NOTIFY_CITY_INVENTIONS,
-                clienttranslate('You have discovered two inventions: ${invention1}[i:${id1}] and ${invention2}[i:${id2}].'),
+                clienttranslate('You have discovered two inventions: [${id1}:${invention1}] and [${id2}:${invention2}] and you can research for ${revealed}.'),
                 [
-                    'i18n' => ['invention1', 'invention2', 'id1', 'id2'],
+                    'i18n' => ['invention1', 'invention2', 'id1', 'id2', 'others'],
                     'invention1' => $cityInventions[0]->getName(),
                     'invention2'=> $cityInventions[1]->getName(),
                     'id1'=> $cityInventions[0]->getCode(),
                     'id2'=> $cityInventions[1]->getCode(),
-                ]
-            );
-
-            $inventions = $this->cards[AbstractCard::TYPE_INVENTION];
-            $this->getCardService()->updateCardsFromDb($inventions);
-            $this->notifyAllPlayers(
-                GameInitState::NOTIFY_INVENTION_REVEALED,
-                clienttranslate('You can research for invention: ${revealed}.'),
-                [
-                    'i18n' => ['revealed'],
                     'revealed' => MessageHelper::formatList(
                         array_map(
                             function(AbstractCard $card) {
-                                return $card->getName();
+                                return sprintf('[%s:%s]', $card->getCode(), $card->getName());
                             },
                             $inventions->getCardsOnLocation(BoardCardInterface::LOCATION_ON_TABLE)
                         )

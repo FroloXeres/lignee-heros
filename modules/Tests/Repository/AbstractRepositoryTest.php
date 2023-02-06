@@ -177,6 +177,29 @@ class AbstractRepositoryTest extends TestCase
         );
     }
 
+    public function testQueryBuilderUpdateObjective()
+    {
+        $this->initRepository(Objective::class);
+        $objective = new Objective(Objective::RESEARCHER);
+        $objective->setBoardCards([
+          (new ObjectiveBoardCard())
+              ->setId(1)
+              ->setLocation(BoardCardInterface::LOCATION_HAND)
+              ->setLocationArg(987654)
+              ->setCompleted(true)
+        ]);
+        $this->repository->updateAllCards($objective);
+        $this->assertEquals(
+            sprintf(
+                "UPDATE `objective` SET `card_completed` = 1, `card_location` = '%s', `card_location_arg` = %s WHERE `card_id` = %s",
+                BoardCardInterface::LOCATION_HAND,
+                987654,
+                1
+            ),
+            $this->repository->getLastQuery()
+        );
+    }
+
     public function testQueryBuilderUpdateInvention()
     {
         $this->initRepository(Invention::class);
