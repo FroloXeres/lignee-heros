@@ -2,6 +2,9 @@
 
 namespace LdH\Entity\Cards;
 
+use LdH\State\ChooseLineageState;
+
+
 class Deck implements \Iterator
 {
     public const TYPE_EXPLORE_DISEASE = 'explore_disease';
@@ -84,7 +87,7 @@ class Deck implements \Iterator
      *
      * @return Deck
      */
-    public function addCard(AbstractCard $card, int $count = 1): Deck
+    public function addCard(AbstractCard $card, int $count = 1, bool $hidden = false): Deck
     {
         if ($this->current === null) {$this->current = 0;}
         else $this->current++;
@@ -93,7 +96,8 @@ class Deck implements \Iterator
 
         $boardCardType = $card->getBoardCardClassByCard();
         for ($i = 0; $i < $count; $i++) {
-            $card->addBoardCard($boardCardType::buildBoardCard());
+            $boardCard = $hidden ? $boardCardType::buildBoardCard(BoardCardInterface::LOCATION_HIDDEN) : $boardCardType::buildBoardCard();
+            $card->addBoardCard($boardCard);
         }
 
         return $this;
@@ -215,7 +219,7 @@ class Deck implements \Iterator
      *
      * @return string[]
      */
-    public function getPublicLocations(): array
+    public function getPublicLocations(int $stateId): array
     {
         switch ($this->type) {
             case AbstractCard::TYPE_INVENTION:
@@ -226,11 +230,13 @@ class Deck implements \Iterator
                     BoardCardInterface::LOCATION_HAND
                 ];
             case AbstractCard::TYPE_LINEAGE:
-                return [
-                    BoardCardInterface::LOCATION_DEFAULT,
-                    BoardCardInterface::LOCATION_HAND
-                ];
+                $locations = [BoardCardInterface::LOCATION_DEFAULT];
+                if ($stateId >= ChooseLineageState::ID)  {
+                    $locations[] = BoardCardInterface::LOCATION_HAND;
+                }
+                return $locations;
             case AbstractCard::TYPE_OBJECTIVE:
+                return ($stateId >= ChooseLineageState::ID) ? [BoardCardInterface::LOCATION_HAND] : [];
             case AbstractCard::TYPE_DISEASE:
             case AbstractCard::TYPE_FIGHT:
             case AbstractCard::TYPE_OTHER:
@@ -246,6 +252,17 @@ class Deck implements \Iterator
     {
         foreach ($this->cards as $card) {
             if ($card->getCode() === $code) {
+                return $card;
+            }
+        }
+
+        return null;
+    }
+
+    public function getFirstCardByKey(string $type, ?int $typeArg = null): ?AbstractCard
+    {
+        foreach ($this->cards as $card) {
+            if ($card->getType() === $type && (!$typeArg || $card->getTypeArg() === $typeArg)) {
                 return $card;
             }
         }

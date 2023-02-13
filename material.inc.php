@@ -256,7 +256,7 @@ $objOrkWorker = (new Objective(Objective::ORK_WORKER, true))
     ->setNeedCount(30)
     ->setSubNeed(Objective::NEED_SUB_WORKER);
 $objective
-    ->addCard($objElvenMage)
+    ->addCard($objElvenMage, 1, true)
     ->addCard($objElvenSavant)
     ->addCard($objNaniWarrior)
     ->addCard($objNaniSavant)

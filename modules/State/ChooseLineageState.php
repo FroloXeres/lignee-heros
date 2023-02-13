@@ -20,7 +20,9 @@ class ChooseLineageState extends AbstractState
     public const ACTION_SELECT_LINEAGE = 'selectLineage';
     public const ACTION_CANCEL_LINEAGE = 'cancelLineage';
 
+    public const NOTIFY_PLAYERS_CHOSEN = 'otherPlayerChooseLineage';
     public const NOTIFY_PLAYER_CHOSEN = 'playerChooseLineage';
+    public const NOTIFY_OBJECTIVE_DRAW = 'playerDrawObjective';
 
     public static function getId(): int
     {
@@ -88,15 +90,47 @@ class ChooseLineageState extends AbstractState
                 $objective->moveCardsTo(BoardCardInterface::LOCATION_HAND, $playerId);
                 $this->getCardService()->updateCard($objective);
 
+                $notificationParams = [
+                    'i18n' => ['player_name', 'lineage'],
+                    'player_name' => $this->getCurrentPlayerName(),
+                    'lineage' => $lineageCard->getName(),
+                    'lineageId' => $lineageCard->getCode(),
+                    'playerId' => $this->getCurrentPlayerId(),
+                ];
                 $this->notifyAllPlayers(
-                    ChooseLineageState::NOTIFY_PLAYER_CHOSEN,
+                    ChooseLineageState::NOTIFY_PLAYERS_CHOSEN,
                     clienttranslate('${player_name} will play with ${lineage}'),
-                    [
-                        'i18n' => ['player_name', 'lineage'],
-                        'player_name' => $this->getCurrentPlayerName(),
-                        'lineage' => ($lineageCard ? $lineageCard->getName() : ''),
-                        'id' => $lineageCard->getCode(),
-                    ]
+                    $notificationParams
+                );
+
+                $notificationParams['i18n'] = ['lineage'];
+                $this->notifyPlayer(
+                    $this->getCurrentPlayerId(),
+                    ChooseLineageState::NOTIFY_PLAYER_CHOSEN,
+                    clienttranslate('You will play with ${lineage}'),
+                    $notificationParams
+                );
+
+                // Draw second objective card
+                $objectives = $this->cards[AbstractCard::TYPE_OBJECTIVE];
+                $secondObjective = $this->getCardService()->pickCardForLocation(
+                    $objectives,
+                    BoardCardInterface::LOCATION_DEFAULT,
+                    BoardCardInterface::LOCATION_HAND,
+                    $this->getCurrentPlayerId()
+                );
+
+                // Send objective drawn notification only to you
+                $notificationParams = [
+                    'i18n' => ['objectiveName'],
+                    'objectiveName' => $secondObjective->getName(),
+                    'objective' => $secondObjective->toTpl($objectives),
+                ];
+                $this->notifyPlayer(
+                    $this->getCurrentPlayerId(),
+                    ChooseLineageState::NOTIFY_OBJECTIVE_DRAW,
+                    clienttranslate('Your hidden objective will be: ${objectiveName}'),
+                    $notificationParams
                 );
 
                 // If all player choose Lineage, next step...

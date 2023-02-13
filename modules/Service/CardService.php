@@ -44,10 +44,12 @@ class CardService
         return $this->cardRepositories[$cardType] ?? null;
     }
 
-    /**
-     * @param Deck           $deck
-     * @param AbstractCard[] $cards
-     */
+    public function pickCardForLocation(Deck $deck, string $from, string $to, ?int $toArg = null): ?AbstractCard
+    {
+        $picked = $deck->getBgaDeck()->pickCardForLocation($from, $to, $toArg ?? 0);
+        return $this->updateCardAfterPick($deck, $picked);
+    }
+
     public function moveTheseCardsTo(
         array $cards,
         string $location = BoardCardInterface::LOCATION_HAND,
@@ -74,6 +76,20 @@ class CardService
     public function updateCardFromDb(AbstractCard $card): void
     {
         $this->getCardRepoByCard($card)->updateCardFromDb($card);
+    }
+
+    public function updateCardAfterPick(Deck $deck, array $cardData): ?AbstractCard
+    {
+        $card = $deck->getFirstCardByKey($cardData['type'], $cardData['type_arg'] ?? null);
+
+        if ($card !== null) {
+            $boardCard = $card->getBoardCard();
+            $boardCard->setId((int) $cardData['id']);
+            $boardCard->setLocation($cardData['location']);
+            $boardCard->setLocationArg((int) $cardData['location_arg']);
+        }
+
+        return $card;
     }
 
     public function updateCardsFromDb(Deck $deck): void
@@ -138,14 +154,14 @@ class CardService
         $cards = [];
 
         foreach ($decks as $type => $deck) {
-            if ($this->canSendDeckByStateAndPlayer($type, $stateId, $currentPlayerId)) {
+            if ($this->canSendDeckByState($type, $stateId)) {
                 $cards[$type] = [];
 
                 $cardRepository = $this->getCardRepoByType($type);
                 $cardRepository->updateCardsFromDb($deck->getCards());
 
-                foreach ($deck->getPublicLocations() as $location) {
-                    $cards[$type][$location] = $this->preparePublicData($deck, $location);
+                foreach ($deck->getPublicLocations($stateId) as $location) {
+                    $cards[$type][$location] = $this->preparePublicData($deck, $location, $stateId, $currentPlayerId);
                 }
             }
         }
@@ -153,13 +169,13 @@ class CardService
         return $cards;
     }
 
-    private function preparePublicData(Deck $ldhDeck, string $location): array
+    public function preparePublicData(Deck $ldhDeck, string $location, int $stateId, int $playerId): array
     {
         $bgaCardsData = [];
         $ldhCardsData = $ldhDeck->cardsDataByCode();
 
         foreach ($ldhDeck->getCards() as $card) {
-            $boardCards = $card->getBoardCardsByLocation($location);
+            $boardCards = $card->getBoardCardsByLocation($location, $stateId, $playerId);
             if (empty($boardCards)) {
                 continue;
             }
@@ -170,10 +186,8 @@ class CardService
 
             foreach ($boardCards as $boardCard) {
                 if ($ldhDeck->getType() === AbstractCard::TYPE_LINEAGE) {
-                    $ldhCardsData[$codeType][BoardCardInterface::BGA_LOCATION] = $boardCard ?
-                        $boardCard->getLocation() : BoardCardInterface::LOCATION_DEFAULT;
-                    $ldhCardsData[$ldhCode][BoardCardInterface::BGA_LOCATION_ARG] = $boardCard ?
-                        $boardCard->getLocationArg() : BoardCardInterface::LOCATION_ARG_DEFAULT;
+                    $ldhCardsData[$codeType][BoardCardInterface::BGA_LOCATION] = $boardCard->getLocation();
+                    $ldhCardsData[$ldhCode][BoardCardInterface::BGA_LOCATION_ARG] = $boardCard->getLocationArg();
                 }
 
                 $bgaCardsData[] = $ldhCardsData[$ldhCode];
@@ -186,7 +200,7 @@ class CardService
     /**
      * @todo To implement (Depends on states)
      */
-    private function canSendDeckByStateAndPlayer(string $deckType, int $stateId, int $currentPlayerId): bool
+    private function canSendDeckByState(string $deckType, int $stateId): bool
     {
         switch ($deckType) {
             case AbstractCard::TYPE_INVENTION:
@@ -194,8 +208,8 @@ class CardService
                 // To update
                 return $stateId > ChooseLineageState::ID;
             case AbstractCard::TYPE_LINEAGE:
-                return true;
             case AbstractCard::TYPE_OBJECTIVE:
+                return true;
                 // Needed ?
                 return \in_array($stateId, [DrawObjectiveState::ID], true);
             case AbstractCard::TYPE_OTHER:

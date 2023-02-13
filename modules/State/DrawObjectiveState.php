@@ -35,7 +35,7 @@ class DrawObjectiveState extends AbstractState
     public function getStateActionMethod(): ?callable
     {
         return function () {
-            // Draw on objective by player (notify)
+            // Draw an objective by player (notify)
 
 
 

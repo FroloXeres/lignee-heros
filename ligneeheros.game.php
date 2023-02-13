@@ -277,7 +277,7 @@ class ligneeheros extends Table
     {
         $result = array();
 
-        $currentPlayerId = self::getCurrentPlayerId();    // !! We must only return information visible by this player !!
+        $currentPlayerId = (int) self::getCurrentPlayerId();    // !! We must only return information visible by this player !!
 
         // Get information about players
         // Note: you can retrieve some extra field you added for "player" table in "dbmodel.sql" if you need it.

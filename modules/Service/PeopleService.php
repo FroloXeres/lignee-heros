@@ -3,6 +3,7 @@
 namespace LdH\Service;
 
 use LdH\Entity\Cards\AbstractCard;
+use LdH\Entity\Cards\BoardCardInterface;
 use LdH\Repository\CardRepository;
 use LdH\Entity\Unit;
 use LdH\Entity\Meeple;
@@ -108,7 +109,7 @@ class PeopleService implements \JsonSerializable
         return $this;
     }
 
-    public function birth(Meeple $type, string $location = Unit::LOCATION_MAP, int $locationArg = null, int $count = 1): void
+    public function birth(Meeple $type, string $location = Unit::LOCATION_MAP, int $locationArg = BoardCardInterface::LOCATION_ARG_DEFAULT, int $count = 1): void
     {
         for ($i = 0; $i < $count; $i++) {
             $baby = (new Unit())

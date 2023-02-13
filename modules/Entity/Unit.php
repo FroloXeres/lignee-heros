@@ -139,7 +139,7 @@ class Unit implements \JsonSerializable
         return [
             'id' => $this->id,
             'type' => $this->type ? $this->type->getCode() : null,
-            'type_arg' => null,
+            'type_arg' => 0,
             'nbr' => 1
         ];
     }

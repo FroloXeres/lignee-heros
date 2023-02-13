@@ -252,7 +252,7 @@ h2#turn::before {
     flex-wrap: wrap;
     justify-content: space-around;
     padding: 1em;
-    max-width: 65em;
+    max-width: 70em;
     left: 50%;
     transform: translateX(-50%);
 }
@@ -260,12 +260,6 @@ h2#turn::before {
 #cards-zone .card.large, #floating-cards .card.large {
     width: 15em;
     margin-bottom: .5em;
-}
-#cards-zone .card.onTable {
-
-}
-#cards-zone .card.hand {
-
 }
 #cards-zone .card {
     position: absolute;
@@ -984,6 +978,7 @@ svg.svg-icon {
 }
 .map-hex-item {
     position: relative;
+    overflow: hidden;
     z-index: 0;
     height: 0;
     padding-bottom: 90%;
@@ -1107,9 +1102,21 @@ svg.svg-icon {
     background: url('img/card-bg.jpg') 0 0 no-repeat;
     background-size: 200% 100%;
 }
-
-.tile.tile_reveal {background: none;}
-.tile.tile_reveal::before {display: none;}
+.tile.tile_reveal {
+    background: none;
+}
+.tile.tile_reveal::before {
+    content: '';
+    position: absolute;
+    z-index: -1;
+    top: -10%;
+    left: 0;
+    width: 105%;
+    height: 120%;
+    background: url('img/tiles-sprits.png') 0 0 no-repeat;
+    background-size: 1000% 200%;
+    transform: rotate(90deg);
+}
 
 .tile.explorable {
     cursor: pointer;
@@ -1175,12 +1182,12 @@ svg.svg-icon {
 }
 
 .tile.tile_reveal .name {
-    font-weight: bold;
     flex-grow: 1;
     display: flex;
     justify-content: center;
     align-items: flex-end;
     padding: 0 .5em;
+    text-shadow: 1px 1px 0 #eee, 1px -1px 0 #eee, -1px 1px 0 #eee, -1px -1px 0 #eee, 1px 0px 0 #eee, 0px 1px 0 #eee, -1px 0px 0 #eee, 0px -1px 0 #eee;
 }
 .tile.tile_reveal .name .bonus {
     font-size: .9em;
@@ -1225,38 +1232,38 @@ svg.svg-icon {
 .tile.tile_reveal .food.none {display: none}
 .tile.tile_reveal .science.none {display: none}
 
-.tile.tile_reveal.tile_town_humani {background-color: antiquewhite;}
-.tile.tile_reveal.tile_town_elven {background-color: antiquewhite;}
-.tile.tile_reveal.tile_town_nani {background-color: antiquewhite;}
-.tile.tile_reveal.tile_town_ork {background-color: antiquewhite;}
+.tile.tile_reveal.tile_town_humani::before {background-position: 0 0;}
+.tile.tile_reveal.tile_town_elven::before {background-position: 0 0;}
+.tile.tile_reveal.tile_town_nani::before {background-position: 0 0;}
+.tile.tile_reveal.tile_town_ork::before {background-position: 0 0;}
 
-.tile.tile_reveal.tile_mountain {background-color: dimgray;}
-.tile.tile_reveal.tile_mountain_lair {background-color: dimgray;}
-.tile.tile_reveal.tile_mountain_lake {background-color: dimgray;}
-.tile.tile_reveal.tile_mountain_wood {background-color: dimgray;}
-.tile.tile_reveal.tile_mountain_tower {background-color: dimgray;}
-.tile.tile_reveal.tile_mountain_river {background-color: dimgray;}
-.tile.tile_reveal.tile_plain {background-color: lightgreen;}
-.tile.tile_reveal.tile_plain_lake {background-color: lightgreen;}
-.tile.tile_reveal.tile_plain_wood {background-color: lightgreen;}
-.tile.tile_reveal.tile_plain_desert {background-color: lightgreen;}
-.tile.tile_reveal.tile_plain_river_ruin {background-color: lightgreen;}
-.tile.tile_reveal.tile_hill {background-color: saddlebrown;}
-.tile.tile_reveal.tile_hill_plateau {background-color: saddlebrown;}
-.tile.tile_reveal.tile_hill_wood_river {background-color: saddlebrown;}
-.tile.tile_reveal.tile_hill_ruin {background-color: saddlebrown;}
-.tile.tile_reveal.tile_hill_lake {background-color: saddlebrown;}
-.tile.tile_reveal.tile_hill_wood_lair {background-color: saddlebrown;}
-.tile.tile_reveal.tile_swamp {background-color: darkolivegreen;}
-.tile.tile_reveal.tile_swamp_lair {background-color: darkolivegreen;}
-.tile.tile_reveal.tile_swamp_tower {background-color: darkolivegreen;}
-.tile.tile_reveal.tile_forest {background-color: darkgreen;}
-.tile.tile_reveal.tile_forest_tower {background-color: darkgreen;}
-.tile.tile_reveal.tile_forest_lair {background-color: darkgreen;}
-.tile.tile_reveal.tile_forest_dense {background-color: darkgreen;}
-.tile.tile_reveal.tile_forest_ruin {background-color: darkgreen;}
-.tile.tile_reveal.tile_desert {background-color: sandybrown;}
-.tile.tile_reveal.tile_desert_stone {background-color: sandybrown;}
+.tile.tile_reveal.tile_mountain::before {background-position: 30% 96%;}
+.tile.tile_reveal.tile_mountain_lair::before {background-position: 30% 96%;}
+.tile.tile_reveal.tile_mountain_lake::before {background-position: 30% 96%;}
+.tile.tile_reveal.tile_mountain_wood::before {background-position: 30% 96%;}
+.tile.tile_reveal.tile_mountain_tower::before {background-position: 30% 96%;}
+.tile.tile_reveal.tile_mountain_river::before {background-position: 30% 96%;}
+.tile.tile_reveal.tile_plain::before {background-position: 70% 0;}
+.tile.tile_reveal.tile_plain_lake::before {background-position: 90% 0;}
+.tile.tile_reveal.tile_plain_wood::before {background-position: 80% 0;}
+.tile.tile_reveal.tile_plain_desert::before {background-position: 30% 0;}
+.tile.tile_reveal.tile_plain_river_ruin::before {background-position: 0 96%;}
+.tile.tile_reveal.tile_hill::before {background-position: 20% 96%;}
+.tile.tile_reveal.tile_hill_plateau::before {background-position: 20% 96%;}
+.tile.tile_reveal.tile_hill_wood_river::before {background-position: 20% 96%;}
+.tile.tile_reveal.tile_hill_ruin::before {background-position: 20% 96%;}
+.tile.tile_reveal.tile_hill_lake::before {background-position: 20% 96%;}
+.tile.tile_reveal.tile_hill_wood_lair::before {background-position: 20% 96%;}
+.tile.tile_reveal.tile_swamp::before {background-position: 10% 0;}
+.tile.tile_reveal.tile_swamp_lair::before {background-position: 10% 0;}
+.tile.tile_reveal.tile_swamp_tower::before {background-position: 10% 0;}
+.tile.tile_reveal.tile_forest::before {background-position: 0 0;}
+.tile.tile_reveal.tile_forest_tower::before {background-position: 0 0;}
+.tile.tile_reveal.tile_forest_lair::before {background-position: 0 0;}
+.tile.tile_reveal.tile_forest_dense::before {background-position: 10% 96%;}
+.tile.tile_reveal.tile_forest_ruin::before {background-position: 0 0;}
+.tile.tile_reveal.tile_desert::before {background-position: 20% 0;}
+.tile.tile_reveal.tile_desert_stone::before {background-position: 20% 0;}
 
 .tile .map-dist-bg {
     position: absolute;

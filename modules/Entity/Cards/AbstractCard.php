@@ -2,6 +2,9 @@
 
 namespace LdH\Entity\Cards;
 
+use LdH\State\ChooseLineageState;
+
+
 abstract class AbstractCard implements CardInterface
 {
     public const TYPE_DISEASE     = 'disease';
@@ -51,12 +54,24 @@ abstract class AbstractCard implements CardInterface
         return $this->boardCards;
     }
 
-    public function getBoardCardsByLocation(string $location): array
+    public function getBoardCardsByLocation(string $location, ?int $stateId = null, ?int $playerId = null): array
     {
         return array_filter(
             $this->boardCards,
-            function (BoardCardInterface $boardCard) use ($location) {
-                return $boardCard->getLocation() === $location;
+            function (BoardCardInterface $boardCard) use ($location, $stateId, $playerId) {
+                if ($boardCard->getLocation() !== $location) return false;
+                if ($stateId === null && $playerId === null) return true;
+
+                switch (get_class($this)) {
+                case Lineage::class:
+                    if ($location === BoardCardInterface::LOCATION_HAND) return true;
+                    return $stateId === ChooseLineageState::ID;
+                case Objective::class:
+                    if ($location === BoardCardInterface::LOCATION_HAND) return $boardCard->getLocationArg() === $playerId;
+                    return false;
+                default:
+                    return true;
+                }
             },
         );
     }
