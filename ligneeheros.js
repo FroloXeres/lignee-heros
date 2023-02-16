@@ -38,6 +38,8 @@ function (dojo, on, declare) {
 
             };
             this.indexed = {};
+            this.playerLineage = null;
+            this.playerUnit = null;
         },
         
         /*
@@ -72,6 +74,7 @@ function (dojo, on, declare) {
             this.initCards(gamedatas);
 
             this.setupMap();
+
             this.initPeople(gamedatas.people);
             this.initTooltips(gamedatas.tooltips);
 
@@ -291,7 +294,7 @@ function (dojo, on, declare) {
         // All about People/Unit
         initPeople: function(people)
         {
-            this.initMapPeople(people.byPlace.map, people.units);
+            this.initMapPeople(people.byPlace.map, people.byType, people.units);
             this.initInventionPeople(people.byPlace.invention, people.units);
             this.initSpellPeople(people.byPlace.spell, people.units);
         },
@@ -307,26 +310,62 @@ function (dojo, on, declare) {
         {
             return 'unit-' + unit.id;
         },
-        initMapPeople: function(byMap, units)
+        initMapPeople: function(byMap, byType, units)
         {
-            for (let location in byMap) {
-                let key = byMap[location];
-                let unit = units[key];
-
-                let zone = this.mapZones[this.getZoneIdByTileIdAndType(unit.location, unit.type)];
-                const domUnitId = this.getDomIdByUnit(unit);
-                let domUnits = dojo.query(domUnitId);
-                if (domUnits.length) {
-                    // TODO: Move to new place ?
-                    //zone.move
-
-                    this.updateUnitStatus(domUnits[0], unit.status);
-                } else {
-                    // Add new unit to map
-                    this.createUnit(unit.type, domUnitId, unit.status);
-                    zone.placeInZone(domUnitId, this.getPriorityByUnitStatus(unit.status));
-                }
+            // Save player unit if defined
+            if (this.playerLineage) {
+                let id = byType[this.playerLineage.meeple];
+                this.playerUnit = units[id];
             }
+
+            for (let id in byMap) {
+                let key = byMap[id];
+                let unit = units[key];
+                if(this.playerUnit && unit.type === this.playerUnit.type) continue;
+
+                this.updateOrCreateUnit(unit);
+            }
+
+            // Be sure to render player unit at the end
+            ifx
+        },
+        updateOrCreateUnit: function(unit)
+        {
+            let zoneId = this.getZoneIdByTileIdAndType(unit.location, unit.type);
+            let zone = this.mapZones[zoneId];
+            const domUnitId = this.getDomIdByUnit(unit);
+            let domUnits = dojo.query(domUnitId);
+            if (domUnits.length) {
+                // todo: Move to new place ?
+                //zone.move
+
+                this.updateUnitStatus(domUnits[0], unit.status);
+            } else {
+                // Add new unit to map
+                this.createUnit(unit.type, domUnitId, unit.status);
+
+                // todo: Animate unit creation (From board to map)
+
+                zone.placeInZone(domUnitId, this.getPriorityByUnitStatus(unit.status));
+            }
+        },
+        ensurePlayerMeepleAppear: function(byMap, units)
+        {
+            // First check if it is necessary
+
+
+            // const $playerMeeple = dojo.query('.player-board:first-of-type .meeple picture svg');
+            // if ($playerMeeple.length) {
+            //     const lineageMeeple = $playerMeeple[0].id;
+            //
+            //     const $mapMeeples = dojo.query('#map-zone svg#' + lineageMeeple);
+            //     if ($mapMeeples.length) {
+            //         // Be sure this is the last unit for this tile/status
+            //         const $mapMeeple = $mapMeeples[0];
+            //         console.log($mapMeeple);
+            //
+            //     }
+            // }
         },
         getPriorityByUnitStatus: function(status)
         {
@@ -452,6 +491,10 @@ function (dojo, on, declare) {
         },
         initPlayerLineage: function (lineage)
         {
+            if (lineage.location_arg === this.player_id) {
+                this.playerLineage = lineage;
+            }
+
             const _self = this;
             lineage = _self.replaceIconsInObject(lineage);
             const lineageBoard = _self.format_block('jstpl_lineage_board', {
@@ -1037,8 +1080,6 @@ function (dojo, on, declare) {
             dojo.subscribe('playerDrawObjective', this, 'onObjectiveDrawn');
             this.notifqueue.setSynchronous('playerDrawObjective', 1000);
 
-
-
             // Example 1: standard notification handling
             // dojo.subscribe( 'cardPlayed', this, "notif_cardPlayed" );
             
@@ -1058,31 +1099,31 @@ function (dojo, on, declare) {
         // TODO: from this point and below, you can write your game notifications handling methods
         onLineageChosen: function (notif)
         {
-            const lineage = this.indexed[notif.args.lineageId] || null;
-            console.log(lineage);
+            const lineage = this.indexed[notif?.args?.lineageId] || null;
             if (lineage) {
+                lineage.location_arg = notif.args.playerId;
 
+                // Move card to player board
+                this.slideToObjectAndDestroy(lineage.id, 'overall_player_board_' + lineage.location_arg, 1000, 0);
+
+                // Create lineage cartridge using chosen lineage
+                window.setTimeout(() => this.initPlayerLineage(lineage), 1000);
+
+                // Lineage unit is added to city
+                if (notif?.args?.unit) {
+                    this.updateOrCreateUnit(notif.args.unit);
+                }
             }
-
-            // Selected card go to player board
-
-
-            // Lineage unit is added to city
-
-
-
-             console.log(notif);
         },
 
         onObjectiveDrawn: function(notif) {
             const objective = notif.args.objective || null;
             console.log(objective);
             if (objective) {
+                debugger;
+                // Objective card is added (Hidden side appear, returned and go to player board)
 
             }
-
-            // Objective card is added (Hidden side appear, returned and go to player board)
-
 
             console.log(notif);
         },

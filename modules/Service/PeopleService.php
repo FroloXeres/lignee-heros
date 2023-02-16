@@ -109,25 +109,36 @@ class PeopleService implements \JsonSerializable
         return $this;
     }
 
-    public function birth(Meeple $type, string $location = Unit::LOCATION_MAP, int $locationArg = BoardCardInterface::LOCATION_ARG_DEFAULT, int $count = 1): void
+    /** @return array<Unit> */
+    public function birth(Meeple $type, string $location = Unit::LOCATION_MAP, int $locationArg = BoardCardInterface::LOCATION_ARG_DEFAULT, int $count = 1, bool $acted = true): array
     {
+        $created = [];
+
         for ($i = 0; $i < $count; $i++) {
             $baby = (new Unit())
                 ->setType($type)
                 ->setLocation($location)
                 ->setLocationArg($locationArg)
-                ->setStatus(Unit::STATUS_ACTED)
+                ->setStatus($acted ? Unit::STATUS_ACTED : Unit::STATUS_FREE)
                 ->setDisease(null)
             ;
             if ($this->getBgaDeck() !== null) {
                 $this->getBgaDeck()->createCards([$baby->toArray()], $location, $locationArg);
 
-                $baby->setId($this->cardService->getCardRepository(Unit::class)->getLastId());
+                $repository = $this->cardService->getCardRepository(Unit::class);
+                $baby->setId($repository->getLastId());
+
+                // No update needed if Free (Default)
+                if ($acted) {
+                    $repository->update($baby);
+                }
 
                 $this->addUnit($baby);
             }
+            $created[] = $baby;
         }
 
+        return $created;
     }
 
     /**

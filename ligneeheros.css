@@ -1022,14 +1022,12 @@ svg.svg-icon {
     height: 100% !important;
     float: left;
 }
-.map-explore .space:first-of-type .wrapped-icon.acted:not(:last-of-type),
-.map-explore .space:first-of-type .wrapped-icon.moved:not(:last-of-type),
-.map-explore .space:first-of-type .wrapped-icon.free:not(:last-of-type) {display: none;}
 .map-explore svg.svg-icon {
     width: 80%;
     height: inherit;
     aspect-ratio: 1;
 }
+.map-explore .space:first-of-type .wrapped-icon svg.svg-icon,
 .map-explore .wrapped-icon:last-of-type svg.svg-icon {
     filter: drop-shadow(2px 1px 3px rgba(0, 0, 0, 0.4));
 }

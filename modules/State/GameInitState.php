@@ -69,7 +69,9 @@ class GameInitState extends AbstractState
                 $peopleService->birth(
                     $meeple,
                     Unit::LOCATION_MAP,
-                    PeopleService::CITY_ID
+                    PeopleService::CITY_ID,
+                    1,
+                    false
                 );
 
                 $state = CurrentStateService::getStateByMeepleType($meeple);
@@ -84,7 +86,8 @@ class GameInitState extends AbstractState
                 $this->meeples[Meeple::WORKER],
                 Unit::LOCATION_MAP,
                 PeopleService::CITY_ID,
-                $toAddCnt
+                $toAddCnt,
+                false
             );
             $this->incGameStateValue(CurrentStateService::GLB_WORKER_CNT, $toAddCnt);
 

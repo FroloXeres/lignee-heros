@@ -62,10 +62,22 @@ class CurrentStateService
     public static function getStateByMeepleType(Meeple $meeple): string
     {
         switch ($meeple->getCode()) {
-            case Meeple::WORKER: return self::GLB_WORKER_CNT;
-            case Meeple::WARRIOR: return self::GLB_WARRIOR_CNT;
-            case Meeple::MAGE: return self::GLB_MAGE_CNT;
-            case Meeple::SAVANT: return self::GLB_SAVANT_CNT;
+            case Meeple::ORK_WORKER:
+            case Meeple::HUMANI_WORKER:
+            case Meeple::WORKER:
+                return self::GLB_WORKER_CNT;
+            case Meeple::ORK_WARRIOR:
+            case Meeple::NANI_WARRIOR:
+            case Meeple::WARRIOR:
+                return self::GLB_WARRIOR_CNT;
+            case Meeple::ELVEN_MAGE:
+            case Meeple::HUMANI_MAGE:
+            case Meeple::MAGE:
+                return self::GLB_MAGE_CNT;
+            case Meeple::ELVEN_SAVANT:
+            case Meeple::NANI_SAVANT:
+            case Meeple::SAVANT:
+                return self::GLB_SAVANT_CNT;
             default: return '';
         }
     }

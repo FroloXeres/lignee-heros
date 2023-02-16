@@ -151,6 +151,7 @@ class Unit implements \JsonSerializable
             'location' => $this->locationArg,
             'status' => $this->getStatus(),
             'disease' => $this->disease ? $this->disease->getCode() : null,
+            'lineage' => $this->type && $this->type->getLineage() !== null,
         ];
     }
 }

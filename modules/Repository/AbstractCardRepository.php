@@ -117,8 +117,6 @@ abstract class AbstractCardRepository extends AbstractRepository
         foreach ($filters as $fieldName) {
             if (array_key_exists($fieldName, $this->keys)) continue;
 
-
-
             $field = array_key_exists($fieldName, $this->mappedFields) ? $this->mappedFields[$fieldName] : $this->boardCardFields[$fieldName];
             $values[] = $this->getFieldValue($reflect->getProperty($fieldName), $field, $object);
         }

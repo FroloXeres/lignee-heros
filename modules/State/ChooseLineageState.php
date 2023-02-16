@@ -8,6 +8,7 @@ use LdH\Entity\Cards\Lineage;
 use LdH\Entity\Map\City;
 use LdH\Entity\Meeple;
 use LdH\Entity\Unit;
+use LdH\Service\CurrentStateService;
 use LdH\Service\MessageHelper;
 use LdH\Service\PeopleService;
 
@@ -78,10 +79,13 @@ class ChooseLineageState extends AbstractState
                 $this->getCardService()->updateCard($lineageCard);
 
                 // Add lineage Meeple to city (auto-saved)
-                $this->getPeople()->birth(
+                $this->incGameStateValue(CurrentStateService::getStateByMeepleType($lineageCard->getMeeple()), 1);
+                $lineageUnits = $this->getPeople()->birth(
                     $lineageCard->getMeeple(),
                     Unit::LOCATION_MAP,
-                    PeopleService::CITY_ID
+                    PeopleService::CITY_ID,
+                    1,
+                    false
                 );
 
                 // Add lineage objective to player's hand
@@ -96,6 +100,7 @@ class ChooseLineageState extends AbstractState
                     'lineage' => $lineageCard->getName(),
                     'lineageId' => $lineageCard->getCode(),
                     'playerId' => $this->getCurrentPlayerId(),
+                    'unit' => $lineageUnits[0] ?? [],
                 ];
                 $this->notifyAllPlayers(
                     ChooseLineageState::NOTIFY_PLAYERS_CHOSEN,
@@ -178,7 +183,7 @@ class ChooseLineageState extends AbstractState
 
             $this->notifyAllPlayers(
                 GameInitState::NOTIFY_CITY_INVENTIONS,
-                clienttranslate('You have discovered two inventions: [${id1}:${invention1}] and [${id2}:${invention2}] and you can research for ${revealed}.'),
+                clienttranslate('You have discovered two inventions: [${id1}]${invention1} and [${id2}]${invention2} and you can research for ${revealed}.'),
                 [
                     'i18n' => ['invention1', 'invention2', 'id1', 'id2', 'others'],
                     'invention1' => $cityInventions[0]->getName(),
