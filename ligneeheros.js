@@ -327,7 +327,9 @@ function (dojo, on, declare) {
             }
 
             // Be sure to render player unit at the end
-            ifx
+            if (this.playerUnit) {
+                this.updateOrCreateUnit(this.playerUnit);
+            }
         },
         updateOrCreateUnit: function(unit)
         {
@@ -1120,7 +1122,6 @@ function (dojo, on, declare) {
             const objective = notif.args.objective || null;
             console.log(objective);
             if (objective) {
-                debugger;
                 // Objective card is added (Hidden side appear, returned and go to player board)
 
             }

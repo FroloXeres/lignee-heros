@@ -87,12 +87,15 @@ class Deck implements \Iterator
      *
      * @return Deck
      */
-    public function addCard(AbstractCard $card, int $count = 1, bool $hidden = false): Deck
+    public function addCard(AbstractCard $card, int $count = 1): Deck
     {
         if ($this->current === null) {$this->current = 0;}
         else $this->current++;
 
         $this->cards[$this->current]  = $card;
+
+        // Some cards are hidden for player (no draw possible)
+        $hidden = ($card instanceof Objective && $card->isLineageObjective());
 
         $boardCardType = $card->getBoardCardClassByCard();
         for ($i = 0; $i < $count; $i++) {

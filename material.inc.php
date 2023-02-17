@@ -208,55 +208,55 @@ $this->cards = [
 
 //      Objective
 // -------------------
-$objElvenMage = (new Objective(Objective::ELVEN_MAGE, true))
+$objElvenMage = (new Objective(Objective::ELVEN_MAGE))
     ->setName("Fal'san'in's")
     ->setDescription(clienttranslate("Have at least 10 Mage"))
     ->setNeed(Objective::NEED_UNITS)
     ->setNeedCount(10)
     ->setSubNeed(Objective::NEED_SUB_MAGE);
-$objElvenSavant = (new Objective(Objective::ELVEN_SAVANT, true))
+$objElvenSavant = (new Objective(Objective::ELVEN_SAVANT))
     ->setName(clienttranslate("Reth'los's"))
     ->setDescription(clienttranslate("Harvest at least 20 Science in one turn"))
     ->setNeed(Objective::NEED_HARVEST)
     ->setNeedCount(20)
     ->setSubNeed(Objective::NEED_SUB_SCIENCE);
-$objNaniWarrior = (new Objective(Objective::NANI_WARRIOR, true))
+$objNaniWarrior = (new Objective(Objective::NANI_WARRIOR))
     ->setName(clienttranslate("Khazhan's"))
     ->setDescription(clienttranslate("Discover at least 5 military inventions"))
     ->setNeed(Objective::NEED_INVENTION)
     ->setNeedCount(5)
     ->setSubNeed(Objective::NEED_SUB_FIGHT);
-$objNaniSavant = (new Objective(Objective::NANI_SAVANT, true))
+$objNaniSavant = (new Objective(Objective::NANI_SAVANT))
     ->setName(clienttranslate("Agrindorn's"))
     ->setDescription(clienttranslate("Have at least 10 Savant"))
     ->setNeed(Objective::NEED_UNITS)
     ->setNeedCount(10)
     ->setSubNeed(Objective::NEED_SUB_SAVANT);
-$objHumaniWorker = (new Objective(Objective::HUMANI_WORKER, true))
+$objHumaniWorker = (new Objective(Objective::HUMANI_WORKER))
     ->setName(clienttranslate("Mournmorning's"))
     ->setDescription(clienttranslate("Master at least 3 nature spells"))
     ->setNeed(Objective::NEED_SPELL)
     ->setNeedCount(5)
     ->setSubNeed(Objective::NEED_SUB_NATURE);
-$objHumaniMage = (new Objective(Objective::HUMANI_MAGE, true))
+$objHumaniMage = (new Objective(Objective::HUMANI_MAGE))
     ->setName(clienttranslate("Mightmaster's"))
     ->setDescription(clienttranslate("Master at least 10 spells"))
     ->setNeed(Objective::NEED_SPELL)
     ->setNeedCount(10);
-$objOrkWarrior = (new Objective(Objective::ORK_WARRIOR, true))
+$objOrkWarrior = (new Objective(Objective::ORK_WARRIOR))
     ->setName(clienttranslate("Gorzog's"))
     ->setDescription(clienttranslate("Have at least 20 Warriors"))
     ->setNeed(Objective::NEED_UNITS)
     ->setNeedCount(20)
     ->setSubNeed(Objective::NEED_SUB_WARRIOR);
-$objOrkWorker = (new Objective(Objective::ORK_WORKER, true))
+$objOrkWorker = (new Objective(Objective::ORK_WORKER))
     ->setName(clienttranslate("Dahkrum's"))
     ->setDescription(clienttranslate("Have at least 30 Workers"))
     ->setNeed(Objective::NEED_UNITS)
     ->setNeedCount(30)
     ->setSubNeed(Objective::NEED_SUB_WORKER);
 $objective
-    ->addCard($objElvenMage, 1, true)
+    ->addCard($objElvenMage)
     ->addCard($objElvenSavant)
     ->addCard($objNaniWarrior)
     ->addCard($objNaniSavant)

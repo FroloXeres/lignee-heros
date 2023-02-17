@@ -77,7 +77,7 @@ class Objective extends AbstractCard
         $this->type_arg = 0;
     }
 
-    protected function isLineageObjective(): bool
+    public function isLineageObjective(): bool
     {
         switch ($this->getCode()) {
         case self::HUMANI_WORKER:
