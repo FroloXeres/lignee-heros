@@ -172,7 +172,7 @@ class CardService
     public function preparePublicData(Deck $ldhDeck, string $location, int $stateId, int $playerId): array
     {
         $bgaCardsData = [];
-        $ldhCardsData = $ldhDeck->cardsDataByCode();
+        $ldhCardsData = $ldhDeck->cardsDataByCode($playerId);
 
         foreach ($ldhDeck->getCards() as $card) {
             $boardCards = $card->getBoardCardsByLocation($location, $stateId, $playerId);

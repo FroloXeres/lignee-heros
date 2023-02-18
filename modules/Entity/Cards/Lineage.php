@@ -154,7 +154,7 @@ class Lineage extends AbstractCard
      *
      * @return array
      */
-    public function toTpl(Deck $deck): array
+    public function toTpl(Deck $deck, ?int $playerId = null): array
     {
         $tpl = parent::toTpl($deck);
 

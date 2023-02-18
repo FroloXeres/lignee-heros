@@ -53,7 +53,7 @@ html, body {
 }
 
 /******* Lineage Board ********/
-.board-lineage {
+.board-overall, .board-lineage {
     background-color: rgba(255, 255, 255, 0.25);
     border-radius: 0.5em;
     padding: .25em;
@@ -92,12 +92,12 @@ html, body {
 
 /********* Cartridge **********/
 #cartridge {
-    padding: 0.5em 1em;
+    padding: .2em .2em;
 }
 #cartridge, .player-board {
     position: relative;
     margin: 0 auto .5em;
-    background: url('img/card-bg.jpg') 0 0 no-repeat;
+    background: url('img/wooden--bg.jpg') 0 0 no-repeat;
     background-size: 200% 100%;
     box-shadow: 0 3px 8px rgba(0,0,0,.3);
     z-index: 1;
@@ -124,7 +124,7 @@ h2#turn::before {
     aspect-ratio: 1;
     margin-right: .5em;
 }
-#cartridge > div {
+#cartridge > div > div {
     line-height: 2em;
 }
 #people-people::after, #people-worker::after, #people-warrior::after, #people-savant::after, #people-mage::after,
@@ -243,9 +243,10 @@ h2#turn::before {
     color: #065009;
     position: absolute;
 }
+#overall-cards,
 #floating-cards {
     position: absolute;
-    z-index: 100;
+    z-index: 90;
     width: 100%;
     box-sizing: border-box;
     display: flex;
@@ -256,8 +257,13 @@ h2#turn::before {
     left: 50%;
     transform: translateX(-50%);
 }
+#overall-cards {
+    z-index: 100;
+}
+#overall-cards:empty,
 #floating-cards:empty {display: none;}
-#cards-zone .card.large, #floating-cards .card.large {
+
+#cards-zone .card.large, #floating-cards .card.large, #overall-cards .card.large {
     width: 15em;
     margin-bottom: .5em;
 }
@@ -322,6 +328,7 @@ h2#turn::before {
     width: 10em;
     aspect-ratio: 7/11;
     border-radius: .5em;
+    box-shadow: 0.1em 0.1em 0.5em rgb(0 0 0 / 50%);
 }
 .card.verso {
     background-color: #000;
@@ -985,7 +992,7 @@ svg.svg-icon {
     grid-column: 1/span 3;
     grid-row: calc(var(--counter) + var(--counter))/span 2;
     -webkit-filter: drop-shadow(0 0 3px rgba(68,68,68,.08));
-    filter: drop-shadow(0 0 0.1em rgba(68,68,68,.08));
+    filter: drop-shadow(.2em .2em .2em rgba(68,68,68,.08));
     margin: 0.1em 0.1em;
     pointer-events: none;
 }
@@ -1097,7 +1104,7 @@ svg.svg-icon {
 }
 
 .tile {
-    background: url('img/card-bg.jpg') 0 0 no-repeat;
+    background: url('img/parchment-bg.jpg') 0 0 no-repeat;
     background-size: 200% 100%;
 }
 .tile.tile_reveal {
@@ -1269,7 +1276,7 @@ svg.svg-icon {
     left: 0.6em;
     width: 10%;
     height: 10%;
-    background: #f0e094;
+    background-color: rgba(255, 255, 255, 0.25);
     transform: rotate(-45deg);
 }
 .tile .map-dist-bg label {

@@ -80,14 +80,14 @@ class Objective extends AbstractCard
     public function isLineageObjective(): bool
     {
         switch ($this->getCode()) {
-        case self::HUMANI_WORKER:
-        case self::HUMANI_MAGE:
-        case self::NANI_SAVANT:
-        case self::NANI_WARRIOR:
-        case self::ELVEN_MAGE:
-        case self::ELVEN_SAVANT:
-        case self::ORK_WARRIOR:
-        case self::ORK_WORKER:
+        case self::TYPE_OBJECTIVE . '_' . self::HUMANI_WORKER:
+        case self::TYPE_OBJECTIVE . '_' . self::HUMANI_MAGE:
+        case self::TYPE_OBJECTIVE . '_' . self::NANI_SAVANT:
+        case self::TYPE_OBJECTIVE . '_' . self::NANI_WARRIOR:
+        case self::TYPE_OBJECTIVE . '_' . self::ELVEN_MAGE:
+        case self::TYPE_OBJECTIVE . '_' . self::ELVEN_SAVANT:
+        case self::TYPE_OBJECTIVE . '_' . self::ORK_WARRIOR:
+        case self::TYPE_OBJECTIVE . '_' . self::ORK_WORKER:
             return true;
         default:
             return false;
@@ -209,6 +209,16 @@ class Objective extends AbstractCard
         ];
     }
 
+    public function addPrivateFields(array $tpl, ?int $playerId = null): array
+    {
+        $boardCard = $this->getBoardCard();
+        //$isCompleted = $boardCard->;
+
+        $tpl[self::TPL_COMPLETED] = false ? 'completed' : '';
+
+        return $tpl;
+    }
+
     /**
      * Return data for Card template build
      *
@@ -216,12 +226,11 @@ class Objective extends AbstractCard
      *
      * @return array
      */
-    public function toTpl(Deck $deck): array
+    public function toTpl(Deck $deck, ?int $playerId = null): array
     {
         $tpl = parent::toTpl($deck);
 
         $tpl[self::TPL_ICON] = Deck::TYPE_OBJECTIVE;
-        //$tpl[self::TPL_COMPLETED] = $this->isCompleted() ? 'completed' : '';
 
         return $tpl;
     }

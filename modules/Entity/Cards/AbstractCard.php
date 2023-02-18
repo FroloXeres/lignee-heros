@@ -289,6 +289,10 @@ abstract class AbstractCard implements CardInterface
     public const BGA_TYPE_ARG     = 'type_arg';
     public const BGA_NBR          = 'nbr';
 
+    public function addPrivateFields(array $tpl): array
+    {
+        return $tpl;
+    }
 
     /**
      * Return data for Card module
@@ -311,9 +315,9 @@ abstract class AbstractCard implements CardInterface
      *
      * @return array
      */
-    public function toTpl(Deck $deck): array
+    public function toTpl(Deck $deck, ?int $playerId = null): array
     {
-        return [
+        return $this->addPrivateFields([
             self::TPL_ID              => $this->getCode(),
             self::TPL_DECK            => $deck->getType(),
             self::TPL_LARGE           => ($deck->isLarge()? 'large' : ''),
@@ -340,6 +344,6 @@ abstract class AbstractCard implements CardInterface
             self::TPL_LEAD_TYPE       => '',
             self::TPL_COMPLETED       => '',
             self::TPL_IS_LEADER       => '',
-        ];
+        ], $playerId);
     }
 }

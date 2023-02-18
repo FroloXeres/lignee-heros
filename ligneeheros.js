@@ -568,7 +568,7 @@ function (dojo, on, declare) {
                 }
             }
         },
-        createDeck: function(type, count)
+        createDeck: function(type, count, place = 'new-card', moveInZone = true)
         {
             let deck        = this.decks[type];
             let deckContent = this.format_block('jstpl_card_verso', {
@@ -578,8 +578,11 @@ function (dojo, on, declare) {
                 name: deck.name,
                 count: count
             });
-            dojo.place(deckContent, 'new-card');
-            this.cardZones[type]['deck'].placeInZone('deck-' + type, 0);
+            dojo.place(deckContent, place);
+
+            if (moveInZone) {
+                this.cardZones[type]['deck'].placeInZone('deck-' + type, 0);
+            }
         },
         createCardsInLocation: function(cards, type, location, useOutsideZone)
         {
@@ -1073,14 +1076,14 @@ function (dojo, on, declare) {
 
             // Animation after lineage choose
             dojo.subscribe('otherPlayerChooseLineage', this, 'onLineageChosen');
-            this.notifqueue.setSynchronous('otherPlayerChooseLineage', 3000);
+            this.notifqueue.setSynchronous('otherPlayerChooseLineage', 1500);
             this.notifqueue.setIgnoreNotificationCheck('otherPlayerChooseLineage', (notif) => (parseInt(notif.args.playerId) === this.player_id));
 
             dojo.subscribe('playerChooseLineage', this, 'onLineageChosen');
-            this.notifqueue.setSynchronous('playerChooseLineage', 3000);
+            this.notifqueue.setSynchronous('playerChooseLineage', 1500);
 
             dojo.subscribe('playerDrawObjective', this, 'onObjectiveDrawn');
-            this.notifqueue.setSynchronous('playerDrawObjective', 1000);
+            this.notifqueue.setSynchronous('playerDrawObjective', 1500);
 
             // Example 1: standard notification handling
             // dojo.subscribe( 'cardPlayed', this, "notif_cardPlayed" );
@@ -1103,7 +1106,7 @@ function (dojo, on, declare) {
         {
             const lineage = this.indexed[notif?.args?.lineageId] || null;
             if (lineage) {
-                lineage.location_arg = notif.args.playerId;
+                lineage.location_arg = parseInt(notif.args.playerId);
 
                 // Move card to player board
                 this.slideToObjectAndDestroy(lineage.id, 'overall_player_board_' + lineage.location_arg, 1000, 0);
@@ -1119,14 +1122,29 @@ function (dojo, on, declare) {
         },
 
         onObjectiveDrawn: function(notif) {
-            const objective = notif.args.objective || null;
-            console.log(objective);
+            debugger;
+            let objective = notif.args.objective || null;
             if (objective) {
                 // Objective card is added (Hidden side appear, returned and go to player board)
+                this.createDeck('objective', 1, 'overall-cards', false);
+                this.slideToObjectAndDestroy('deck-objective', 'overall_player_board_' + this.player_id, 1000, 0);
 
+                window.setTimeout(() => {
+                    const qryPic = '#overall_player_board_' + this.player_id + ' .hidden-one picture';
+                    const qryLabel = '#overall_player_board_' + this.player_id + ' .hidden-one label';
+
+                    objective = this.replaceIconsInObject(objective);
+                    const $pic = dojo.query(qryPic);
+                    if ($pic.length) {
+                        $pic[0].innerHTML = this.getIconAsText(objective.icon);
+                    }
+
+                    const $label = dojo.query(qryLabel);
+                    if ($label.length) {
+                        $label[0].innerHTML = objective.text;
+                    }
+                }, 1000);
             }
-
-            console.log(notif);
         },
 
         /*

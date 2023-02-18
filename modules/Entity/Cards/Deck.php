@@ -195,11 +195,11 @@ class Deck implements \Iterator
         ];
     }
 
-    public function cardsDataByCode(): array
+    public function cardsDataByCode(?int $playerId = null): array
     {
         return array_combine(
             array_map(function(AbstractCard $card) {return $card->getCode();}, $this->getCards()),
-            array_map(function(AbstractCard $card) {return $card->toTpl($this);}, $this->getCards())
+            array_map(function(AbstractCard $card) use($playerId) {return $card->toTpl($this, $playerId);}, $this->getCards())
         );
     }
 

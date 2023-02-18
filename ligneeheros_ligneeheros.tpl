@@ -1,6 +1,7 @@
 {OVERALL_GAME_HEADER}
 
 <div id="floating-cards"></div>
+<div id="overall-cards"></div>
 <div id="map-zone">
     <div id="zoom" data-zoom="2">
         <i id="zoom_out_icon" class="fa fa-search-minus"></i>
@@ -183,6 +184,10 @@
                 <picture>${objectiveIcon}</picture>\
                 <label>${objective}</label>\
             </div>\
+            <div class="objective hidden-one">\
+                <picture></picture>\
+                <label></label>\
+            </div>\
             <div class="ldh-leading ${leader} ${leadType}">\
                 <picture>${leadingIcon}</picture>\
                 <label>\
@@ -197,48 +202,50 @@
         '<div id="cartridge">\
             <div id="new-unit"></div>\
             <h2 id="turn" data-turn="1">Turn ${turn}</h2>\
-            <div class="people">\
-                <div id="people-title"></div>\
-                <div id="people-people" data-count="0"></div>\
-            </div>\
-            <div class="people-types">\
-                <div id="people-worker" data-count="0"></div>\
-                <div id="people-warrior" data-count="0"></div>\
-                <div id="people-savant" data-count="0"></div>\
-                <div id="people-mage" data-count="0"></div>\
-            </div>\
-            <div class="military">\
-                <div id="military-title"></div>\
-                <div id="military-power" data-count="0"></div>\
-                <div id="military-defense" data-count="0"></div>\
-            </div>\
-            <div class="city">\
-                <div id="city-title"></div>\
-                <div id="city-life" data-count="0"></div>\
-                <div id="city-defense" data-count="0"></div>\
-            </div>\
-            <div class="harvest">\
-                <div id="harvest-title"></div>\
-                <div id="harvest-food" data-count="0"></div>\
-                <div id="harvest-science" data-count="0"></div>\
-            </div>\
-            <div class="stock">\
-                <div id="stock-title"></div>\
-                <div id="stock-food" data-count="0" data-stock="0"></div>\
-                <div id="stock-science" data-count="0"></div>\
-            </div>\
-            <div class="stock-resources">\
-                <div class="group">\
-                    <div id="stock-wood" data-count="0"></div>\
-                    <div id="stock-animal" data-count="0"></div>\
-                    <div id="stock-stone" data-count="0"></div>\
-                    <div id="stock-metal" data-count="0"></div>\
+            <div class="board-overall">\
+                <div class="people">\
+                    <div id="people-title"></div>\
+                    <div id="people-people" data-count="0"></div>\
                 </div>\
-                <div class="group">\
-                    <div id="stock-clay" data-count="0"></div>\
-                    <div id="stock-paper" data-count="0"></div>\
-                    <div id="stock-medic" data-count="0"></div>\
-                    <div id="stock-gem" data-count="0"></div>\
+                <div class="people-types">\
+                    <div id="people-worker" data-count="0"></div>\
+                    <div id="people-warrior" data-count="0"></div>\
+                    <div id="people-savant" data-count="0"></div>\
+                    <div id="people-mage" data-count="0"></div>\
+                </div>\
+                <div class="military">\
+                    <div id="military-title"></div>\
+                    <div id="military-power" data-count="0"></div>\
+                    <div id="military-defense" data-count="0"></div>\
+                </div>\
+                <div class="city">\
+                    <div id="city-title"></div>\
+                    <div id="city-life" data-count="0"></div>\
+                    <div id="city-defense" data-count="0"></div>\
+                </div>\
+                <div class="harvest">\
+                    <div id="harvest-title"></div>\
+                    <div id="harvest-food" data-count="0"></div>\
+                    <div id="harvest-science" data-count="0"></div>\
+                </div>\
+                <div class="stock">\
+                    <div id="stock-title"></div>\
+                    <div id="stock-food" data-count="0" data-stock="0"></div>\
+                    <div id="stock-science" data-count="0"></div>\
+                </div>\
+                <div class="stock-resources">\
+                    <div class="group">\
+                        <div id="stock-wood" data-count="0"></div>\
+                        <div id="stock-animal" data-count="0"></div>\
+                        <div id="stock-stone" data-count="0"></div>\
+                        <div id="stock-metal" data-count="0"></div>\
+                    </div>\
+                    <div class="group">\
+                        <div id="stock-clay" data-count="0"></div>\
+                        <div id="stock-paper" data-count="0"></div>\
+                        <div id="stock-medic" data-count="0"></div>\
+                        <div id="stock-gem" data-count="0"></div>\
+                    </div>\
                 </div>\
             </div>\
         </div>'
