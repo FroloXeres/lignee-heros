@@ -211,10 +211,14 @@ class Objective extends AbstractCard
 
     public function addPrivateFields(array $tpl, ?int $playerId = null): array
     {
+        /** @var ObjectiveBoardCard $boardCard */
         $boardCard = $this->getBoardCard();
-        //$isCompleted = $boardCard->;
 
-        $tpl[self::TPL_COMPLETED] = false ? 'completed' : '';
+        if ($boardCard->getLocation() === BoardCardInterface::LOCATION_HAND
+            && $boardCard->getLocationArg() === $playerId
+        ) {
+            $tpl[self::TPL_COMPLETED] = $boardCard->isCompleted();
+        }
 
         return $tpl;
     }
@@ -228,7 +232,7 @@ class Objective extends AbstractCard
      */
     public function toTpl(Deck $deck, ?int $playerId = null): array
     {
-        $tpl = parent::toTpl($deck);
+        $tpl = parent::toTpl($deck, $playerId);
 
         $tpl[self::TPL_ICON] = Deck::TYPE_OBJECTIVE;
 

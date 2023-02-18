@@ -84,10 +84,13 @@ html, body {
     justify-content: center;
     align-items: center;
 }
-.board-lineage .ldh-leading {display: none;}
+.board-lineage .ldh-leading {
+    opacity: .3;
+}
 .board-lineage .ldh-leading.leader {
     display: flex;
     transition: .5s;
+    opacity: 1;
 }
 
 /********* Cartridge **********/
@@ -110,7 +113,7 @@ html, body {
 h2#turn {
     text-align: center;
     font-size: 1.25em;
-    margin: 0 auto;
+    margin: .3em auto;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -237,6 +240,20 @@ h2#turn::before {
 #invention-hand .card .cost svg {
     display: none;
 }
+.objective picture {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.leader picture, .icon-complete {
+    position: relative;
+}
+.leader picture::before, .icon-complete::before {
+    right: 0;
+    bottom: 0;
+}
+.leader picture::before,
+.icon-complete::before,
 #invention-hand .card .cost::before {
     font-family: "FontAwesome";
     content: "\f00c";
@@ -1272,15 +1289,17 @@ svg.svg-icon {
 
 .tile .map-dist-bg {
     position: absolute;
-    top: 45%;
-    left: 0.6em;
+    top: 0.6em;
+    left: 44.25%;
     width: 10%;
     height: 10%;
     background-color: rgba(255, 255, 255, 0.25);
     transform: rotate(-45deg);
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 .tile .map-dist-bg label {
-    display: inline-block;
     font-size: .75vw;
     color: #333;
     transform: rotate(45deg);

@@ -210,8 +210,6 @@ class CardService
             case AbstractCard::TYPE_LINEAGE:
             case AbstractCard::TYPE_OBJECTIVE:
                 return true;
-                // Needed ?
-                return \in_array($stateId, [DrawObjectiveState::ID], true);
             case AbstractCard::TYPE_OTHER:
             case AbstractCard::TYPE_FIGHT:
             case AbstractCard::TYPE_DISEASE:

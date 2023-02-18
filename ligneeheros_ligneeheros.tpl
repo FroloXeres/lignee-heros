@@ -181,7 +181,7 @@
                 <label>${meeplePower}</label>\
             </div>\
             <div class="objective">\
-                <picture>${objectiveIcon}</picture>\
+                <picture class="${objectiveCompleted}">${objectiveIcon}</picture>\
                 <label>${objective}</label>\
             </div>\
             <div class="objective hidden-one">\

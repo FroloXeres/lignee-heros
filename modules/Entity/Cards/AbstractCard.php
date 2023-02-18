@@ -289,7 +289,7 @@ abstract class AbstractCard implements CardInterface
     public const BGA_TYPE_ARG     = 'type_arg';
     public const BGA_NBR          = 'nbr';
 
-    public function addPrivateFields(array $tpl): array
+    public function addPrivateFields(array $tpl, ?int $playerId = null): array
     {
         return $tpl;
     }

@@ -106,7 +106,7 @@ class Disease extends AbstractCard
      */
     public function toTpl(Deck $deck, ?int $playerId = null): array
     {
-        $tpl = parent::toTpl($deck);
+        $tpl = parent::toTpl($deck, $playerId);
 
         $tpl[self::TPL_ICON] = AbstractCard::TYPE_DISEASE;
         $tpl[self::TPL_COST] = join('', array_fill(0, $this->getLevel(), 'I'));

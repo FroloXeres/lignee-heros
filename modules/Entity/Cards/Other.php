@@ -115,7 +115,7 @@ class Other extends AbstractCard
      */
     public function toTpl(Deck $deck, ?int $playerId = null): array
     {
-        $tpl = parent::toTpl($deck);
+        $tpl = parent::toTpl($deck, $playerId);
 
         $tpl[self::TPL_ICON] = self::TYPE_OTHER;
         $tpl[self::TPL_GAIN] = join(' ', $this->getGives());

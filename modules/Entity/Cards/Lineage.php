@@ -156,7 +156,7 @@ class Lineage extends AbstractCard
      */
     public function toTpl(Deck $deck, ?int $playerId = null): array
     {
-        $tpl = parent::toTpl($deck);
+        $tpl = parent::toTpl($deck, $playerId);
 
         $tpl[self::TPL_ICON]            = 'lineage';
         $tpl[self::TPL_MEEPLE]          = $this->getMeeple()->getCode();
@@ -165,8 +165,20 @@ class Lineage extends AbstractCard
         $tpl[self::TPL_OBJECTIVE_BONUS] = (string) $this->getObjectiveBonus();
         $tpl[self::TPL_LEAD_TYPE]       = $this->getLeadingType() === self::LEADING_TYPE_EVERY3TURN ? 'end_turn' : 'fight';
         $tpl[self::TPL_LEAD_POWER]      = (string) $this->getLeadingBonus();
-        //$tpl[self::TPL_COMPLETED]       = $this->isObjectiveCompleted() ? 'completed' : '';
-        //$tpl[self::TPL_IS_LEADER]       = $this->isLeader();
+
+        return $tpl;
+    }
+
+    public function addPrivateFields(array $tpl, ?int $playerId = null): array
+    {
+        /** @var LineageBoardCard $boardCard */
+        $boardCard = $this->getBoardCard();
+        if ($boardCard->getLocation() === BoardCardInterface::LOCATION_HAND
+            && $boardCard->getLocationArg() === $playerId
+        ) {
+            $tpl[self::TPL_COMPLETED]       = $boardCard->isObjectiveCompleted();
+            $tpl[self::TPL_IS_LEADER]       = $boardCard->isLeader();
+        }
 
         return $tpl;
     }

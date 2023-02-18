@@ -441,7 +441,7 @@ function (dojo, on, declare) {
 
             // Lineage in hands // Others are displayed only on ChooseLineageState
             if (this.cards?.lineage?.hand?.length) {
-                this.initPlayerLineages(this.cards['lineage']['hand']);
+                this.initPlayerLineages(this.cards.lineage.hand, this.cards?.objective?.hand);
             }
 
             this.indexCards();
@@ -484,12 +484,16 @@ function (dojo, on, declare) {
                 this.cardZones.outside.updateDisplay();
             }
         },
-        initPlayerLineages: function(lineages)
+        initPlayerLineages: function(lineages, objectives = null)
         {
             const _self = this;
             lineages.forEach(function(lineage) {
                 _self.initPlayerLineage(lineage);
             });
+
+            if (objectives.length && objectives[0].id) {
+                this.initPlayerObjective(objectives[0]);
+            }
         },
         initPlayerLineage: function (lineage)
         {
@@ -505,6 +509,7 @@ function (dojo, on, declare) {
                 lineageIcon: _self.getIconAsText('lineage'),
                 meeple: _self.getIconAsText(lineage.meeple),
                 meeplePower: lineage.meeplePower,
+                objectiveCompleted: lineage.completed ? 'icon-complete' : '',
                 objectiveIcon: _self.getIconAsText('objective'),
                 objective: lineage.objective,
                 leader: lineage.leader ? 'leader' : '',
@@ -515,6 +520,24 @@ function (dojo, on, declare) {
             });
 
             dojo.place(lineageBoard, 'overall_player_board_' + lineage.location_arg, 'end');
+        },
+        initPlayerObjective: function(objective)
+        {
+            const qryPic = '#overall_player_board_' + this.player_id + ' .hidden-one picture';
+            const qryLabel = '#overall_player_board_' + this.player_id + ' .hidden-one label';
+
+            objective = this.replaceIconsInObject(objective);
+            const $pic = dojo.query(qryPic);
+            if ($pic.length) {
+                $pic[0].title = objective.name;
+                $pic[0].className = objective.completed ? 'icon-complete' : '';
+                $pic[0].innerHTML = this.getIconAsText(objective.icon);
+            }
+
+            const $label = dojo.query(qryLabel);
+            if ($label.length) {
+                $label[0].innerHTML = objective.text;
+            }
         },
         initLineageCards: function()
         {
@@ -1129,21 +1152,7 @@ function (dojo, on, declare) {
                 this.createDeck('objective', 1, 'overall-cards', false);
                 this.slideToObjectAndDestroy('deck-objective', 'overall_player_board_' + this.player_id, 1000, 0);
 
-                window.setTimeout(() => {
-                    const qryPic = '#overall_player_board_' + this.player_id + ' .hidden-one picture';
-                    const qryLabel = '#overall_player_board_' + this.player_id + ' .hidden-one label';
-
-                    objective = this.replaceIconsInObject(objective);
-                    const $pic = dojo.query(qryPic);
-                    if ($pic.length) {
-                        $pic[0].innerHTML = this.getIconAsText(objective.icon);
-                    }
-
-                    const $label = dojo.query(qryLabel);
-                    if ($label.length) {
-                        $label[0].innerHTML = objective.text;
-                    }
-                }, 1000);
+                window.setTimeout(() => this.initPlayerObjective(objective), 1000);
             }
         },
 
