@@ -1145,7 +1145,6 @@ function (dojo, on, declare) {
         },
 
         onObjectiveDrawn: function(notif) {
-            debugger;
             let objective = notif.args.objective || null;
             if (objective) {
                 // Objective card is added (Hidden side appear, returned and go to player board)
