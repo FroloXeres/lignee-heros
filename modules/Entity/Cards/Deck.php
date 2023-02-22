@@ -2,7 +2,8 @@
 
 namespace LdH\Entity\Cards;
 
-use LdH\Repository\CardRepository;
+use LdH\State\ChooseLineageState;
+
 
 class Deck implements \Iterator
 {
@@ -24,9 +25,6 @@ class Deck implements \Iterator
     /** @var AbstractCard[] */
     protected array $cards   = [];
     protected ?int  $current = null;
-
-    /** @var int[] */
-    protected array $copies = [];
 
     /** @var \Deck */
     protected $bgaDeck = null;
@@ -95,7 +93,15 @@ class Deck implements \Iterator
         else $this->current++;
 
         $this->cards[$this->current]  = $card;
-        $this->copies[$this->current] = $count;
+
+        // Some cards are hidden for player (no draw possible)
+        $hidden = ($card instanceof Objective && $card->isLineageObjective());
+
+        $boardCardType = $card->getBoardCardClassByCard();
+        for ($i = 0; $i < $count; $i++) {
+            $boardCard = $hidden ? $boardCardType::buildBoardCard(BoardCardInterface::LOCATION_HIDDEN) : $boardCardType::buildBoardCard();
+            $card->addBoardCard($boardCard);
+        }
 
         return $this;
     }
@@ -189,11 +195,16 @@ class Deck implements \Iterator
         ];
     }
 
-    public function cardsDataByCode(): array
+    public function cardsDataByCode(?int $playerId = null): array
     {
         return array_combine(
             array_map(function(AbstractCard $card) {return $card->getCode();}, $this->getCards()),
-            array_map(function(AbstractCard $card) {return $card->toTpl($this);}, $this->getCards())
+            array_map(
+                function(AbstractCard $card) use($playerId) {
+                    return $card->toTpl($this, $playerId);
+                },
+                $this->getCards()
+            )
         );
     }
 
@@ -205,7 +216,7 @@ class Deck implements \Iterator
         $cards = [];
         for ($i = 0; $i <= $this->current; $i++) {
             $card        = $this->cards[$i]->toArray();
-            $card['nbr'] = $this->copies[$i];
+            $card['nbr'] = $this->cards[$i]->getCardCount();
             $cards[]     = $card;
         }
         return $cards;
@@ -216,30 +227,36 @@ class Deck implements \Iterator
      *
      * @return string[]
      */
-    public function getPublicLocations(): array
+    public function getPublicLocations(int $stateId): array
     {
         switch ($this->type) {
             case AbstractCard::TYPE_INVENTION:
             case AbstractCard::TYPE_MAGIC:
                 return [
-                    AbstractCard::LOCATION_DEFAULT,
-                    AbstractCard::LOCATION_ON_TABLE,
-                    AbstractCard::LOCATION_HAND
+                    BoardCardInterface::LOCATION_DEFAULT,
+                    BoardCardInterface::LOCATION_ON_TABLE,
+                    BoardCardInterface::LOCATION_HAND
                 ];
             case AbstractCard::TYPE_LINEAGE:
+                $locations = [BoardCardInterface::LOCATION_DEFAULT];
+                if ($stateId >= ChooseLineageState::ID)  {
+                    $locations[] = BoardCardInterface::LOCATION_HAND;
+                }
+                return $locations;
             case AbstractCard::TYPE_OBJECTIVE:
+                return ($stateId >= ChooseLineageState::ID) ? [BoardCardInterface::LOCATION_HAND] : [];
             case AbstractCard::TYPE_DISEASE:
             case AbstractCard::TYPE_FIGHT:
             case AbstractCard::TYPE_OTHER:
                 return [
-                    AbstractCard::LOCATION_DEFAULT
+                    BoardCardInterface::LOCATION_DEFAULT
                 ];
             default:
                 return [];
         }
     }
 
-    public function getCardByCode(string $code): ?AbstractCard
+    public function getFirstCardByCode(string $code): ?AbstractCard
     {
         foreach ($this->cards as $card) {
             if ($card->getCode() === $code) {
@@ -249,6 +266,34 @@ class Deck implements \Iterator
 
         return null;
     }
+
+    public function getFirstCardByKey(string $type, ?int $typeArg = null): ?AbstractCard
+    {
+        foreach ($this->cards as $card) {
+            if ($card->getType() === $type && (!$typeArg || $card->getTypeArg() === $typeArg)) {
+                return $card;
+            }
+        }
+
+        return null;
+    }
+
+    /** @return array<AbstractCard> */
+    public function getCardsOnLocation(string $location): array
+    {
+        return array_filter(
+            $this->cards,
+            function (AbstractCard $card) use ($location) {
+                return count(
+                    $card->getBoardCardsByLocation(
+                        $location
+                    )
+                );
+            }
+        );
+    }
+
+
 
     // Implement Traversable
     public function current()

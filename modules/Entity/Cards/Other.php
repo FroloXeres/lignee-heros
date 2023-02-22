@@ -4,6 +4,10 @@ namespace LdH\Entity\Cards;
 
 use LdH\Entity\Bonus;
 
+/**
+ * @table="explore_other"
+ * @entityLinked="\LdH\Entity\Cards\DefaultBoardCard"
+ */
 class Other extends AbstractCard
 {
     public const ABANDONED_GEM_MINE   = 401;
@@ -109,9 +113,9 @@ class Other extends AbstractCard
      *
      * @return array
      */
-    public function toTpl(Deck $deck): array
+    public function toTpl(Deck $deck, ?int $playerId = null): array
     {
-        $tpl = parent::toTpl($deck);
+        $tpl = parent::toTpl($deck, $playerId);
 
         $tpl[self::TPL_ICON] = self::TYPE_OTHER;
         $tpl[self::TPL_GAIN] = join(' ', $this->getGives());

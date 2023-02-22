@@ -5,6 +5,10 @@ namespace LdH\Entity\Cards;
 use LdH\Entity\Meeple;
 use LdH\Entity\Bonus;
 
+/**
+ * @table="lineage"
+ * @entityLinked="\LdH\Entity\Cards\LineageBoardCard"
+ */
 class Lineage extends AbstractCard
 {
     public const LEADING_TYPE_EVERY3TURN = 1;
@@ -17,9 +21,6 @@ class Lineage extends AbstractCard
     protected ?Bonus     $objectiveBonus = null;
     protected int        $leadingType    = self::LEADING_TYPE_EVERY3TURN;
     protected ?Bonus     $leadingBonus   = null;
-
-    protected bool $objectiveCompleted = false;
-    protected bool $leader = false;
 
     /**
      * @param string $code
@@ -131,28 +132,9 @@ class Lineage extends AbstractCard
         return $this;
     }
 
-    public function isObjectiveCompleted(): bool
+    public static function getBoardCardClassByCard(): string
     {
-        return $this->objectiveCompleted;
-    }
-
-    public function setObjectiveCompleted(bool $objectiveCompleted): self
-    {
-        $this->objectiveCompleted = $objectiveCompleted;
-
-        return $this;
-    }
-
-    public function isLeader(): bool
-    {
-        return $this->leader;
-    }
-
-    public function setLeader(bool $leader): self
-    {
-        $this->leader = $leader;
-
-        return $this;
+        return LineageBoardCard::class;
     }
 
     /** Return data for Card module */
@@ -172,9 +154,9 @@ class Lineage extends AbstractCard
      *
      * @return array
      */
-    public function toTpl(Deck $deck): array
+    public function toTpl(Deck $deck, ?int $playerId = null): array
     {
-        $tpl = parent::toTpl($deck);
+        $tpl = parent::toTpl($deck, $playerId);
 
         $tpl[self::TPL_ICON]            = 'lineage';
         $tpl[self::TPL_MEEPLE]          = $this->getMeeple()->getCode();
@@ -183,8 +165,20 @@ class Lineage extends AbstractCard
         $tpl[self::TPL_OBJECTIVE_BONUS] = (string) $this->getObjectiveBonus();
         $tpl[self::TPL_LEAD_TYPE]       = $this->getLeadingType() === self::LEADING_TYPE_EVERY3TURN ? 'end_turn' : 'fight';
         $tpl[self::TPL_LEAD_POWER]      = (string) $this->getLeadingBonus();
-        $tpl[self::TPL_COMPLETED]       = $this->isObjectiveCompleted() ? 'completed' : '';
-        $tpl[self::TPL_IS_LEADER]       = $this->isLeader();
+
+        return $tpl;
+    }
+
+    public function addPrivateFields(array $tpl, ?int $playerId = null): array
+    {
+        /** @var LineageBoardCard $boardCard */
+        $boardCard = $this->getBoardCard();
+        if ($boardCard->getLocation() === BoardCardInterface::LOCATION_HAND
+            && $boardCard->getLocationArg() === $playerId
+        ) {
+            $tpl[self::TPL_COMPLETED]       = $boardCard->isObjectiveCompleted();
+            $tpl[self::TPL_IS_LEADER]       = $boardCard->isLeader();
+        }
 
         return $tpl;
     }

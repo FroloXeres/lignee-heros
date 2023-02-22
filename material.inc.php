@@ -41,38 +41,52 @@ use LdH\Entity\Bonus;
 
 $worker = (new Meeple(Meeple::WORKER))
     ->setName(clienttranslate('Worker'))
+    ->setPlural(clienttranslate('Workers'))
     ->setDescription(clienttranslate("Whether farmers, fishermen or any type of craftsmen, they have to harvest enough food for everyone and to develop the infrastructure of Esperys"));
 $warrior = (new Meeple(Meeple::WARRIOR))
     ->setName(clienttranslate('Warrior'))
+    ->setPlural(clienttranslate('Warriors'))
     ->setDescription(clienttranslate("They have been trained to brave the worst dangers of Estiny. Their mission is to stand up for their peers, wherever they are. They are often at the forefront when exploring promising new lands."));
 $savant = (new Meeple(Meeple::SAVANT))
     ->setName(clienttranslate('Erudite'))
+    ->setPlural(clienttranslate('Erudites'))
     ->setDescription(clienttranslate("In all parts of society, scientists devote their time to testing and developing the inventions they have imagined in order to improve daily life for generations to come."));
 $mage = (new Meeple(Meeple::MAGE))
     ->setName(clienttranslate('Wizard'))
+    ->setPlural(clienttranslate('Wizards'))
     ->setDescription(clienttranslate("Estiny is a world filled with magic and mysteries. Thus, as long as we devote ourselves fully to it, it is possible to shape the primordial flows to cast powerful spells. Magic is capricious, but once tamed, wizards can cast spells that can help you in many ways."));
 $all = (new Meeple(Meeple::ALL))
     ->setName(clienttranslate('Any meeple'))
+    ->setPlural(clienttranslate('Any meeple'))
     ->setDescription(clienttranslate('Any meeple (Worker, Warrior, Savant or Mage)'));
 $monster = (new Meeple(Meeple::MONSTER))
     ->setName(clienttranslate('Creature'))
+    ->setPlural(clienttranslate('Creatures'))
     ->setDescription(clienttranslate(""));
 $elvenMage = (new Meeple(Meeple::ELVEN_MAGE))
-    ->setName(clienttranslate("Fal'san'in unit"));
+    ->setName(clienttranslate("Fal'san'in unit"))
+    ->setPlural(clienttranslate("Fal'san'in lineage"));
 $elvenSavant = (new Meeple(Meeple::ELVEN_SAVANT))
-    ->setName(clienttranslate('Reth\'los unit'));
+    ->setName(clienttranslate('Reth\'los unit'))
+    ->setPlural(clienttranslate("Reth\'los lineage"));
 $naniWarrior = (new Meeple(Meeple::NANI_WARRIOR))
-    ->setName(clienttranslate('Khazhan unit'));
+    ->setName(clienttranslate('Khazhan unit'))
+    ->setPlural(clienttranslate("Khazhan lineage"));
 $naniSavant = (new Meeple(Meeple::NANI_SAVANT))
-    ->setName(clienttranslate('Agrindorn unit'));
+    ->setName(clienttranslate('Agrindorn unit'))
+    ->setPlural(clienttranslate("Agrindorn lineage"));
 $humaniWorker = (new Meeple(Meeple::HUMANI_WORKER))
-    ->setName(clienttranslate('Mournmorning unit'));
+    ->setName(clienttranslate('Mournmorning unit'))
+    ->setPlural(clienttranslate("Mournmorning lineage"));
 $humaniMage = (new Meeple(Meeple::HUMANI_MAGE))
-    ->setName(clienttranslate('Mightmaster unit'));
+    ->setName(clienttranslate('Mightmaster unit'))
+    ->setPlural(clienttranslate("Mightmaster lineage"));
 $orkWarrior = (new Meeple(Meeple::ORK_WARRIOR))
-    ->setName(clienttranslate('Gorzog unit'));
+    ->setName(clienttranslate('Gorzog unit'))
+    ->setPlural(clienttranslate("Gorzog lineage"));
 $orkWorker = (new Meeple(Meeple::ORK_WORKER))
-    ->setName(clienttranslate('Dahkrum unit'));
+    ->setName(clienttranslate('Dahkrum unit'))
+    ->setPlural(clienttranslate("Dahkrum lineage"));
 $this->meeples = [
     $worker->getCode()  => $worker,
     $warrior->getCode() => $warrior,
@@ -171,23 +185,17 @@ $lineage = (new Deck(Deck::TYPE_LINEAGE))
     ->setIsLarge(true)
     ->setIsPublic(true);
 $objective = (new Deck(Deck::TYPE_OBJECTIVE))
-    ->setName(clienttranslate('Objective cards'))
-    ->setIsPublic(true);
+    ->setName(clienttranslate('Objective cards'));
 $magic = (new Deck(Deck::TYPE_MAGIC))
-    ->setName(clienttranslate('Sepll cards'))
-    ->setIsPublic(true);
+    ->setName(clienttranslate('Sepll cards'));
 $invention = (new Deck(Deck::TYPE_INVENTION))
-    ->setName(clienttranslate('Invention cards'))
-    ->setIsPublic(true);
+    ->setName(clienttranslate('Invention cards'));
 $exploreFight = (new Deck(Deck::TYPE_EXPLORE_FIGHT))
-    ->setName(clienttranslate('Explore : Fight cards'))
-    ->setIsPublic(true);
+    ->setName(clienttranslate('Explore : Fight cards'));
 $exploreOther = (new Deck(Deck::TYPE_EXPLORE_OTHER))
-    ->setName(clienttranslate('Explore : Other cards'))
-    ->setIsPublic(true);
+    ->setName(clienttranslate('Explore : Other cards'));
 $exploreDisease = (new Deck(Deck::TYPE_EXPLORE_DISEASE))
-    ->setName(clienttranslate('Explore : Disease cards'))
-    ->setIsPublic(true);
+    ->setName(clienttranslate('Explore : Disease cards'));
 $this->cards = [
     $lineage->getType()        => $lineage,
     $objective->getType()      => $objective,
@@ -200,48 +208,48 @@ $this->cards = [
 
 //      Objective
 // -------------------
-$objElvenMage = (new Objective(Objective::ELVEN_MAGE, true))
+$objElvenMage = (new Objective(Objective::ELVEN_MAGE))
     ->setName("Fal'san'in's")
     ->setDescription(clienttranslate("Have at least 10 Mage"))
     ->setNeed(Objective::NEED_UNITS)
     ->setNeedCount(10)
     ->setSubNeed(Objective::NEED_SUB_MAGE);
-$objElvenSavant = (new Objective(Objective::ELVEN_SAVANT, true))
+$objElvenSavant = (new Objective(Objective::ELVEN_SAVANT))
     ->setName(clienttranslate("Reth'los's"))
     ->setDescription(clienttranslate("Harvest at least 20 Science in one turn"))
     ->setNeed(Objective::NEED_HARVEST)
     ->setNeedCount(20)
     ->setSubNeed(Objective::NEED_SUB_SCIENCE);
-$objNaniWarrior = (new Objective(Objective::NANI_WARRIOR, true))
+$objNaniWarrior = (new Objective(Objective::NANI_WARRIOR))
     ->setName(clienttranslate("Khazhan's"))
     ->setDescription(clienttranslate("Discover at least 5 military inventions"))
     ->setNeed(Objective::NEED_INVENTION)
     ->setNeedCount(5)
     ->setSubNeed(Objective::NEED_SUB_FIGHT);
-$objNaniSavant = (new Objective(Objective::NANI_SAVANT, true))
+$objNaniSavant = (new Objective(Objective::NANI_SAVANT))
     ->setName(clienttranslate("Agrindorn's"))
     ->setDescription(clienttranslate("Have at least 10 Savant"))
     ->setNeed(Objective::NEED_UNITS)
     ->setNeedCount(10)
     ->setSubNeed(Objective::NEED_SUB_SAVANT);
-$objHumaniWorker = (new Objective(Objective::HUMANI_WORKER, true))
+$objHumaniWorker = (new Objective(Objective::HUMANI_WORKER))
     ->setName(clienttranslate("Mournmorning's"))
     ->setDescription(clienttranslate("Master at least 3 nature spells"))
     ->setNeed(Objective::NEED_SPELL)
     ->setNeedCount(5)
     ->setSubNeed(Objective::NEED_SUB_NATURE);
-$objHumaniMage = (new Objective(Objective::HUMANI_MAGE, true))
+$objHumaniMage = (new Objective(Objective::HUMANI_MAGE))
     ->setName(clienttranslate("Mightmaster's"))
     ->setDescription(clienttranslate("Master at least 10 spells"))
     ->setNeed(Objective::NEED_SPELL)
     ->setNeedCount(10);
-$objOrkWarrior = (new Objective(Objective::ORK_WARRIOR, true))
+$objOrkWarrior = (new Objective(Objective::ORK_WARRIOR))
     ->setName(clienttranslate("Gorzog's"))
     ->setDescription(clienttranslate("Have at least 20 Warriors"))
     ->setNeed(Objective::NEED_UNITS)
     ->setNeedCount(20)
     ->setSubNeed(Objective::NEED_SUB_WARRIOR);
-$objOrkWorker = (new Objective(Objective::ORK_WORKER, true))
+$objOrkWorker = (new Objective(Objective::ORK_WORKER))
     ->setName(clienttranslate("Dahkrum's"))
     ->setDescription(clienttranslate("Have at least 30 Workers"))
     ->setNeed(Objective::NEED_UNITS)

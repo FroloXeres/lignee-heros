@@ -27,6 +27,19 @@ function (dojo, on, declare) {
             this.map       = [];
             this.resources = [];
             this.terrains  = [];
+
+            this.status = {
+                isInitializing: false,
+                state: {
+                    lineageChosen: true,
+
+                },
+                currentState: {},
+
+            };
+            this.indexed = {};
+            this.playerLineage = null;
+            this.playerUnit = null;
         },
         
         /*
@@ -49,30 +62,32 @@ function (dojo, on, declare) {
             // Setting up player boards
             for( var player_id in gamedatas.players )
             {
+
                 var player = gamedatas.players[player_id];
                          
                 // TODO: Setting up players boards if needed
             }
 
-            this.isInitializing = true;
+            this.status.isInitializing = true;
             this.setupGameState(gamedatas);
             this.setupGameData(gamedatas);
             this.initCards(gamedatas);
 
             this.setupMap();
+
             this.initPeople(gamedatas.people);
             this.initTooltips(gamedatas.tooltips);
 
             // Setup game notifications to handle (see "setupNotifications" method below)
             this.setupNotifications();
-            this.isInitializing = false;
+            this.status.isInitializing = false;
 
             this.postInitCardUpdate();
         },
 
         setupGameState: function(gamedatas)
         {
-            this.currentState  = gamedatas.currentState;
+            this.status.currentState  = gamedatas.currentState;
             this.initCartridge();
             this.initEvents()
         },
@@ -279,7 +294,7 @@ function (dojo, on, declare) {
         // All about People/Unit
         initPeople: function(people)
         {
-            this.initMapPeople(people.byPlace.map, people.units);
+            this.initMapPeople(people.byPlace.map, people.byType, people.units);
             this.initInventionPeople(people.byPlace.invention, people.units);
             this.initSpellPeople(people.byPlace.spell, people.units);
         },
@@ -295,26 +310,64 @@ function (dojo, on, declare) {
         {
             return 'unit-' + unit.id;
         },
-        initMapPeople: function(byMap, units)
+        initMapPeople: function(byMap, byType, units)
         {
-            for (let location in byMap) {
-                let key = byMap[location];
-                let unit = units[key];
-
-                let zone = this.mapZones[this.getZoneIdByTileIdAndType(unit.location, unit.type)];
-                const domUnitId = this.getDomIdByUnit(unit);
-                let domUnits = dojo.query(domUnitId);
-                if (domUnits.length) {
-                    // TODO: Move to new place ?
-                    //zone.move
-
-                    this.updateUnitStatus(domUnits[0], unit.status);
-                } else {
-                    // Add new unit to map
-                    this.createUnit(unit.type, domUnitId, unit.status);
-                    zone.placeInZone(domUnitId, this.getPriorityByUnitStatus(unit.status));
-                }
+            // Save player unit if defined
+            if (this.playerLineage) {
+                let id = byType[this.playerLineage.meeple];
+                this.playerUnit = units[id];
             }
+
+            for (let id in byMap) {
+                let key = byMap[id];
+                let unit = units[key];
+                if(this.playerUnit && unit.type === this.playerUnit.type) continue;
+
+                this.updateOrCreateUnit(unit);
+            }
+
+            // Be sure to render player unit at the end
+            if (this.playerUnit) {
+                this.updateOrCreateUnit(this.playerUnit);
+            }
+        },
+        updateOrCreateUnit: function(unit)
+        {
+            let zoneId = this.getZoneIdByTileIdAndType(unit.location, unit.type);
+            let zone = this.mapZones[zoneId];
+            const domUnitId = this.getDomIdByUnit(unit);
+            let domUnits = dojo.query(domUnitId);
+            if (domUnits.length) {
+                // todo: Move to new place ?
+                //zone.move
+
+                this.updateUnitStatus(domUnits[0], unit.status);
+            } else {
+                // Add new unit to map
+                this.createUnit(unit.type, domUnitId, unit.status);
+
+                // todo: Animate unit creation (From board to map)
+
+                zone.placeInZone(domUnitId, this.getPriorityByUnitStatus(unit.status));
+            }
+        },
+        ensurePlayerMeepleAppear: function(byMap, units)
+        {
+            // First check if it is necessary
+
+
+            // const $playerMeeple = dojo.query('.player-board:first-of-type .meeple picture svg');
+            // if ($playerMeeple.length) {
+            //     const lineageMeeple = $playerMeeple[0].id;
+            //
+            //     const $mapMeeples = dojo.query('#map-zone svg#' + lineageMeeple);
+            //     if ($mapMeeples.length) {
+            //         // Be sure this is the last unit for this tile/status
+            //         const $mapMeeple = $mapMeeples[0];
+            //         console.log($mapMeeple);
+            //
+            //     }
+            // }
         },
         getPriorityByUnitStatus: function(status)
         {
@@ -374,14 +427,36 @@ function (dojo, on, declare) {
                     this.cardZones[type][location] = this.createCardZone(type+'-'+location);
                 }
             }
+
             // Floating-cards
             this.cardZones.outside = this.createCardZone('floating-cards', true);
 
             // Init cards
             this.cards = gamedatas.cards;
             for (let type in this.cards) {
-                if (this.cards.hasOwnProperty(type)) {
+                if (['invention', 'spell'].includes(type) && this.cards.hasOwnProperty(type)) {
                     this.initLocation(this.cards[type], type);
+                }
+            }
+
+            // Lineage in hands // Others are displayed only on ChooseLineageState
+            if (this.cards?.lineage?.hand?.length) {
+                this.initPlayerLineages(this.cards.lineage.hand, this.cards?.objective?.hand);
+            }
+
+            this.indexCards();
+        },
+        indexCards: function()
+        {
+            const _self = this;
+            for (let type in _self.cards) {
+                const locations = _self.cards[type];
+                for (let location in locations) {
+                    const cards = locations[location];
+                    for (let id in cards) {
+                        const card = cards[id];
+                        _self.indexed[card.id] = card;
+                    }
                 }
             }
         },
@@ -408,6 +483,70 @@ function (dojo, on, declare) {
             if (this.cardZones.outside.items.length) {
                 this.cardZones.outside.updateDisplay();
             }
+        },
+        initPlayerLineages: function(lineages, objectives = null)
+        {
+            const _self = this;
+            lineages.forEach(function(lineage) {
+                _self.initPlayerLineage(lineage);
+            });
+
+            if (objectives.length && objectives[0].id) {
+                this.initPlayerObjective(objectives[0]);
+            }
+        },
+        initPlayerLineage: function (lineage)
+        {
+            if (lineage.location_arg === this.player_id) {
+                this.playerLineage = lineage;
+            }
+
+            const _self = this;
+            lineage = _self.replaceIconsInObject(lineage);
+            const lineageBoard = _self.format_block('jstpl_lineage_board', {
+                playerId: lineage.location_arg,
+                name: lineage.name,
+                lineageIcon: _self.getIconAsText('lineage'),
+                meeple: _self.getIconAsText(lineage.meeple),
+                meeplePower: lineage.meeplePower,
+                objectiveCompleted: lineage.completed ? 'icon-complete' : '',
+                objectiveIcon: _self.getIconAsText('objective'),
+                objective: lineage.objective,
+                leader: lineage.leader ? 'leader' : '',
+                leadingIcon: _self.getIconAsText('leading'),
+                leadTypeIcon: _self.getIconAsText(lineage.leadType),
+                leadType: lineage.leadType,
+                leadPower: lineage.leadPower
+            });
+
+            dojo.place(lineageBoard, 'overall_player_board_' + lineage.location_arg, 'end');
+        },
+        initPlayerObjective: function(objective)
+        {
+            const qryPic = '#overall_player_board_' + this.player_id + ' .hidden-one picture';
+            const qryLabel = '#overall_player_board_' + this.player_id + ' .hidden-one label';
+
+            objective = this.replaceIconsInObject(objective);
+            const $pic = dojo.query(qryPic);
+            if ($pic.length) {
+                $pic[0].title = objective.name;
+                $pic[0].className = objective.completed ? 'icon-complete' : '';
+                $pic[0].innerHTML = this.getIconAsText(objective.icon);
+            }
+
+            const $label = dojo.query(qryLabel);
+            if ($label.length) {
+                $label[0].innerHTML = objective.text;
+            }
+        },
+        initLineageCards: function()
+        {
+            this.createCardsInLocation(
+                this.cards?.lineage?.deck || [],
+                'lineage',
+                'deck',
+                true
+            );
         },
         createCardZone: function(code, isOutside = false)
         {
@@ -452,7 +591,7 @@ function (dojo, on, declare) {
                 }
             }
         },
-        createDeck: function(type, count)
+        createDeck: function(type, count, place = 'new-card', moveInZone = true)
         {
             let deck        = this.decks[type];
             let deckContent = this.format_block('jstpl_card_verso', {
@@ -462,8 +601,11 @@ function (dojo, on, declare) {
                 name: deck.name,
                 count: count
             });
-            dojo.place(deckContent, 'new-card');
-            this.cardZones[type]['deck'].placeInZone('deck-' + type, 0);
+            dojo.place(deckContent, place);
+
+            if (moveInZone) {
+                this.cardZones[type]['deck'].placeInZone('deck-' + type, 0);
+            }
         },
         createCardsInLocation: function(cards, type, location, useOutsideZone)
         {
@@ -497,7 +639,7 @@ function (dojo, on, declare) {
         },
         getPriorityByCard: function(card)
         {
-            let priority = 0;
+            let priority;
             switch (card.type) {
                 default: priority = 10;
             }
@@ -561,6 +703,8 @@ function (dojo, on, declare) {
 
         onChooseLineage: function(event)
         {
+            if (this.status.state.lineageChosen) return;
+
             const card = event.target.closest('.card.lineage');
             if (card === null) return;
 
@@ -670,6 +814,7 @@ function (dojo, on, declare) {
 
             this.updateCartridge();
         },
+
         updateCartridge: function()
         {
             this.updateTurn();
@@ -682,61 +827,62 @@ function (dojo, on, declare) {
 
         updateTurn: function()
         {
-            this.$turn.dataset.turn = this.currentState.turn;
-            this.$turn.innerHTML    = this.currentState.title.turn + ' ' + this.$turn.dataset.turn;
+
+            this.$turn.dataset.turn = this.status.currentState?.turn || 1;
+            this.$turn.innerHTML    = this.status.currentState?.title?.turn + ' ' + this.$turn.dataset.turn;
         },
 
         updatePeople: function()
         {
-            this.$peopleTitle.innerHTML = this.currentState.title.people;
+            this.$peopleTitle.innerHTML = this.status.currentState?.title?.people || '';
 
-            this.$peopleAll.dataset.count = this.currentState.peopleCount;
-            this.$peopleWorker.dataset.count = this.currentState.workerCount;
-            this.$peopleWarrior.dataset.count = this.currentState.warriorCount;
-            this.$peopleSavant.dataset.count = this.currentState.savantCount;
-            this.$peopleMage.dataset.count = this.currentState.mageCount;
+            this.$peopleAll.dataset.count = this.status.currentState?.peopleCount || 0;
+            this.$peopleWorker.dataset.count = this.status.currentState?.workerCount || 0;
+            this.$peopleWarrior.dataset.count = this.status.currentState?.warriorCount || 0;
+            this.$peopleSavant.dataset.count = this.status.currentState?.savantCount || 0;
+            this.$peopleMage.dataset.count = this.status.currentState?.mageCount || 0;
         },
 
         updateHarvest: function()
         {
-            this.$harvestTitle.innerHTML = this.currentState.title.harvest;
+            this.$harvestTitle.innerHTML = this.status.currentState?.title?.harvest || '';
 
-            this.$foodHarvest.dataset.count = this.currentState.foodProduction;
-            this.$scienceHarvest.dataset.count = this.currentState.scienceProduction;
+            this.$foodHarvest.dataset.count = this.status.currentState?.foodProduction || 0;
+            this.$scienceHarvest.dataset.count = this.status.currentState?.scienceProduction || 0;
         },
 
         updateMilitary: function()
         {
-            this.$militaryTitle.innerHTML = this.currentState.title.military;
+            this.$militaryTitle.innerHTML = this.status.currentState?.title?.military || '';
 
-            this.$powerMilitary.dataset.count = this.currentState.warriorPower;
-            this.$defenseMilitary.dataset.count = this.currentState.warriorDefense;
+            this.$powerMilitary.dataset.count = this.status.currentState?.warriorPower || 0;
+            this.$defenseMilitary.dataset.count = this.status.currentState?.warriorDefense || 0;
         },
 
         updateCity: function()
         {
-            this.$cityTitle.innerHTML = this.currentState.title.city;
+            this.$cityTitle.innerHTML = this.status.currentState?.title?.city || '';
 
-            this.$cityLife.dataset.count = this.currentState.life;
-            this.$cityDefense.dataset.count = this.currentState.cityDefense;
+            this.$cityLife.dataset.count = this.status.currentState?.life || 0;
+            this.$cityDefense.dataset.count = this.status.currentState?.cityDefense || 0;
         },
 
         updateStock: function()
         {
-            this.$stockTitle.innerHTML = this.currentState.title.stock;
+            this.$stockTitle.innerHTML = this.status.currentState?.title?.stock || '';
 
-            this.$foodStock.dataset.count = this.currentState.food;
-            this.$scienceStock.dataset.count = this.currentState.science;
-            this.$foodStock.dataset.stock = this.currentState.foodStock;
+            this.$foodStock.dataset.count = this.status.currentState?.food;
+            this.$scienceStock.dataset.count = this.status.currentState?.science || 0;
+            this.$foodStock.dataset.stock = this.status.currentState?.foodStock || 0;
 
-            this.$woodStock.dataset.count = this.currentState.woodStock;
-            this.$animalStock.dataset.count = this.currentState.animalStock;
-            this.$stoneStock.dataset.count = this.currentState.stoneStock;
-            this.$metalStock.dataset.count = this.currentState.metalStock;
-            this.$clayStock.dataset.count = this.currentState.clayStock;
-            this.$paperStock.dataset.count = this.currentState.paperStock;
-            this.$medicStock.dataset.count = this.currentState.medicStock;
-            this.$gemStock.dataset.count = this.currentState.gemStock;
+            this.$woodStock.dataset.count = this.status.currentState?.woodStock || 0;
+            this.$animalStock.dataset.count = this.status.currentState?.animalStock || 0;
+            this.$stoneStock.dataset.count = this.status.currentState?.stoneStock || 0;
+            this.$metalStock.dataset.count = this.status.currentState?.metalStock || 0;
+            this.$clayStock.dataset.count = this.status.currentState?.clayStock || 0;
+            this.$paperStock.dataset.count = this.status.currentState?.paperStock || 0;
+            this.$medicStock.dataset.count = this.status.currentState?.medicStock || 0;
+            this.$gemStock.dataset.count = this.status.currentState?.gemStock || 0;
         },
 
         replaceIconsInObject: function(cardObject)
@@ -772,6 +918,8 @@ function (dojo, on, declare) {
         {
             switch( stateName ) {
             case 'ChooseLineage' :
+                this.initLineageCards();
+
                 const chooseBtn = dojo.query('#chooseLineage');
                 const cancelBtn = dojo.query('#cancelChooseLineage');
                 if (chooseBtn.length && cancelBtn.length) {
@@ -803,6 +951,13 @@ function (dojo, on, declare) {
         //        
         onUpdateActionButtons: function( stateName, args )
         {
+            switch( stateName ) {
+                case 'ChooseLineage' :
+                    //
+                    this.status.state.lineageChosen = !this.isCurrentPlayerActive();
+                    break;
+            }
+
             if( this.isCurrentPlayerActive() )
             {            
                 switch( stateName ) {
@@ -869,8 +1024,14 @@ function (dojo, on, declare) {
         
         */
         onSelectLineage: function()  {
-            if (this.selectedCards[0] !== 'undefined' && this.checkAction('selectLineage')) {
-                this.ajaxCallWrapper('selectLineage', {lineage: this.selectedCards[0]});
+            if (this.selectedCards[0] !== 'undefined' && this.checkAction('selectLineage') && !this.status.state.lineageChosen) {
+                this.status.state.lineageChosen = true;
+                this.ajaxCallWrapper(
+                    'selectLineage',
+                    {lineage: this.selectedCards[0]},
+                    (response) => {},
+                    (isError) => {},
+                );
             }
         },
 
@@ -936,8 +1097,17 @@ function (dojo, on, declare) {
         {
             dojo.subscribe( 'debug', this, "onDebug" );
 
-            // TODO: here, associate your game notifications with local methods
-            
+            // Animation after lineage choose
+            dojo.subscribe('otherPlayerChooseLineage', this, 'onLineageChosen');
+            this.notifqueue.setSynchronous('otherPlayerChooseLineage', 1500);
+            this.notifqueue.setIgnoreNotificationCheck('otherPlayerChooseLineage', (notif) => (parseInt(notif.args.playerId) === this.player_id));
+
+            dojo.subscribe('playerChooseLineage', this, 'onLineageChosen');
+            this.notifqueue.setSynchronous('playerChooseLineage', 1500);
+
+            dojo.subscribe('playerDrawObjective', this, 'onObjectiveDrawn');
+            this.notifqueue.setSynchronous('playerDrawObjective', 1500);
+
             // Example 1: standard notification handling
             // dojo.subscribe( 'cardPlayed', this, "notif_cardPlayed" );
             
@@ -952,8 +1122,38 @@ function (dojo, on, declare) {
         onDebug: function(sentData)
         {
             console.log(sentData);
-        }
+        },
+
         // TODO: from this point and below, you can write your game notifications handling methods
+        onLineageChosen: function (notif)
+        {
+            const lineage = this.indexed[notif?.args?.lineageId] || null;
+            if (lineage) {
+                lineage.location_arg = parseInt(notif.args.playerId);
+
+                // Move card to player board
+                this.slideToObjectAndDestroy(lineage.id, 'overall_player_board_' + lineage.location_arg, 1000, 0);
+
+                // Create lineage cartridge using chosen lineage
+                window.setTimeout(() => this.initPlayerLineage(lineage), 1000);
+
+                // Lineage unit is added to city
+                if (notif?.args?.unit) {
+                    this.updateOrCreateUnit(notif.args.unit);
+                }
+            }
+        },
+
+        onObjectiveDrawn: function(notif) {
+            let objective = notif.args.objective || null;
+            if (objective) {
+                // Objective card is added (Hidden side appear, returned and go to player board)
+                this.createDeck('objective', 1, 'overall-cards', false);
+                this.slideToObjectAndDestroy('deck-objective', 'overall_player_board_' + this.player_id, 1000, 0);
+
+                window.setTimeout(() => this.initPlayerObjective(objective), 1000);
+            }
+        },
 
         /*
         Example:

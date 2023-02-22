@@ -4,6 +4,10 @@ namespace LdH\Entity\Cards;
 
 use LdH\Entity\Bonus;
 
+/**
+ * @table="explore_fight"
+ * @entityLinked="\LdH\Entity\Cards\DefaultBoardCard"
+ */
 class Fight extends AbstractCard
 {
     public const PIC_BULL      = 201;
@@ -44,7 +48,6 @@ class Fight extends AbstractCard
 
         // Card specific
         $this->type_arg     = 0;
-        $this->location_arg = 0;
     }
 
     /**
@@ -157,9 +160,9 @@ class Fight extends AbstractCard
      *
      * @return array
      */
-    public function toTpl(Deck $deck): array
+    public function toTpl(Deck $deck, ?int $playerId = null): array
     {
-        $tpl = parent::toTpl($deck);
+        $tpl = parent::toTpl($deck, $playerId);
 
         $tpl[self::TPL_ICON] = self::TYPE_FIGHT;
         $tpl[self::TPL_COST] = $this->getPower();

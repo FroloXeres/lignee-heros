@@ -1,8 +1,16 @@
 .vscode
 .git
 .idea
+.phpunit.result.cache
 package-lock.json
 yarn.lock
 tsconfig.json
 node_modules/
 README.md
+vendor/doctrine
+vendor/myclabs
+vendor/nikic
+vendor/phpunit
+vendor/phar-io
+vendor/sebastian
+vendor/theseer

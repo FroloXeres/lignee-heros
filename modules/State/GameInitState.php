@@ -3,6 +3,7 @@
 namespace LdH\State;
 
 use LdH\Entity\Cards\AbstractCard;
+use LdH\Entity\Cards\BoardCardInterface;
 use LdH\Entity\Cards\Deck;
 use LdH\Entity\Map\City;
 use LdH\Entity\Map\Terrain;
@@ -18,8 +19,6 @@ class GameInitState extends AbstractState
 
     public const NOTIFY_CITY_START         = 'cityStart';
     public const NOTIFY_CITY_INVENTIONS    = 'cityInventions';
-    public const NOTIFY_CITY_UNITS         = 'cityUnits';
-    public const NOTIFY_INVENTION_REVEALED = 'inventionRevealed';
 
     public static function getId(): int
     {
@@ -56,34 +55,34 @@ class GameInitState extends AbstractState
             // -> Draw city inventions (notify)
             /** @var Deck $inventions */
             $inventions = $this->getDeck(AbstractCard::TYPE_INVENTION);
-            $this->cardService->drawCards($inventions, $city->getInventions());
+            $this->getCardService()->moveTheseCardsTo($city->getInventions());
 
             // Draw 1st invention card of the deck (notify)
-            $inventions->getBgaDeck()->pickCardForLocation(AbstractCard::LOCATION_DEFAULT, AbstractCard::LOCATION_ON_TABLE);
+            $inventions->getBgaDeck()->pickCardForLocation(BoardCardInterface::LOCATION_DEFAULT, BoardCardInterface::LOCATION_ON_TABLE);
 
             $peopleService = $this->getPeople();
 
             // -> Put city units on central tile (notify)
             foreach ($city->getUnits() as $meeple) {
                 $peopleService->birth(
-                    $meeple->getCode(),
+                    $meeple,
                     Unit::LOCATION_MAP,
-                    PeopleService::CITY_ID
+                    PeopleService::CITY_ID,
+                    1,
+                    false
                 );
 
-                $state = CurrentStateService::getStateByMeepleType($meeple);
-                if ($state) {
-                    $this->incGameStateValue($state, 1);
-                }
+                $this->incGameStateValue(CurrentStateService::getStateByMeepleType($meeple), 1);
             }
 
-            // Put 8 Worker (- number of player) on central tile (notify)
+            // Put 10 Worker (- number of player - city units) on central tile (notify)
             $toAddCnt = CurrentStateService::START_PEOPLE - $this->getPlayersNumber() - count($city->getUnits());
             $peopleService->birth(
-                Meeple::WORKER,
+                $this->meeples[Meeple::WORKER],
                 Unit::LOCATION_MAP,
                 PeopleService::CITY_ID,
-                $toAddCnt
+                $toAddCnt,
+                false
             );
             $this->incGameStateValue(CurrentStateService::GLB_WORKER_CNT, $toAddCnt);
 

@@ -6,6 +6,10 @@ use LdH\Entity\Map\Resource;
 use LdH\Entity\Meeple;
 use LdH\Entity\Bonus;
 
+/**
+ * @table="invention"
+ * @entityLinked="\LdH\Entity\Cards\InventionBoardCard"
+ */
 class Invention extends AbstractCard
 {
     public const TYPE_START       = 'start';
@@ -77,8 +81,6 @@ class Invention extends AbstractCard
 
     /** @var Bonus[] */
     protected array $gives = [];
-
-    protected bool $completed = false;
 
     /**
      * @param string $type
@@ -242,21 +244,14 @@ class Invention extends AbstractCard
         $this->gives = $gives;
     }
 
-    public function isCompleted(): bool
-    {
-        return $this->completed;
-    }
-
-    public function setCompleted(bool $completed): self
-    {
-        $this->completed = $completed;
-
-        return $this;
-    }
-
     public static function getTypeName(string $type): string
     {
         return clienttranslate(ucfirst($type));
+    }
+
+    public static function getBoardCardClassByCard(): string
+    {
+        return InventionBoardCard::class;
     }
 
     /**
@@ -266,9 +261,9 @@ class Invention extends AbstractCard
      *
      * @return array
      */
-    public function toTpl(Deck $deck): array
+    public function toTpl(Deck $deck, ?int $playerId = null): array
     {
-        $tpl = parent::toTpl($deck);
+        $tpl = parent::toTpl($deck, $playerId);
 
         $tpl[self::TPL_ICON] = Deck::TYPE_INVENTION;
         $tpl[self::TPL_COST] = $this->getScience();
@@ -309,7 +304,7 @@ class Invention extends AbstractCard
             $tpl[self::TPL_GAIN_TYPE] = '';
             $tpl[self::TPL_GAIN] = join(' ', $this->getGives());
         }
-        $tpl[self::TPL_COMPLETED] = $this->isCompleted() ? 'completed' : '';
+        //$tpl[self::TPL_COMPLETED] = $this->isActivated() ? 'completed' : '';
 
         return $tpl;
     }

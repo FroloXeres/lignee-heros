@@ -2,6 +2,8 @@
 
 namespace LdH\Service;
 
+use LdH\Entity\Cards\AbstractCard;
+use LdH\Entity\Cards\BoardCardInterface;
 use LdH\Repository\CardRepository;
 use LdH\Entity\Unit;
 use LdH\Entity\Meeple;
@@ -42,11 +44,11 @@ class PeopleService implements \JsonSerializable
         Meeple::MONSTER => []
     ];
 
-    protected CardRepository $cardRepository;
+    protected CardService $cardService;
 
     public function __construct()
     {
-        $this->cardRepository = new CardRepository();
+        $this->cardService = new CardService();
     }
 
     public function getPopulation(): int
@@ -58,13 +60,20 @@ class PeopleService implements \JsonSerializable
     {
         $people = [];
         foreach ($this->byType as $type => $ids) {
-            if (count($ids)) {
-                $people[] = sprintf('%s %s', count($ids), $this->meeples[$type]->getName());
+            $count = count($ids);
+            if ($count) {
+                $people[] = sprintf(
+                    '%s %s',
+                    $count,
+                    $count === 1 ? $this->meeples[$type]->getName() : $this->meeples[$type]->getPlural()
+                );
             }
         }
 
-        return join(', ', $people);
+        return MessageHelper::formatList($people);
     }
+
+
 
     /**
      * @return \Deck|null
@@ -93,38 +102,55 @@ class PeopleService implements \JsonSerializable
         $this->units[$this->population] = $unit;
         $this->byIds[$unit->getId()] = $this->population;
         $this->byPlace[$unit->getLocation()][] = $this->population;
-        $this->byType[$unit->getType()][] = $this->population;
+        $this->byType[$unit->getType()->getCode()][] = $this->population;
 
         $this->population++;
 
         return $this;
     }
 
-    public function birth(string $type, string $location = Unit::LOCATION_MAP, int $locationArg = null, int $count = 1): void
+    /** @return array<Unit> */
+    public function birth(Meeple $type, string $location = Unit::LOCATION_MAP, int $locationArg = BoardCardInterface::LOCATION_ARG_DEFAULT, int $count = 1, bool $acted = true): array
     {
+        $created = [];
+
         for ($i = 0; $i < $count; $i++) {
             $baby = (new Unit())
                 ->setType($type)
                 ->setLocation($location)
                 ->setLocationArg($locationArg)
-                ->setStatus(Unit::STATUS_ACTED)
+                ->setStatus($acted ? Unit::STATUS_ACTED : Unit::STATUS_FREE)
                 ->setDisease(null)
             ;
             if ($this->getBgaDeck() !== null) {
                 $this->getBgaDeck()->createCards([$baby->toArray()], $location, $locationArg);
-                $baby->setId($this->cardRepository->getLastId());
+
+                $repository = $this->cardService->getCardRepository(Unit::class);
+                $baby->setId($repository->getLastId());
+
+                // No update needed if Free (Default)
+                if ($acted) {
+                    $repository->update($baby);
+                }
 
                 $this->addUnit($baby);
             }
+            $created[] = $baby;
         }
 
+        return $created;
     }
 
-    public static function buildUnit(array $data): Unit
+    /**
+     * @param array<string, mixed> $data
+     * @param array<string, Meeple> $meeples
+     * @return Unit
+     */
+    public static function buildUnit(array $data, array $meeples): Unit
     {
         return (new Unit())
             ->setId((int) $data['card_id'])
-            ->setType($data['card_type'])
+            ->setType($meeples[$data['card_type']])
             ->setLocation($data['card_location'])
             ->setLocationArg($data['card_location_arg'])
             ->setStatus($data['meeple_status'])
@@ -141,9 +167,9 @@ class PeopleService implements \JsonSerializable
         $this->setBgaDeck($bgaMeeple);
         $this->setMeeples($meeples);
 
-        foreach ($this->cardRepository->getPeopleData() as $unitData) {
+        foreach ($this->cardService->getCardRepository(Unit::class)->getPeopleData() as $unitData) {
             $this->addUnit(
-                self::buildUnit($unitData)
+                self::buildUnit($unitData, $meeples)
             );
         }
     }

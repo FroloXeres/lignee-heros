@@ -17,7 +17,7 @@ class MapService
 
     public function __construct()
     {
-        $this->mapRepository = new MapRepository();
+        $this->mapRepository = new MapRepository(Tile::class);
     }
 
     public function setTerrains(array $terrains): self

@@ -37,14 +37,14 @@ $gameinfos = array(
     'bgg_id' => 264647,
 
 // Players configuration that can be played (ex: 2 to 4 players)
-    'players' => [1, 2, 3, 4, 5, 6, 7, 8],
+    'players' => [1, 2, 3, 4, 5, 6],
 
 // Suggest players to play with this number of players. Must be null if there is no such advice, or if there is only one possible player configuration.
 // NB: the automatic lobby will try first the lowest number of players if this is not specified. So you _have to_ specify this parameter if the lowest player number is not compatible with the default options.
     'suggest_player_number' => 2,
 
 // Discourage players to play with these numbers of players. Must be null if there is no such advice.
-    'not_recommend_player_number' => [7, 8],
+    'not_recommend_player_number' => [5, 6],
 // 'not_recommend_player_number' => array( 2, 3 ),      // <= example: this is not recommended to play this game with 2 or 3 players
 
 // Estimated game duration, in minutes (used only for the launch, afterward the real duration is computed)

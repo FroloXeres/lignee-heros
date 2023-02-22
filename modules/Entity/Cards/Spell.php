@@ -5,6 +5,10 @@ namespace LdH\Entity\Cards;
 use LdH\Entity\Bonus;
 use LdH\Entity\Map\Resource;
 
+/**
+ * @table="spell"
+ * @entityLinked="\LdH\Entity\Cards\SpellBoardCard"
+ */
 class Spell extends AbstractCard
 {
     public const WHEN_FIGHT_START_ROUND = 1;
@@ -93,8 +97,6 @@ class Spell extends AbstractCard
      */
     protected array $gives;
 
-    protected bool $completed = false;
-
     /**
      * @param string $type
      * @param int    $code
@@ -103,9 +105,6 @@ class Spell extends AbstractCard
     {
         $this->setType($type);
         $this->setCode($code);
-
-        // Card specific
-        $this->location_arg = 0;
     }
 
     /**
@@ -317,18 +316,6 @@ class Spell extends AbstractCard
         return $this;
     }
 
-    public function isCompleted(): bool
-    {
-        return $this->completed;
-    }
-
-    public function setCompleted(bool $completed): self
-    {
-        $this->completed = $completed;
-
-        return $this;
-    }
-
     /**
      * @param string $type
      *
@@ -356,6 +343,11 @@ class Spell extends AbstractCard
         );
     }
 
+    public static function getBoardCardClassByCard(): string
+    {
+        return SpellBoardCard::class;
+    }
+
     /**
      * Return data for Card module
      *
@@ -377,9 +369,9 @@ class Spell extends AbstractCard
      *
      * @return array
      */
-    public function toTpl(Deck $deck): array
+    public function toTpl(Deck $deck, ?int $playerId = null): array
     {
-        $tpl = parent::toTpl($deck);
+        $tpl = parent::toTpl($deck, $playerId);
 
         $tpl[self::TPL_ICON]      = Deck::TYPE_MAGIC;
         $tpl[self::TPL_TYPE_ICON] = $this->getType();

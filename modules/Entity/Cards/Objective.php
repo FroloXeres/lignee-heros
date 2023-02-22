@@ -5,6 +5,10 @@ namespace LdH\Entity\Cards;
 use LdH\Entity\Bonus;
 use LdH\Entity\Meeple;
 
+/**
+ * @table="objective"
+ * @entityLinked="\LdH\Entity\Cards\ObjectiveBoardCard"
+ */
 class Objective extends AbstractCard
 {
     public const ABUNDANCE         = 501;
@@ -61,12 +65,8 @@ class Objective extends AbstractCard
     protected int  $need;
     protected int  $subNeed;
     protected int  $needCount;
-    protected bool $completed = false;
 
-    /**
-     * @param int $code
-     */
-    public function __construct(int $code, bool $lineage = false)
+    public function __construct(int $code)
     {
         $this->setCode($code);
         $this->need      = self::NEED_EXPLORE;
@@ -74,10 +74,33 @@ class Objective extends AbstractCard
         $this->needCount = 1;
 
         // Card specific
-        $this->type_arg     = 0;
+        $this->type_arg = 0;
+    }
 
-        $this->location     = $lineage? self::LOCATION_HIDDEN : self::LOCATION_DEFAULT;
-        $this->location_arg = 0;
+    public function isLineageObjective(): bool
+    {
+        switch ($this->getCode()) {
+        case self::TYPE_OBJECTIVE . '_' . self::HUMANI_WORKER:
+        case self::TYPE_OBJECTIVE . '_' . self::HUMANI_MAGE:
+        case self::TYPE_OBJECTIVE . '_' . self::NANI_SAVANT:
+        case self::TYPE_OBJECTIVE . '_' . self::NANI_WARRIOR:
+        case self::TYPE_OBJECTIVE . '_' . self::ELVEN_MAGE:
+        case self::TYPE_OBJECTIVE . '_' . self::ELVEN_SAVANT:
+        case self::TYPE_OBJECTIVE . '_' . self::ORK_WARRIOR:
+        case self::TYPE_OBJECTIVE . '_' . self::ORK_WORKER:
+            return true;
+        default:
+            return false;
+        }
+    }
+
+    public function addBoardCard(BoardCardInterface $boardCard): void
+    {
+        if ($this->isLineageObjective()) {
+            $boardCard->setLocation(BoardCardInterface::LOCATION_HIDDEN);
+        }
+
+        parent::addBoardCard($boardCard);
     }
 
     /**
@@ -164,16 +187,9 @@ class Objective extends AbstractCard
         return $entityAsText?? parent::getDescription();
     }
 
-    public function isCompleted(): bool
+    public static function getBoardCardClassByCard(): string
     {
-        return $this->completed;
-    }
-
-    public function setCompleted(bool $completed): self
-    {
-        $this->completed = $completed;
-
-        return $this;
+        return ObjectiveBoardCard::class;
     }
 
     /**
@@ -193,6 +209,20 @@ class Objective extends AbstractCard
         ];
     }
 
+    public function addPrivateFields(array $tpl, ?int $playerId = null): array
+    {
+        /** @var ObjectiveBoardCard $boardCard */
+        $boardCard = $this->getBoardCard();
+
+        if ($boardCard->getLocation() === BoardCardInterface::LOCATION_HAND
+            && $boardCard->getLocationArg() === $playerId
+        ) {
+            $tpl[self::TPL_COMPLETED] = $boardCard->isCompleted();
+        }
+
+        return $tpl;
+    }
+
     /**
      * Return data for Card template build
      *
@@ -200,12 +230,11 @@ class Objective extends AbstractCard
      *
      * @return array
      */
-    public function toTpl(Deck $deck): array
+    public function toTpl(Deck $deck, ?int $playerId = null): array
     {
-        $tpl = parent::toTpl($deck);
+        $tpl = parent::toTpl($deck, $playerId);
 
         $tpl[self::TPL_ICON] = Deck::TYPE_OBJECTIVE;
-        $tpl[self::TPL_COMPLETED] = $this->isCompleted() ? 'completed' : '';
 
         return $tpl;
     }

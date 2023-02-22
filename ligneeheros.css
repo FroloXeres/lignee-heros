@@ -52,14 +52,55 @@ html, body {
     font-size: 15px;
 }
 
+/******* Lineage Board ********/
+.board-overall, .board-lineage {
+    background-color: rgba(255, 255, 255, 0.25);
+    border-radius: 0.5em;
+    padding: .25em;
+    margin: .25em;
+    box-shadow: -1px 1px 5px 1px rgba(0, 0, 0, 0.2) inset;
+}
+.board-lineage .name,
+.board-lineage .meeple,
+.board-lineage .objective,
+.board-lineage .ldh-leading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0.2em 0;
+}
+.board-lineage picture {
+    width: 3em;
+    text-align: center;
+}
+.board-lineage .name label {
+    font-size: 1.1em;
+    font-weight: bold;
+    flex-grow: initial;
+}
+.board-lineage label {
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.board-lineage .ldh-leading {
+    opacity: .3;
+}
+.board-lineage .ldh-leading.leader {
+    display: flex;
+    transition: .5s;
+    opacity: 1;
+}
+
 /********* Cartridge **********/
 #cartridge {
-    padding: 0.5em 1em;
+    padding: .2em .2em;
 }
 #cartridge, .player-board {
     position: relative;
     margin: 0 auto .5em;
-    background: url('img/card-bg.jpg') 0 0 no-repeat;
+    background: url('img/wooden--bg.jpg') 0 0 no-repeat;
     background-size: 200% 100%;
     box-shadow: 0 3px 8px rgba(0,0,0,.3);
     z-index: 1;
@@ -72,7 +113,7 @@ html, body {
 h2#turn {
     text-align: center;
     font-size: 1.25em;
-    margin: 0 auto;
+    margin: .3em auto;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -86,7 +127,7 @@ h2#turn::before {
     aspect-ratio: 1;
     margin-right: .5em;
 }
-#cartridge > div {
+#cartridge > div > div {
     line-height: 2em;
 }
 #people-people::after, #people-worker::after, #people-warrior::after, #people-savant::after, #people-mage::after,
@@ -199,38 +240,55 @@ h2#turn::before {
 #invention-hand .card .cost svg {
     display: none;
 }
+.objective picture {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.leader picture, .icon-complete {
+    position: relative;
+}
+.leader picture::before, .icon-complete::before {
+    right: 0;
+    bottom: 0;
+}
+.leader picture::before,
+.icon-complete::before,
 #invention-hand .card .cost::before {
     font-family: "FontAwesome";
     content: "\f00c";
     color: #065009;
     position: absolute;
 }
+#overall-cards,
 #floating-cards {
     position: absolute;
-    z-index: 100;
+    z-index: 90;
     width: 100%;
     box-sizing: border-box;
     display: flex;
     flex-wrap: wrap;
     justify-content: space-around;
     padding: 1em;
-    max-width: 65em;
+    max-width: 70em;
     left: 50%;
     transform: translateX(-50%);
 }
+#overall-cards {
+    z-index: 100;
+}
+#overall-cards:empty,
 #floating-cards:empty {display: none;}
-#cards-zone .card.large, #floating-cards .card.large {
+
+#cards-zone .card.large, #floating-cards .card.large, #overall-cards .card.large {
     width: 15em;
     margin-bottom: .5em;
 }
-#cards-zone .card.onTable {
-
-}
-#cards-zone .card.hand {
-
-}
 #cards-zone .card {
     position: absolute;
+}
+#cards-zone .card.recto:hover {
+    z-index: 1;
 }
 #floating-cards .card {
     margin-right: 1em;
@@ -290,6 +348,7 @@ h2#turn::before {
     width: 10em;
     aspect-ratio: 7/11;
     border-radius: .5em;
+    box-shadow: 0.1em 0.1em 0.5em rgb(0 0 0 / 50%);
 }
 .card.verso {
     background-color: #000;
@@ -635,26 +694,31 @@ h2#turn::before {
     margin-right: 2%;
     left: .2em;
 }
-.card.lineage .ldh-leading span {
+.card.lineage .ldh-leading span,
+.board-lineage .ldh-leading span {
     position: relative;
     aspect-ratio: 1;
     margin-right: 6%;
 }
-.card.lineage .ldh-leading span svg {
+.card.lineage .ldh-leading span svg,
+.board-lineage .ldh-leading span svg {
     width: 1.25em;
     height: 1.25em;
 }
-.card.lineage .ldh-leading.end_turn span::after {
+.card.lineage .ldh-leading.end_turn span::after,
+.board-lineage .ldh-leading .end_turn span::after {
     position: absolute;
     content: "/3";
     margin-left: -.2em;
     margin-top: .65em;
     font-size: .9em;
 }
-.card.lineage .ldh-leading.fight span {
+.card.lineage .ldh-leading.fight span,
+.board-lineage .ldh-leading.fight span {
     margin-right: 8%;
 }
-.card.lineage .ldh-leading.fight span::after {
+.card.lineage .ldh-leading.fight span::after,
+.board-lineage .ldh-leading.fight span::after {
     content: "x1";
     margin-left: 0;
     margin-top: .6em;
@@ -941,13 +1005,14 @@ svg.svg-icon {
 }
 .map-hex-item {
     position: relative;
+    overflow: hidden;
     z-index: 0;
     height: 0;
     padding-bottom: 90%;
     grid-column: 1/span 3;
     grid-row: calc(var(--counter) + var(--counter))/span 2;
     -webkit-filter: drop-shadow(0 0 3px rgba(68,68,68,.08));
-    filter: drop-shadow(0 0 0.1em rgba(68,68,68,.08));
+    filter: drop-shadow(.2em .2em .2em rgba(68,68,68,.08));
     margin: 0.1em 0.1em;
     pointer-events: none;
 }
@@ -989,8 +1054,9 @@ svg.svg-icon {
     height: inherit;
     aspect-ratio: 1;
 }
+.map-explore .space:first-of-type .wrapped-icon svg.svg-icon,
 .map-explore .wrapped-icon:last-of-type svg.svg-icon {
-    filter: drop-shadow(3px 5px 2px rgb(0 0 0 / 0.4));
+    filter: drop-shadow(2px 1px 3px rgba(0, 0, 0, 0.4));
 }
 .wrapped-icon {
     cursor: pointer;
@@ -1058,12 +1124,24 @@ svg.svg-icon {
 }
 
 .tile {
-    background: url('img/card-bg.jpg') 0 0 no-repeat;
+    background: url('img/parchment-bg.jpg') 0 0 no-repeat;
     background-size: 200% 100%;
 }
-
-.tile.tile_reveal {background: none;}
-.tile.tile_reveal::before {display: none;}
+.tile.tile_reveal {
+    background: none;
+}
+.tile.tile_reveal::before {
+    content: '';
+    position: absolute;
+    z-index: -1;
+    top: -10%;
+    left: 0;
+    width: 105%;
+    height: 120%;
+    background: url('img/tiles-sprits.png') 0 0 no-repeat;
+    background-size: 1000% 200%;
+    transform: rotate(90deg);
+}
 
 .tile.explorable {
     cursor: pointer;
@@ -1129,12 +1207,12 @@ svg.svg-icon {
 }
 
 .tile.tile_reveal .name {
-    font-weight: bold;
     flex-grow: 1;
     display: flex;
     justify-content: center;
     align-items: flex-end;
     padding: 0 .5em;
+    text-shadow: 1px 1px 0 #eee, 1px -1px 0 #eee, -1px 1px 0 #eee, -1px -1px 0 #eee, 1px 0px 0 #eee, 0px 1px 0 #eee, -1px 0px 0 #eee, 0px -1px 0 #eee;
 }
 .tile.tile_reveal .name .bonus {
     font-size: .9em;
@@ -1179,50 +1257,52 @@ svg.svg-icon {
 .tile.tile_reveal .food.none {display: none}
 .tile.tile_reveal .science.none {display: none}
 
-.tile.tile_reveal.tile_town_humani {background-color: antiquewhite;}
-.tile.tile_reveal.tile_town_elven {background-color: antiquewhite;}
-.tile.tile_reveal.tile_town_nani {background-color: antiquewhite;}
-.tile.tile_reveal.tile_town_ork {background-color: antiquewhite;}
+.tile.tile_reveal.tile_town_humani::before {background-position: 0 0;}
+.tile.tile_reveal.tile_town_elven::before {background-position: 0 0;}
+.tile.tile_reveal.tile_town_nani::before {background-position: 0 0;}
+.tile.tile_reveal.tile_town_ork::before {background-position: 0 0;}
 
-.tile.tile_reveal.tile_mountain {background-color: dimgray;}
-.tile.tile_reveal.tile_mountain_lair {background-color: dimgray;}
-.tile.tile_reveal.tile_mountain_lake {background-color: dimgray;}
-.tile.tile_reveal.tile_mountain_wood {background-color: dimgray;}
-.tile.tile_reveal.tile_mountain_tower {background-color: dimgray;}
-.tile.tile_reveal.tile_mountain_river {background-color: dimgray;}
-.tile.tile_reveal.tile_plain {background-color: lightgreen;}
-.tile.tile_reveal.tile_plain_lake {background-color: lightgreen;}
-.tile.tile_reveal.tile_plain_wood {background-color: lightgreen;}
-.tile.tile_reveal.tile_plain_desert {background-color: lightgreen;}
-.tile.tile_reveal.tile_plain_river_ruin {background-color: lightgreen;}
-.tile.tile_reveal.tile_hill {background-color: saddlebrown;}
-.tile.tile_reveal.tile_hill_plateau {background-color: saddlebrown;}
-.tile.tile_reveal.tile_hill_wood_river {background-color: saddlebrown;}
-.tile.tile_reveal.tile_hill_ruin {background-color: saddlebrown;}
-.tile.tile_reveal.tile_hill_lake {background-color: saddlebrown;}
-.tile.tile_reveal.tile_hill_wood_lair {background-color: saddlebrown;}
-.tile.tile_reveal.tile_swamp {background-color: darkolivegreen;}
-.tile.tile_reveal.tile_swamp_lair {background-color: darkolivegreen;}
-.tile.tile_reveal.tile_swamp_tower {background-color: darkolivegreen;}
-.tile.tile_reveal.tile_forest {background-color: darkgreen;}
-.tile.tile_reveal.tile_forest_tower {background-color: darkgreen;}
-.tile.tile_reveal.tile_forest_lair {background-color: darkgreen;}
-.tile.tile_reveal.tile_forest_dense {background-color: darkgreen;}
-.tile.tile_reveal.tile_forest_ruin {background-color: darkgreen;}
-.tile.tile_reveal.tile_desert {background-color: sandybrown;}
-.tile.tile_reveal.tile_desert_stone {background-color: sandybrown;}
+.tile.tile_reveal.tile_mountain::before {background-position: 30% 96%;}
+.tile.tile_reveal.tile_mountain_lair::before {background-position: 30% 96%;}
+.tile.tile_reveal.tile_mountain_lake::before {background-position: 30% 96%;}
+.tile.tile_reveal.tile_mountain_wood::before {background-position: 30% 96%;}
+.tile.tile_reveal.tile_mountain_tower::before {background-position: 30% 96%;}
+.tile.tile_reveal.tile_mountain_river::before {background-position: 30% 96%;}
+.tile.tile_reveal.tile_plain::before {background-position: 70% 0;}
+.tile.tile_reveal.tile_plain_lake::before {background-position: 90% 0;}
+.tile.tile_reveal.tile_plain_wood::before {background-position: 80% 0;}
+.tile.tile_reveal.tile_plain_desert::before {background-position: 30% 0;}
+.tile.tile_reveal.tile_plain_river_ruin::before {background-position: 0 96%;}
+.tile.tile_reveal.tile_hill::before {background-position: 20% 96%;}
+.tile.tile_reveal.tile_hill_plateau::before {background-position: 20% 96%;}
+.tile.tile_reveal.tile_hill_wood_river::before {background-position: 20% 96%;}
+.tile.tile_reveal.tile_hill_ruin::before {background-position: 20% 96%;}
+.tile.tile_reveal.tile_hill_lake::before {background-position: 20% 96%;}
+.tile.tile_reveal.tile_hill_wood_lair::before {background-position: 20% 96%;}
+.tile.tile_reveal.tile_swamp::before {background-position: 10% 0;}
+.tile.tile_reveal.tile_swamp_lair::before {background-position: 10% 0;}
+.tile.tile_reveal.tile_swamp_tower::before {background-position: 10% 0;}
+.tile.tile_reveal.tile_forest::before {background-position: 0 0;}
+.tile.tile_reveal.tile_forest_tower::before {background-position: 0 0;}
+.tile.tile_reveal.tile_forest_lair::before {background-position: 0 0;}
+.tile.tile_reveal.tile_forest_dense::before {background-position: 10% 96%;}
+.tile.tile_reveal.tile_forest_ruin::before {background-position: 0 0;}
+.tile.tile_reveal.tile_desert::before {background-position: 20% 0;}
+.tile.tile_reveal.tile_desert_stone::before {background-position: 20% 0;}
 
 .tile .map-dist-bg {
     position: absolute;
-    top: 45%;
-    left: 0.6em;
+    top: 0.6em;
+    left: 44.25%;
     width: 10%;
     height: 10%;
-    background: #f0e094;
+    background-color: rgba(255, 255, 255, 0.25);
     transform: rotate(-45deg);
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 .tile .map-dist-bg label {
-    display: inline-block;
     font-size: .75vw;
     color: #333;
     transform: rotate(45deg);

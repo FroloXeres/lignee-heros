@@ -32,6 +32,11 @@ class CurrentStateService
 
     public const LAST_TURN    = 50;
     public const START_PEOPLE = 10;
+    public const START_FOOD_PRD = 2;
+    public const START_SCIENCE_PRD = 1;
+    public const START_LIFE = 1;
+    public const START_WAR_PWR = 1;
+    public const START_CTY_DFS = 1;
 
     public const CURRENT_STATES = [
         self::GLB_TURN_LFT    => 10,
@@ -62,10 +67,22 @@ class CurrentStateService
     public static function getStateByMeepleType(Meeple $meeple): string
     {
         switch ($meeple->getCode()) {
-            case Meeple::WORKER: return self::GLB_WORKER_CNT;
-            case Meeple::WARRIOR: return self::GLB_WARRIOR_CNT;
-            case Meeple::MAGE: return self::GLB_MAGE_CNT;
-            case Meeple::SAVANT: return self::GLB_SAVANT_CNT;
+            case Meeple::ORK_WORKER:
+            case Meeple::HUMANI_WORKER:
+            case Meeple::WORKER:
+                return self::GLB_WORKER_CNT;
+            case Meeple::ORK_WARRIOR:
+            case Meeple::NANI_WARRIOR:
+            case Meeple::WARRIOR:
+                return self::GLB_WARRIOR_CNT;
+            case Meeple::ELVEN_MAGE:
+            case Meeple::HUMANI_MAGE:
+            case Meeple::MAGE:
+                return self::GLB_MAGE_CNT;
+            case Meeple::ELVEN_SAVANT:
+            case Meeple::NANI_SAVANT:
+            case Meeple::SAVANT:
+                return self::GLB_SAVANT_CNT;
             default: return '';
         }
     }

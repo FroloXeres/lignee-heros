@@ -2,6 +2,9 @@
 
 namespace LdH\Entity\Cards;
 
+use LdH\State\ChooseLineageState;
+
+
 abstract class AbstractCard implements CardInterface
 {
     public const TYPE_DISEASE     = 'disease';
@@ -12,21 +15,25 @@ abstract class AbstractCard implements CardInterface
     public const TYPE_OBJECTIVE = 'objective';
     public const TYPE_LINEAGE   = 'lineage';
 
-    public const LOCATION_DEFAULT  = 'deck';
-    public const LOCATION_HAND     = 'hand';
-    public const LOCATION_ON_TABLE = 'onTable';
-    public const LOCATION_DISCARD  = 'discard';
-    public const LOCATION_HIDDEN   = 'hidden';
-    public const LOCATION_REMOVED  = 'removed';
-    public const LOCATION_PLAYER   = 'player';
+    /**
+     * @var BoardCardInterface[]
+     */
+    protected array $boardCards = [];
 
-    /** @var int[]  */
-    protected ?array $ids          = [];
-    protected string $code         = '';
+    protected string $code       = '';
+
+    /**
+     * @column="card_type"
+     * @isKey
+     */
     protected string $type;
+
+    /**
+     * @column="card_type_arg"
+     * @isKey
+     */
     protected ?int   $type_arg;
-    protected string $location     = self::LOCATION_DEFAULT;
-    protected ?int   $location_arg;
+
     protected ?int   $nbr;
 
     protected string  $name        = '';
@@ -34,20 +41,73 @@ abstract class AbstractCard implements CardInterface
     protected string  $costIcon    = 'none';
     protected string  $artist      = '';
 
-    /**
-     * @return int[]
-     */
-    public function getIds(): array
+    public static function getBoardCardClassByCard(): string
     {
-        return $this->ids;
+        return DefaultBoardCard::class;
     }
 
     /**
-     * @param int[] $ids
+     * @return BoardCardInterface[]
      */
-    public function setIds(array $ids): void
+    public function getBoardCards(): array
     {
-        $this->ids = $ids;
+        return $this->boardCards;
+    }
+
+    public function getBoardCardsByLocation(string $location, ?int $stateId = null, ?int $playerId = null): array
+    {
+        return array_filter(
+            $this->boardCards,
+            function (BoardCardInterface $boardCard) use ($location, $stateId, $playerId) {
+                if ($boardCard->getLocation() !== $location) return false;
+                if ($stateId === null && $playerId === null) return true;
+
+                switch (get_class($this)) {
+                case Lineage::class:
+                    if ($location === BoardCardInterface::LOCATION_HAND) return true;
+                    return $stateId === ChooseLineageState::ID;
+                case Objective::class:
+                    if ($location === BoardCardInterface::LOCATION_HAND) return $boardCard->getLocationArg() === $playerId;
+                    return false;
+                default:
+                    return true;
+                }
+            },
+        );
+    }
+
+    public function getBoardCard(?int $id = null): ?BoardCardInterface
+    {
+        $nbBoardCard = $this->getCardCount();
+        if ($id === null && $nbBoardCard === 1) {
+            return reset($this->boardCards);
+        }
+
+        for ($i = 0; $i < $nbBoardCard; $i++) {
+            if ($this->boardCards[$i]->getId() === $id) {
+                return $this->boardCards[$i];
+            }
+        }
+
+        return null;
+    }
+
+    public function addBoardCard(BoardCardInterface $boardCard): void
+    {
+        $this->boardCards[] = $boardCard;
+    }
+
+    /**
+     * @param BoardCardInterface[] $boardCards
+     */
+    public function setBoardCards(array $boardCards): void
+    {
+        $this->boardCards = $boardCards;
+    }
+
+    public function getCardCount(): int
+    {
+        return count($this->boardCards);
     }
 
     /**
@@ -98,36 +158,27 @@ abstract class AbstractCard implements CardInterface
         $this->type_arg = $type_arg;
     }
 
-    /**
-     * @return string
-     */
-    public function getLocation(): string
+    public function moveCardsTo(string $location, ?int $locationArg = null): void
     {
-        return $this->location;
+        foreach ($this->boardCards as $boardCard) {
+            $boardCard->setLocation($location);
+
+            if ($locationArg !== null) {
+                $boardCard->setLocationArg($locationArg);
+            }
+        }
     }
 
-    /**
-     * @param string $location
-     */
-    public function setLocation(string $location): void
+    public function moveCardTo(int $id, string $location, ?int $locationArg = null): void
     {
-        $this->location = $location;
-    }
+        $boardCard = $this->getBoardCard($id);
+        if ($boardCard !== null) {
+            $boardCard->setLocation($location);
 
-    /**
-     * @return int|null
-     */
-    public function getLocationArg(): ?int
-    {
-        return $this->location_arg;
-    }
-
-    /**
-     * @param int|null $location_arg
-     */
-    public function setLocationArg(?int $location_arg): void
-    {
-        $this->location_arg = $location_arg;
+            if ($locationArg !== null) {
+                $boardCard->setLocationArg($locationArg);
+            }
+        }
     }
 
     /**
@@ -236,10 +287,12 @@ abstract class AbstractCard implements CardInterface
 
     public const BGA_TYPE         = 'type';
     public const BGA_TYPE_ARG     = 'type_arg';
-    public const BGA_LOCATION     = 'location';
-    public const BGA_LOCATION_ARG = 'location_arg';
     public const BGA_NBR          = 'nbr';
 
+    public function addPrivateFields(array $tpl, ?int $playerId = null): array
+    {
+        return $tpl;
+    }
 
     /**
      * Return data for Card module
@@ -251,8 +304,6 @@ abstract class AbstractCard implements CardInterface
         return [
             self::BGA_TYPE         => $this->getType(),
             self::BGA_TYPE_ARG     => $this->getTypeArg(),
-            self::BGA_LOCATION     => $this->getLocation(),
-            self::BGA_LOCATION_ARG => $this->getLocationArg(),
             self::BGA_NBR          => 1
         ];
     }
@@ -264,9 +315,9 @@ abstract class AbstractCard implements CardInterface
      *
      * @return array
      */
-    public function toTpl(Deck $deck): array
+    public function toTpl(Deck $deck, ?int $playerId = null): array
     {
-        return [
+        return $this->addPrivateFields([
             self::TPL_ID              => $this->getCode(),
             self::TPL_DECK            => $deck->getType(),
             self::TPL_LARGE           => ($deck->isLarge()? 'large' : ''),
@@ -293,7 +344,6 @@ abstract class AbstractCard implements CardInterface
             self::TPL_LEAD_TYPE       => '',
             self::TPL_COMPLETED       => '',
             self::TPL_IS_LEADER       => '',
-            self::BGA_LOCATION        => $this->getLocation()
-        ];
+        ], $playerId);
     }
 }
