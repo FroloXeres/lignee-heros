@@ -32,6 +32,11 @@ class CurrentStateService
 
     public const LAST_TURN    = 50;
     public const START_PEOPLE = 10;
+    public const START_FOOD_PRD = 2;
+    public const START_SCIENCE_PRD = 1;
+    public const START_LIFE = 1;
+    public const START_WAR_PWR = 1;
+    public const START_CTY_DFS = 1;
 
     public const CURRENT_STATES = [
         self::GLB_TURN_LFT    => 10,

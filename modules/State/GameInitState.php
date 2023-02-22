@@ -19,8 +19,6 @@ class GameInitState extends AbstractState
 
     public const NOTIFY_CITY_START         = 'cityStart';
     public const NOTIFY_CITY_INVENTIONS    = 'cityInventions';
-    public const NOTIFY_CITY_UNITS         = 'cityUnits';
-    public const NOTIFY_INVENTION_REVEALED = 'inventionRevealed';
 
     public static function getId(): int
     {
@@ -74,10 +72,7 @@ class GameInitState extends AbstractState
                     false
                 );
 
-                $state = CurrentStateService::getStateByMeepleType($meeple);
-                if ($state) {
-                    $this->incGameStateValue($state, 1);
-                }
+                $this->incGameStateValue(CurrentStateService::getStateByMeepleType($meeple), 1);
             }
 
             // Put 10 Worker (- number of player - city units) on central tile (notify)

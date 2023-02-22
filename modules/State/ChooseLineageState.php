@@ -6,7 +6,6 @@ use LdH\Entity\Cards\AbstractCard;
 use LdH\Entity\Cards\BoardCardInterface;
 use LdH\Entity\Cards\Lineage;
 use LdH\Entity\Map\City;
-use LdH\Entity\Meeple;
 use LdH\Entity\Unit;
 use LdH\Service\CurrentStateService;
 use LdH\Service\MessageHelper;
@@ -39,7 +38,7 @@ class ChooseLineageState extends AbstractState
         $this->action            = 'st' . $this->name;
         $this->args              = 'arg' . $this->name;
         $this->possibleActions   = [self::ACTION_SELECT_LINEAGE, self::ACTION_CANCEL_LINEAGE];
-        $this->transitions       = ["" => DrawObjectiveState::ID];
+        $this->transitions       = ["" => PrincipalState::ID];
     }
 
     public function getActionCleanMethods(): array
@@ -75,8 +74,7 @@ class ChooseLineageState extends AbstractState
 
                 // CurrentPlayer choose this lineage
                 $playerId = (int) $this->getCurrentPlayerId();
-                $lineageCard->moveCardsTo(BoardCardInterface::LOCATION_HAND, $playerId);
-                $this->getCardService()->updateCard($lineageCard);
+                $this->getCardService()->moveTheseCardsTo([$lineageCard], BoardCardInterface::LOCATION_HAND, $playerId);
 
                 // Add lineage Meeple to city (auto-saved)
                 $this->incGameStateValue(CurrentStateService::getStateByMeepleType($lineageCard->getMeeple()), 1);
@@ -90,16 +88,14 @@ class ChooseLineageState extends AbstractState
 
                 // Add lineage objective to player's hand
                 $objective = $lineageCard->getObjective();
-                $this->getCardService()->updateCardFromDb($objective);
-                $objective->moveCardsTo(BoardCardInterface::LOCATION_HAND, $playerId);
-                $this->getCardService()->updateCard($objective);
+                $this->getCardService()->moveTheseCardsTo([$objective], BoardCardInterface::LOCATION_HAND, $playerId);
 
                 $notificationParams = [
                     'i18n' => ['player_name', 'lineage'],
                     'player_name' => $this->getCurrentPlayerName(),
                     'lineage' => $lineageCard->getName(),
                     'lineageId' => $lineageCard->getCode(),
-                    'playerId' => $this->getCurrentPlayerId(),
+                    'playerId' => $playerId,
                     'unit' => $lineageUnits[0] ?? [],
                 ];
                 $this->notifyAllPlayers(
@@ -110,7 +106,7 @@ class ChooseLineageState extends AbstractState
 
                 $notificationParams['i18n'] = ['lineage'];
                 $this->notifyPlayer(
-                    $this->getCurrentPlayerId(),
+                    $playerId,
                     ChooseLineageState::NOTIFY_PLAYER_CHOSEN,
                     clienttranslate('You will play with ${lineage}'),
                     $notificationParams
@@ -122,7 +118,7 @@ class ChooseLineageState extends AbstractState
                     $objectives,
                     BoardCardInterface::LOCATION_DEFAULT,
                     BoardCardInterface::LOCATION_HAND,
-                    $this->getCurrentPlayerId()
+                    $playerId
                 );
 
                 // Send objective drawn notification only to you
@@ -132,14 +128,14 @@ class ChooseLineageState extends AbstractState
                     'objective' => $secondObjective->toTpl($objectives),
                 ];
                 $this->notifyPlayer(
-                    $this->getCurrentPlayerId(),
+                    $playerId,
                     ChooseLineageState::NOTIFY_OBJECTIVE_DRAW,
                     clienttranslate('Your hidden objective will be: ${objectiveName}'),
                     $notificationParams
                 );
 
                 // If all player choose Lineage, next step...
-                $this->gamestate->setPlayerNonMultiActive($this->getCurrentPlayerId(), '');
+                $this->gamestate->setPlayerNonMultiActive($playerId, '');
             }
         ];
     }

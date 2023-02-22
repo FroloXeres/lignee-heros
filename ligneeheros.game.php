@@ -223,9 +223,11 @@ class ligneeheros extends Table
 
         $this->setGameStateValue(CurrentStateService::GLB_TURN_LFT, CurrentStateService::LAST_TURN);
         $this->setGameStateValue(CurrentStateService::GLB_PEOPLE_CNT, CurrentStateService::START_PEOPLE);
-        $this->setGameStateValue(CurrentStateService::GLB_LIFE, 1);
-        $this->setGameStateValue(CurrentStateService::GLB_WAR_PWR, 1);
-        $this->setGameStateValue(CurrentStateService::GLB_CTY_DFS, 1);
+        $this->setGameStateValue(CurrentStateService::GLB_FOOD_PRD, CurrentStateService::START_FOOD_PRD);
+        $this->setGameStateValue(CurrentStateService::GLB_SCIENCE_PRD, CurrentStateService::START_SCIENCE_PRD);
+        $this->setGameStateValue(CurrentStateService::GLB_LIFE, CurrentStateService::START_LIFE);
+        $this->setGameStateValue(CurrentStateService::GLB_WAR_PWR, CurrentStateService::START_WAR_PWR);
+        $this->setGameStateValue(CurrentStateService::GLB_CTY_DFS, CurrentStateService::START_CTY_DFS);
     }
 
     private function initStats()
@@ -321,8 +323,8 @@ class ligneeheros extends Table
                 'military-defense' => clienttranslate('Warrior defense'),
                 'city-life' => clienttranslate('Growth (%count%/8 chance to produce new unit)'),
                 'city-defense' => clienttranslate('City defense'),
-                'harvest-food' => clienttranslate('Food to harvest (at the end of turn)'),
-                'harvest-science' => clienttranslate('Science to harvest (at the end of turn)'),
+                'harvest-food' => clienttranslate('Food harvested by each Free Worker (at the end of turn)'),
+                'harvest-science' => clienttranslate('Science harvested by each Free Savant (at the end of turn)'),
                 'stock-food' => clienttranslate('Food harvested / Food stock available'),
                 'stock-science' => clienttranslate('Science harvested'),
                 'stock-wood' => clienttranslate('Wood (resource harvested)'),
@@ -369,7 +371,7 @@ class ligneeheros extends Table
                 ],
                 '.tile .resource.food' => [
                     clienttranslate('Food'),
-                    clienttranslate('Keep free worker(s) (Max. %count%) on this tile to harvest at the end of turn'),
+                    clienttranslate('Keep free worker(s) (Max. %count%) on this tile to harvest Food at the end of turn'),
                 ],
                 '.tile .resource.science' => [
                     clienttranslate('Science'),
@@ -387,6 +389,7 @@ class ligneeheros extends Table
                 '.wrapped-icon.free.mage' => clienttranslate('%count% free mage(s)'),
                 '.wrapped-icon.moved.mage' => clienttranslate('%count% moved mage(s) (No more move possible)'),
                 '.wrapped-icon.acted.mage' => clienttranslate('%count% acted mage(s) (No more action possible)'),
+                '.player-board .ldh-leading' => clienttranslate('The first player to complete his two objectives becomes the leader and obtains this power'),
             ],
         ];
     }

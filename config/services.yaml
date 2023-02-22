@@ -12,13 +12,6 @@ services:
     LdH\Service\StateService:
         public: true
 
-    # Repositories
-    LdH\Repository\MapRepository:
-        public: true
-
-    LdH\Repository\CardRepository:
-        public: true
-
     LdH\Repository\Field:
         public: true
 
@@ -34,7 +27,11 @@ services:
         public: true
         tags: [ 'ldh.state' ]
 
-    LdH\State\DrawObjectiveState:
+    LdH\State\GameStartState:
+        public: true
+        tags: ['ldh.state']
+
+    LdH\State\PrincipalState:
         public: true
         tags: ['ldh.state']
 

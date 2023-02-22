@@ -188,7 +188,7 @@
                 <picture></picture>\
                 <label></label>\
             </div>\
-            <div class="ldh-leading ${leader} ${leadType}">\
+            <div id="leader-power-${playerId}" class="ldh-leading ${leader} ${leadType}">\
                 <picture>${leadingIcon}</picture>\
                 <label>\
                     <span>${leadTypeIcon}</span>\

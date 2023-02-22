@@ -15,7 +15,7 @@ use LdH\Entity\Cards\Spell;
 use LdH\Repository\CardRepository;
 use LdH\State\ChooseLineageState;
 use LdH\State\DeadEndState;
-use LdH\State\DrawObjectiveState;
+use LdH\State\PrincipalState;
 
 class CardService
 {

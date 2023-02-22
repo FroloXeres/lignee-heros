@@ -287,6 +287,9 @@ h2#turn::before {
 #cards-zone .card {
     position: absolute;
 }
+#cards-zone .card.recto:hover {
+    z-index: 1;
+}
 #floating-cards .card {
     margin-right: 1em;
 }
