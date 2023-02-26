@@ -35,6 +35,14 @@ services:
         public: true
         tags: ['ldh.state']
 
+    LdH\State\PreparePrincipalState:
+        public: true
+        tags: ['ldh.state']
+
+    LdH\State\EndTurnState:
+        public: true
+        tags: [ 'ldh.state' ]
+
     LdH\State\DeadEndState:
         public: true
         tags: ['ldh.state']

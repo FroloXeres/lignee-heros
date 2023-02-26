@@ -69,6 +69,7 @@ function (dojo, on, declare) {
             }
 
             this.status.isInitializing = true;
+            this.isActive = gamedatas.isActive;
             this.setupGameState(gamedatas);
             this.setupGameData(gamedatas);
             this.initCards(gamedatas);
@@ -916,6 +917,9 @@ function (dojo, on, declare) {
         //
         onEnteringState: function( stateName, args )
         {
+            console.log('EnteringState:');
+            console.log(args);
+
             switch( stateName ) {
             case 'ChooseLineage' :
                 this.initLineageCards();
@@ -927,8 +931,9 @@ function (dojo, on, declare) {
                     cancelBtn.forEach((elt) => elt.classList.add('hidden'));
                 }
                 break;
-            case 'DrawObjective' :
-                console.log('DrawObjective');
+            case 'Principal' :
+
+                this.isActive = args['isActive'];
                 break;
             }
         },
@@ -951,30 +956,25 @@ function (dojo, on, declare) {
         //        
         onUpdateActionButtons: function( stateName, args )
         {
-            switch( stateName ) {
-                case 'ChooseLineage' :
-                    //
-                    this.status.state.lineageChosen = !this.isCurrentPlayerActive();
-                    break;
+            switch(stateName) {
+                case 'ChooseLineage': this.status.state.lineageChosen = !this.isCurrentPlayerActive(); break;
             }
 
-            if( this.isCurrentPlayerActive() )
-            {            
-                switch( stateName ) {
-                    case 'ChooseLineage' :
+            if(this.isCurrentPlayerActive()) {
+                switch(stateName) {
+                    case 'ChooseLineage':
                         this.addActionButton( 'chooseLineage', _('Yes'), 'onSelectLineage' );
                         this.addActionButton( 'cancelChooseLineage', _('No'), 'onUnselectLineage' );
                         break;
-/*
-                 case 'myGameState':
-                    
-                    // Add 3 action buttons in the action status bar:
-                    
-                    this.addActionButton( 'button_1_id', _('Button 1 label'), 'onMyMethodToCall1' );
-                    this.addActionButton( 'button_2_id', _('Button 2 label'), 'onMyMethodToCall2' ); 
-                    this.addActionButton( 'button_3_id', _('Button 3 label'), 'onMyMethodToCall3' ); 
-                    break;
-*/
+                    case 'Principal':
+                        if (this.isActive) {
+                            this.addActionButton( 'pass', _('Pass'), 'onPass' );
+                        } else {
+                            this.addActionButton( 'unPass', _('An action to do?'), 'onUnPass' );
+                        }
+
+
+                        break;
                 }
             }
         },        
@@ -1023,7 +1023,9 @@ function (dojo, on, declare) {
             _ make a call to the game server
         
         */
-        onSelectLineage: function()  {
+        onSelectLineage: function(evt)  {
+            dojo.stopEvent(evt);
+
             if (this.selectedCards[0] !== 'undefined' && this.checkAction('selectLineage') && !this.status.state.lineageChosen) {
                 this.status.state.lineageChosen = true;
                 this.ajaxCallWrapper(
@@ -1035,7 +1037,9 @@ function (dojo, on, declare) {
             }
         },
 
-        onUnselectLineage: function() {
+        onUnselectLineage: function(evt) {
+            dojo.stopEvent(evt);
+
             this.selectedCards = [];
             dojo.query('#floating-cards .card').forEach((thisCard) => {
                 thisCard.classList.remove('selected');
@@ -1046,41 +1050,20 @@ function (dojo, on, declare) {
             dojo.query('#cancelChooseLineage')[0].classList.add('hidden');
         },
 
-        /* Example:
-        
-        onMyMethodToCall1: function( evt )
-        {
-            console.log( 'onMyMethodToCall1' );
-            
-            // Preventing default browser reaction
-            dojo.stopEvent( evt );
+        onPass: function(evt) {
+            dojo.stopEvent(evt);
+            if (!this.checkAction('pass')) return;
 
-            // Check that this action is possible (see "possibleactions" in states.inc.php)
-            if( ! this.checkAction( 'myAction' ) )
-            {   return; }
+            this.ajaxCallWrapper('pass', {}, (response) => {}, (isError) => {});
+        },
 
-            this.ajaxcall( "/ligneeheros/ligneeheros/myAction.html", { 
-                                                                    lock: true, 
-                                                                    myArgument1: arg1, 
-                                                                    myArgument2: arg2,
-                                                                    ...
-                                                                 }, 
-                         this, function( result ) {
-                            
-                            // What to do after the server call if it succeeded
-                            // (most of the time: nothing)
-                            
-                         }, function( is_error) {
+        onUnPass: function(evt) {
+            dojo.stopEvent(evt);
+            if (!this.checkAction('unPass')) return;
 
-                            // What to do after the server call in anyway (success or failure)
-                            // (most of the time: nothing)
+            this.ajaxCallWrapper('unPass', {}, (response) => {}, (isError) => {});
+        },
 
-                         } );        
-        },        
-        
-        */
-
-        
         ///////////////////////////////////////////////////
         //// Reaction to cometD notifications
 

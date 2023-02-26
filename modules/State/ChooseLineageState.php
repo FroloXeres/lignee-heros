@@ -38,7 +38,7 @@ class ChooseLineageState extends AbstractState
         $this->action            = 'st' . $this->name;
         $this->args              = 'arg' . $this->name;
         $this->possibleActions   = [self::ACTION_SELECT_LINEAGE, self::ACTION_CANCEL_LINEAGE];
-        $this->transitions       = ["" => PrincipalState::ID];
+        $this->transitions       = ["" => PreparePrincipalState::ID];
     }
 
     public function getActionCleanMethods(): array

@@ -285,6 +285,7 @@ class ligneeheros extends Table
         // Note: you can retrieve some extra field you added for "player" table in "dbmodel.sql" if you need it.
         $sql = "SELECT player_id id, player_score score FROM player ";
         $result['players'] = self::getCollectionFromDb( $sql );
+        $result['isActive'] = $this->gamestate->isPlayerActive($this->getCurrentPlayerId());
 
         // Send materials
         $result['resources'] = $this->resources?? [];
@@ -309,6 +310,19 @@ class ligneeheros extends Table
         // TODO: Gather all information about current game situation (visible by player $current_player_id).
 
         return $result;
+    }
+
+    function addPlayersInfosForArgs(&$args): array
+    {
+        $args['players'] = [];
+
+        $players = $this->loadPlayersBasicInfos();
+        foreach ($players as $playerId => $playerInfos) {
+            $args['players'][$playerId] = [
+                'isActive' => ($playerInfos['player_is_multiactive'] === '1'),
+            ];
+        }
+        return $args;
     }
 
     function getTooltips(): array

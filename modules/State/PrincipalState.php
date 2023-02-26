@@ -7,9 +7,14 @@ class PrincipalState extends AbstractState
     public const ID = 5;
     public const NAME = 'Principal';
 
-    public const ACTION_END_TURN = 'endTurn';
+    public const ACTION_PASS = 'pass';
+    public const ACTION_UN_PASS = 'unPass';
 
-    public const TR_END_TURN = 'trEndTurn';
+    public const TR_PASS = 'trPass';
+    public const TR_UN_PASS = 'trUnPass';
+
+    public const NOTIFY_PLAYER_PASS = 'playerPass';
+    public const NOTIFY_PLAYER_UN_PASS = 'playerUnPass';
 
     public static function getId(): int
     {
@@ -19,35 +24,43 @@ class PrincipalState extends AbstractState
     public function __construct()
     {
         $this->name              = self::NAME;
-        $this->type              = self::TYPE_ACTIVE;
+        $this->type              = self::TYPE_MULTI_ACTIVE;
         $this->description       = clienttranslate('${actplayer} has to choose an action to do');
         $this->descriptionMyTurn = clienttranslate("Please choose an action to do");
         $this->action            = 'st' . $this->name;
         $this->possibleActions   = [
-            self::ACTION_END_TURN,
+            self::ACTION_PASS,
+            self::ACTION_UN_PASS,
         ];
         $this->args              = 'arg' . $this->name;
         $this->transitions       = [
-            self::TR_END_TURN => DeadEndState::ID,
+            self::TR_UN_PASS => PrincipalState::ID,
+            self::TR_PASS => EndTurnState::ID,
         ];
     }
 
     public function getStateArgMethod(): ?callable
     {
         return function () {
-            // Send data for this state
-
-
-            return [
-                'data' => 'Content'
+            /** @var \ligneeheros $this */
+            // Available actions for this turn
+            $args = [
+                'actions' => [],
             ];
+            $this->addPlayersInfosForArgs($args);
+
+            // Check for available actions
+
+
+            return $args;
         };
     }
 
     public function getStateActionMethod(): ?callable
     {
         return function () {
-            // Action start
+            /** @var \ligneeheros $this */
+
 
         };
     }
@@ -55,27 +68,52 @@ class PrincipalState extends AbstractState
     public function getActionCleanMethods(): array
     {
         return [
-            self::ACTION_END_TURN => function() {
+            self::ACTION_PASS => function() {
                 /** @var \action_ligneeheros $this */
-
-
-
-                $this->game->{PrincipalState::ACTION_END_TURN}();
-            }
+                $this->game->{PrincipalState::ACTION_PASS}();
+            },
+            self::ACTION_UN_PASS => function() {
+                /** @var \action_ligneeheros $this */
+                $this->game->{PrincipalState::ACTION_UN_PASS}();
+            },
         ];
     }
 
     public function getActionMethods(): array
     {
         return [
-            self::ACTION_END_TURN => function() {
+            self::ACTION_PASS => function() {
                 /** @var \ligneeheros $this */
                 // No more action to do, launch end of turn...
 
+                $notificationParams = [
+                    'i18n' => ['player_name'],
+                    'player_name' => $this->getCurrentPlayerName(),
+                ];
+                $this->notifyAllPlayers(
+                    PrincipalState::NOTIFY_PLAYER_PASS,
+                    clienttranslate('${player_name} do nothing for now'),
+                    $notificationParams
+                );
 
+                $this->gamestate->setPlayerNonMultiactive($this->getCurrentPlayerId(), PrincipalState::TR_PASS);
+            },
+            self::ACTION_UN_PASS => function() {
+                /** @var \ligneeheros $this */
+                // Finally, do something
 
-                $this->gamestate->nextState();
-            }
+                $notificationParams = [
+                    'i18n' => ['player_name'],
+                    'player_name' => $this->getCurrentPlayerName(),
+                ];
+                $this->notifyAllPlayers(
+                    PrincipalState::NOTIFY_PLAYER_UN_PASS,
+                    clienttranslate('${player_name} join us back'),
+                    $notificationParams
+                );
+
+                $this->gamestate->setPlayersMultiactive([$this->getCurrentPlayerId()], PrincipalState::TR_UN_PASS);
+            },
         ];
     }
 }
