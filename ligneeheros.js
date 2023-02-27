@@ -892,21 +892,27 @@ function (dojo, on, declare) {
                 if (cardObject.hasOwnProperty(attr)) {
                     let value = cardObject[attr];
                     if (typeof value === 'string' || value instanceof String) {
-                        [... value.matchAll(/\[invention\] \[([a-z_]+)\]/ig)].forEach((found) => {
-                            value = value.replace(found[0], '<div class="double">'+this.getIconAsText('invention')+this.getIconAsText(found[1])+'</div>');
-                        });
-                        [... value.matchAll(/\[spell\] \[([a-z_]+)\]/ig)].forEach((found) => {
-                            value = value.replace(found[0], '<div class="double">'+this.getIconAsText('spell')+this.getIconAsText(found[1])+'</div>');
-                        });
-                        [... value.matchAll(/\[([a-z_]+)\]/ig)].forEach((found) => {
-                            value = value.replace(found[0], this.getIconAsText(found[1]));
-                        });
-                        cardObject[attr] = value;
+                        cardObject[attr] = this.replaceIconsInString(value);
                     }
                 }
             }
 
             return cardObject;
+        },
+
+        replaceIconsInString: function(toReplace)
+        {
+            [... toReplace.matchAll(/\[invention\] \[([a-z_]+)\]/ig)].forEach((found) => {
+                toReplace = toReplace.replace(found[0], '<div class="double">'+this.getIconAsText('invention')+this.getIconAsText(found[1])+'</div>');
+            });
+            [... toReplace.matchAll(/\[spell\] \[([a-z_]+)\]/ig)].forEach((found) => {
+                toReplace = toReplace.replace(found[0], '<div class="double">'+this.getIconAsText('spell')+this.getIconAsText(found[1])+'</div>');
+            });
+            [... toReplace.matchAll(/\[([a-z_]+)\]/ig)].forEach((found) => {
+                toReplace = toReplace.replace(found[0], this.getIconAsText(found[1]));
+            });
+
+            return toReplace;
         },
 
         ///////////////////////////////////////////////////
@@ -1096,6 +1102,20 @@ function (dojo, on, declare) {
             // dojo.subscribe( 'cardPlayed', this, "notif_cardPlayed" );
             // this.notifqueue.setSynchronous( 'cardPlayed', 3000 );
             // 
+        },
+
+        /* @Override */
+        format_string_recursive : function format_string_recursive(log, args) {
+            try {
+                if (log && args && !args.processed) {
+                    args.processed = true;
+                    log = this.replaceIconsInString(log);
+                }
+            } catch (e) {
+                console.error(log,args,"Exception thrown", e.stack);
+            }
+
+            return this.inherited({callee: format_string_recursive}, arguments);
         },
 
         onDebug: function(sentData)

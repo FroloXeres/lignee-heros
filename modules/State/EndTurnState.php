@@ -66,12 +66,11 @@ class EndTurnState extends AbstractState
 
             if ($turnLeft > 1) {
                 $this->incGameStateValue(CurrentStateService::GLB_TURN_LFT, -1);
-                $this->notifyAllPlayers(EndTurnState::NOTIFY_END_TURN, clienttranslate('End of turn '.$turn), []);
+                $this->notifyAllPlayers(EndTurnState::NOTIFY_END_TURN, clienttranslate('[end_turn] ${turn} ended'), ['i18n' => ['turn'], 'turn' => $turn]);
 
                 EndTurnState::endTurn($this);
 
-                $notificationParams = ['turn' => ++$turn];
-                $this->notifyAllPlayers(EndTurnState::NOTIFY_START_TURN, clienttranslate('Start of turn '.$turn), $notificationParams);
+                $this->notifyAllPlayers(EndTurnState::NOTIFY_START_TURN, clienttranslate('[turn] ${turn} started'), ['i18n' => ['turn'], 'turn' => ++$turn]);
 
                 $this->gamestate->setAllPlayersMultiactive();
                 $this->gamestate->nextState(EndTurnState::TR_NEXT_TURN);
@@ -99,8 +98,9 @@ class EndTurnState extends AbstractState
             $game->incGameStateValue(CurrentStateService::GLB_SCIENCE, $scienceToAdd);
             $game->notifyAllPlayers(
                 EndTurnState::NOTIFY_SCIENCE_HARVEST,
-                clienttranslate('[savant] harvest '.$scienceToAdd . ' [science]'),
+                clienttranslate('${count} [science] harvested'),
                 [
+                    'i18n' => ['count'],
                     'harvesters' => $scienceHarvesters,
                     'count' => $scienceToAdd,
                 ]
