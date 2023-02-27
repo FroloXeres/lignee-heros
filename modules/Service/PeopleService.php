@@ -73,8 +73,6 @@ class PeopleService implements \JsonSerializable
         return MessageHelper::formatList($people);
     }
 
-
-
     /**
      * @return \Deck|null
      */

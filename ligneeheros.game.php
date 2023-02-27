@@ -426,9 +426,13 @@ class ligneeheros extends Table
         }
 
         // Computed states
-        $states['turn'] = (CurrentStateService::LAST_TURN - $states[CurrentStateService::GLB_TURN_LFT] + 1);
+        $states['turn'] = $this->getCurrentTurn($states[CurrentStateService::GLB_TURN_LFT]);
 
         return $states;
+    }
+
+    function getCurrentTurn(int $turnLeft): int {
+        return (CurrentStateService::LAST_TURN - $turnLeft + 1);
     }
 
     /*
@@ -695,5 +699,10 @@ class ligneeheros extends Table
     public function getService(string $serviceName):? object
     {
         return $this->container->get($serviceName);
+    }
+
+    public function debugArgs(string $message, array $args = []): void
+    {
+        $this->notifyAllPlayers('debug', $message, $args);
     }
 }

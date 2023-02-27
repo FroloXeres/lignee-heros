@@ -932,7 +932,6 @@ function (dojo, on, declare) {
                 }
                 break;
             case 'Principal' :
-
                 this.isActive = args['isActive'];
                 break;
             }
@@ -947,6 +946,9 @@ function (dojo, on, declare) {
             case 'ChooseLineage':
                 dojo.query('#floating-cards .card.lineage').remove();
                 this.removeEvent('onChooseLineage');
+                break;
+            case 'EndPrincipal':
+                
                 break;
             }
         }, 
@@ -967,13 +969,7 @@ function (dojo, on, declare) {
                         this.addActionButton( 'cancelChooseLineage', _('No'), 'onUnselectLineage' );
                         break;
                     case 'Principal':
-                        if (this.isActive) {
-                            this.addActionButton( 'pass', _('Pass'), 'onPass' );
-                        } else {
-                            this.addActionButton( 'unPass', _('An action to do?'), 'onUnPass' );
-                        }
-
-
+                        this.addActionButton( 'pass', _('Pass'), 'onPass' );
                         break;
                 }
             }
@@ -1057,13 +1053,6 @@ function (dojo, on, declare) {
             this.ajaxCallWrapper('pass', {}, (response) => {}, (isError) => {});
         },
 
-        onUnPass: function(evt) {
-            dojo.stopEvent(evt);
-            if (!this.checkAction('unPass')) return;
-
-            this.ajaxCallWrapper('unPass', {}, (response) => {}, (isError) => {});
-        },
-
         ///////////////////////////////////////////////////
         //// Reaction to cometD notifications
 
@@ -1090,6 +1079,13 @@ function (dojo, on, declare) {
 
             dojo.subscribe('playerDrawObjective', this, 'onObjectiveDrawn');
             this.notifqueue.setSynchronous('playerDrawObjective', 1500);
+
+
+
+            dojo.subscribe('ntfyScienceHarvest', this, 'onScienceHarvest');
+
+            dojo.subscribe('ntfyStartTurn', this, 'onStartTurn');
+
 
             // Example 1: standard notification handling
             // dojo.subscribe( 'cardPlayed', this, "notif_cardPlayed" );
@@ -1136,6 +1132,25 @@ function (dojo, on, declare) {
 
                 window.setTimeout(() => this.initPlayerObjective(objective), 1000);
             }
+        },
+
+        onStartTurn: function (notif) {
+            // Display new turn on screen
+
+            // Update turn in cartridge
+            console.log('Start turn:');
+            console.log(notif);
+        },
+
+        onScienceHarvest: function(notif) {
+            // Animate science from map to Cartridge
+
+
+            // Update science stock
+
+
+            console.log('Science harvest:');
+            console.log(notif);
         },
 
         /*

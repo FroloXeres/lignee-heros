@@ -80,6 +80,22 @@ class MapService
         ]);
     }
 
+    /** @return string[] */
+    public function getScienceHarvestCodes(array $terrains): array
+    {
+        return array_map(
+            function (Terrain $terrain) {
+                return $terrain->getCode();
+            },
+            array_filter(
+                $terrains,
+                function(Terrain $terrain) {
+                    return $terrain->hasScience();
+                },
+            )
+        );
+    }
+
     /**
      * Choose CSS class to display hidden tile, revealed one and display image if it does
      *

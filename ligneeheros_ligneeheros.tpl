@@ -213,6 +213,16 @@
                     <div id="people-savant" data-count="0"></div>\
                     <div id="people-mage" data-count="0"></div>\
                 </div>\
+                <div class="stock">\
+                    <div id="stock-title"></div>\
+                    <div id="stock-food" data-count="0" data-stock="0"></div>\
+                    <div id="stock-science" data-count="0"></div>\
+                </div>\
+                <div class="harvest">\
+                    <div id="harvest-title"></div>\
+                    <div id="harvest-food" data-count="0"></div>\
+                    <div id="harvest-science" data-count="0"></div>\
+                </div>\
                 <div class="military">\
                     <div id="military-title"></div>\
                     <div id="military-power" data-count="0"></div>\
@@ -222,16 +232,6 @@
                     <div id="city-title"></div>\
                     <div id="city-life" data-count="0"></div>\
                     <div id="city-defense" data-count="0"></div>\
-                </div>\
-                <div class="harvest">\
-                    <div id="harvest-title"></div>\
-                    <div id="harvest-food" data-count="0"></div>\
-                    <div id="harvest-science" data-count="0"></div>\
-                </div>\
-                <div class="stock">\
-                    <div id="stock-title"></div>\
-                    <div id="stock-food" data-count="0" data-stock="0"></div>\
-                    <div id="stock-science" data-count="0"></div>\
                 </div>\
                 <div class="stock-resources">\
                     <div class="group">\

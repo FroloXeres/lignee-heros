@@ -34,7 +34,7 @@ $gameinfos = array(
     'publisher_bgg_id' => 0,
 
 // Board game geek ID of the game
-    'bgg_id' => 264647,
+    'bgg_id' => 0,
 
 // Players configuration that can be played (ex: 2 to 4 players)
     'players' => [1, 2, 3, 4, 5, 6],
