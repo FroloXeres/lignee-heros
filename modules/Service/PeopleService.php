@@ -63,9 +63,9 @@ class PeopleService implements \JsonSerializable
             $count = count($ids);
             if ($count) {
                 $people[] = sprintf(
-                    '%s %s',
+                    '%s [%s]',
                     $count,
-                    $count === 1 ? $this->meeples[$type]->getName() : $this->meeples[$type]->getPlural()
+                    $this->meeples[$type]->getCode(),
                 );
             }
         }

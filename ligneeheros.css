@@ -197,6 +197,16 @@ h2#turn::before {
     background: white;
 }
 
+/********* Log override **********/
+.log .roundedbox {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    flex-wrap: wrap;
+}
+.log .roundedbox * {
+    margin: 0 0.2em;
+}
 
 /********* Card zones **********/
 #cards-zone {

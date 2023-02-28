@@ -211,13 +211,18 @@ class Deck implements \Iterator
     /**
      * @return array
      */
-    public function getBgaDeckData(): array
+    public function getBgaDeckData(bool $hidden = false): array
     {
         $cards = [];
         for ($i = 0; $i <= $this->current; $i++) {
             $card        = $this->cards[$i]->toArray();
             $card['nbr'] = $this->cards[$i]->getCardCount();
-            $cards[]     = $card;
+
+            $boardCard = $this->cards[$i]->getBoardCard();
+            if ($boardCard->getLocation() !== ($hidden? BoardCardInterface::LOCATION_HIDDEN : BoardCardInterface::LOCATION_DEFAULT))
+                continue;
+
+            $cards[] = $card;
         }
         return $cards;
     }

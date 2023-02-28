@@ -257,7 +257,9 @@ class ligneeheros extends Table
         if (!empty($this->cards)) {
             foreach ($this->cards as $deck) {
                 $bgaDeck = $deck->getBgaDeck();
+
                 $bgaDeck->createCards($deck->getBgaDeckData(), BoardCardInterface::LOCATION_DEFAULT);
+                $bgaDeck->createCards($deck->getBgaDeckData(true), BoardCardInterface::LOCATION_HIDDEN);
 
                 if (!$deck->isPublic()) {
                     $bgaDeck->shuffle(BoardCardInterface::LOCATION_DEFAULT);

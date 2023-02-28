@@ -20,7 +20,6 @@ class ChooseLineageState extends AbstractState
     public const ACTION_SELECT_LINEAGE = 'selectLineage';
     public const ACTION_CANCEL_LINEAGE = 'cancelLineage';
 
-    public const NOTIFY_PLAYERS_CHOSEN = 'otherPlayerChooseLineage';
     public const NOTIFY_PLAYER_CHOSEN = 'playerChooseLineage';
     public const NOTIFY_OBJECTIVE_DRAW = 'playerDrawObjective';
 
@@ -99,16 +98,8 @@ class ChooseLineageState extends AbstractState
                     'unit' => $lineageUnits[0] ?? [],
                 ];
                 $this->notifyAllPlayers(
-                    ChooseLineageState::NOTIFY_PLAYERS_CHOSEN,
-                    clienttranslate('${player_name} will play with ${lineage}'),
-                    $notificationParams
-                );
-
-                $notificationParams['i18n'] = ['lineage'];
-                $this->notifyPlayer(
-                    $playerId,
                     ChooseLineageState::NOTIFY_PLAYER_CHOSEN,
-                    clienttranslate('You will play with ${lineage}'),
+                    clienttranslate('${player_name} will play with [lineage] ${lineage}'),
                     $notificationParams
                 );
 
@@ -130,7 +121,7 @@ class ChooseLineageState extends AbstractState
                 $this->notifyPlayer(
                     $playerId,
                     ChooseLineageState::NOTIFY_OBJECTIVE_DRAW,
-                    clienttranslate('Your hidden objective will be: ${objectiveName}'),
+                    clienttranslate('Your hidden [objective] will be: ${objectiveName}'),
                     $notificationParams
                 );
 
@@ -165,11 +156,10 @@ class ChooseLineageState extends AbstractState
 
             $this->notifyAllPlayers(
                 GameInitState::NOTIFY_CITY_START,
-                clienttranslate('You live in ${city} with ${population}.'),
+                clienttranslate('You live in <b>${city}</b> city with '.$peopleService->getPopulationAsString().'.'),
                 [
                     'i18n' => ['city', 'population'],
                     'city' => $city->getName(),
-                    'population' => $peopleService->getPopulationAsString(),
                 ]
             );
 
@@ -179,17 +169,15 @@ class ChooseLineageState extends AbstractState
 
             $this->notifyAllPlayers(
                 GameInitState::NOTIFY_CITY_INVENTIONS,
-                clienttranslate('You have discovered two inventions: [${id1}]${invention1} and [${id2}]${invention2} and you can research for ${revealed}.'),
+                clienttranslate('You have discovered 2 [invention]: <b>${invention1}</b> and <b>${invention2}</b> and you can research <b>${revealed}</b>.'),
                 [
-                    'i18n' => ['invention1', 'invention2', 'id1', 'id2', 'others'],
+                    'i18n' => ['invention1', 'invention2', 'others'],
                     'invention1' => $cityInventions[0]->getName(),
                     'invention2'=> $cityInventions[1]->getName(),
-                    'id1'=> $cityInventions[0]->getCode(),
-                    'id2'=> $cityInventions[1]->getCode(),
                     'revealed' => MessageHelper::formatList(
                         array_map(
                             function(AbstractCard $card) {
-                                return sprintf('[%s:%s]', $card->getCode(), $card->getName());
+                                return $card->getName();
                             },
                             $inventions->getCardsOnLocation(BoardCardInterface::LOCATION_ON_TABLE)
                         )

@@ -1076,10 +1076,6 @@ function (dojo, on, declare) {
             dojo.subscribe( 'debug', this, "onDebug" );
 
             // Animation after lineage choose
-            dojo.subscribe('otherPlayerChooseLineage', this, 'onLineageChosen');
-            this.notifqueue.setSynchronous('otherPlayerChooseLineage', 1500);
-            this.notifqueue.setIgnoreNotificationCheck('otherPlayerChooseLineage', (notif) => (parseInt(notif.args.playerId) === this.player_id));
-
             dojo.subscribe('playerChooseLineage', this, 'onLineageChosen');
             this.notifqueue.setSynchronous('playerChooseLineage', 1500);
 
@@ -1123,7 +1119,6 @@ function (dojo, on, declare) {
             console.log(sentData);
         },
 
-        // TODO: from this point and below, you can write your game notifications handling methods
         onLineageChosen: function (notif)
         {
             const lineage = this.indexed[notif?.args?.lineageId] || null;

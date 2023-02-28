@@ -79,7 +79,7 @@ abstract class AbstractCard implements CardInterface
     public function getBoardCard(?int $id = null): ?BoardCardInterface
     {
         $nbBoardCard = $this->getCardCount();
-        if ($id === null && $nbBoardCard === 1) {
+        if ($id === null) {
             return reset($this->boardCards);
         }
 

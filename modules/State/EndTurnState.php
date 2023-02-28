@@ -66,11 +66,11 @@ class EndTurnState extends AbstractState
 
             if ($turnLeft > 1) {
                 $this->incGameStateValue(CurrentStateService::GLB_TURN_LFT, -1);
-                $this->notifyAllPlayers(EndTurnState::NOTIFY_END_TURN, clienttranslate('[end_turn] ${turn} ended'), ['i18n' => ['turn'], 'turn' => $turn]);
+                $this->notifyAllPlayers(EndTurnState::NOTIFY_END_TURN, clienttranslate('[end_turn] phase'), []);
 
                 EndTurnState::endTurn($this);
 
-                $this->notifyAllPlayers(EndTurnState::NOTIFY_START_TURN, clienttranslate('[turn] ${turn} started'), ['i18n' => ['turn'], 'turn' => ++$turn]);
+                $this->notifyAllPlayers(EndTurnState::NOTIFY_START_TURN, clienttranslate('[turn] <b>${turn}</b> started'), ['i18n' => ['turn'], 'turn' => ++$turn]);
 
                 $this->gamestate->setAllPlayersMultiactive();
                 $this->gamestate->nextState(EndTurnState::TR_NEXT_TURN);
