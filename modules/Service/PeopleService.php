@@ -108,6 +108,12 @@ class PeopleService implements \JsonSerializable
     }
 
     /** @return array<Unit> */
+    public function isLineageUnitFree(string $type): array
+    {
+        return $this->byType[$type];
+    }
+
+    /** @return array<Unit> */
     public function birth(Meeple $type, string $location = Unit::LOCATION_MAP, int $locationArg = BoardCardInterface::LOCATION_ARG_DEFAULT, int $count = 1, bool $acted = true): array
     {
         $created = [];

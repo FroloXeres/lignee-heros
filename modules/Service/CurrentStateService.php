@@ -12,6 +12,7 @@ class CurrentStateService
     public const GLB_WARRIOR_CNT = 'warriorCount';
     public const GLB_SAVANT_CNT  = 'savantCount';
     public const GLB_MAGE_CNT    = 'mageCount';
+    public const GLB_LEADER = 'leader';
     public const GLB_FOOD_PRD    = 'foodProduction';
     public const GLB_FOOD        = 'food';
     public const GLB_FOOD_STK    = 'foodStock';
@@ -61,7 +62,8 @@ class CurrentStateService
         self::GLB_LIFE        => 16,
         self::GLB_WAR_PWR     => 17,
         self::GLB_WAR_DFS     => 18,
-        self::GLB_CTY_DFS     => 19
+        self::GLB_CTY_DFS     => 19,
+        self::GLB_LEADER      => 34,
     ];
 
     public static function getStateByMeepleType(Meeple $meeple): string

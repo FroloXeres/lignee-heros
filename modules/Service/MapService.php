@@ -96,6 +96,19 @@ class MapService
         );
     }
 
+    /** @return string[] */
+    public function getFoodHarvestCount(array $terrains): array
+    {
+        $foodByCode = [];
+        foreach ($terrains as $terrain) {
+            /** @var Terrain $terrain */
+            if ($terrain->hasFood()) {
+                $foodByCode[$terrain->getCode()] = $terrain->getFood();
+            }
+        }
+        return $foodByCode;
+    }
+
     /**
      * Choose CSS class to display hidden tile, revealed one and display image if it does
      *

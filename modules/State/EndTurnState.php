@@ -2,13 +2,19 @@
 
 namespace LdH\State;
 
+use LdH\Entity\Bonus;
 use LdH\Entity\Cards\AbstractCard;
 use LdH\Entity\Cards\BoardCardInterface;
 use LdH\Entity\Cards\Deck;
+use LdH\Entity\Cards\Lineage;
+use LdH\Entity\Cards\Objective;
 use LdH\Entity\Map\City;
 use LdH\Entity\Map\Terrain;
 use LdH\Entity\Meeple;
 use LdH\Entity\Unit;
+use LdH\Repository\AbstractCardRepository;
+use LdH\Repository\CardRepository;
+use LdH\Service\BonusService;
 use LdH\Service\PeopleService;
 use LdH\Service\CurrentStateService;
 
@@ -47,7 +53,7 @@ class EndTurnState extends AbstractState
     {
         return function () {
             /** @var \ligneeheros $this */
-            $turn = $this->getCurrentTurn((int) $this->getGameStateValue(CurrentStateService::GLB_TURN_LFT));
+            $turn = $this->getCurrentTurn();
             $args = [
                 'turn' => $turn,
                 'endOfTurn' => clienttranslate('End of turn '.$turn),
@@ -61,10 +67,9 @@ class EndTurnState extends AbstractState
     {
         return function () {
             /** @var \ligneeheros $this */
-            $turnLeft = (int) $this->getGameStateValue(CurrentStateService::GLB_TURN_LFT);
-            $turn = $this->getCurrentTurn($turnLeft);
+            $turn = $this->getCurrentTurn();
 
-            if ($turnLeft > 1) {
+            if ($turn < CurrentStateService::LAST_TURN) {
                 $this->incGameStateValue(CurrentStateService::GLB_TURN_LFT, -1);
                 $this->notifyAllPlayers(EndTurnState::NOTIFY_END_TURN, clienttranslate('[end_turn] phase'), []);
 
@@ -84,37 +89,23 @@ class EndTurnState extends AbstractState
 
     public static function endTurn(\ligneeheros $game): void
     {
+        $bonusService = new BonusService($game);
         $unitRepository = $game->getCardService()->getCardRepository(Unit::class);
 
-        // Science harvest
-        $scienceHarvest = (int) $game->getGameStateValue(CurrentStateService::GLB_SCIENCE_PRD);
-        $scienceHarvesters = $unitRepository->getScienceHarvesters(
-            $game->mapService->getScienceHarvestCodes($game->terrains)
-        );
+        // Activate people
 
-        $scienceTotalHarvesters = array_sum($scienceHarvesters);
-        $scienceToAdd = $scienceHarvest * $scienceTotalHarvesters;
-        if ($scienceToAdd) {
-            $game->incGameStateValue(CurrentStateService::GLB_SCIENCE, $scienceToAdd);
-            $game->notifyAllPlayers(
-                EndTurnState::NOTIFY_SCIENCE_HARVEST,
-                clienttranslate('${count} [science] harvested'),
-                [
-                    'i18n' => ['count'],
-                    'harvesters' => $scienceHarvesters,
-                    'count' => $scienceToAdd,
-                ]
-            );
-        }
+
+        // Science harvest
+        self::scienceHarvest($game, $unitRepository, $bonusService);
 
         // Food harvest
-        $foodHarvest = (int) $game->getGameStateValue(CurrentStateService::GLB_FOOD_PRD);
-        $foodHarvesters = $unitRepository->getFoodHarvesters(
-            $game->mapService->getScienceHarvestCodes($game->terrains)
-        );
-
+        self::foodHarvest($game, $unitRepository, $bonusService);
 
         // Inventions
+
+
+        // Invention activated finished (Change bonuses)
+
 
         // Resources renew
 
@@ -122,6 +113,43 @@ class EndTurnState extends AbstractState
 
 
         // People are available
+
+    }
+
+    public static function scienceHarvest(\ligneeheros $game, CardRepository $unitRepository, BonusService $bonusService): void
+    {
+        $population = (int) $game->getGameStateValue(CurrentStateService::GLB_PEOPLE_CNT);
+        $scienceHarvest = (int) $game->getGameStateValue(CurrentStateService::GLB_SCIENCE_PRD);
+
+        $scienceHarvestersCount = $unitRepository->getScienceHarvestersCount($game->mapService->getScienceHarvestCodes($game->terrains));
+        $scienceTotalHarvesters = array_sum($scienceHarvestersCount);
+        $scienceToAdd =
+            $scienceHarvest * $scienceTotalHarvesters
+            + floor($population / 5)
+            + $bonusService->getHarvestScienceBonus()
+        ;
+
+        if ($scienceToAdd) {
+            $game->incGameStateValue(CurrentStateService::GLB_SCIENCE, $scienceToAdd);
+            $game->notifyAllPlayers(
+                EndTurnState::NOTIFY_SCIENCE_HARVEST,
+                clienttranslate('${count} [science] harvested'),
+                [
+                    'i18n' => ['count'],
+                    'harvesters' => $scienceHarvestersCount,
+                    'count' => $scienceToAdd,
+                ]
+            );
+        }
+    }
+
+    public static function foodHarvest(\ligneeheros $game, CardRepository $unitRepository, BonusService $bonusService): void
+    {
+        $foodHarvest = (int) $game->getGameStateValue(CurrentStateService::GLB_FOOD_PRD);
+        $foodHarvesters = $unitRepository->getFoodHarvesters(
+            $game->mapService->getFoodHarvestCount($game->terrains)
+        );
+
 
     }
 }

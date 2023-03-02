@@ -45,7 +45,7 @@ class ChooseLineageState extends AbstractState
         return [
             self::ACTION_SELECT_LINEAGE => function() {
                 /** @var \action_ligneeheros $this */
-                $lineage = $this->getArg('lineage', AT_enum, true, null, Lineage::getLineageIds());
+                $lineage = $this->getArg('lineage', AT_enum, true, null, Lineage::getLineageCodes());
 
                 $this->game->{ChooseLineageState::ACTION_SELECT_LINEAGE}($lineage);
             }

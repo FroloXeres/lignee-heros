@@ -1,5 +1,8 @@
 # config/services.yaml
 services:
+    LdH\Service\BonusService:
+        public: true
+
     LdH\Service\PeopleService:
         public: true
 

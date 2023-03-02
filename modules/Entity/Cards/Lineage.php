@@ -14,6 +14,17 @@ class Lineage extends AbstractCard
     public const LEADING_TYPE_EVERY3TURN = 1;
     public const LEADING_TYPE_FIGHT      = 2;
 
+    public const STATE_CODES = [
+        1 => Meeple::ORK_WORKER,
+        2 => Meeple::ORK_WARRIOR,
+        3 => Meeple::NANI_SAVANT,
+        4 => Meeple::NANI_WARRIOR,
+        5 => Meeple::HUMANI_WORKER,
+        6 => Meeple::HUMANI_MAGE,
+        7 => Meeple::ELVEN_SAVANT,
+        8 => Meeple::ELVEN_MAGE,
+    ];
+
     protected ?Meeple $meeple      = null;
 
     protected ?Bonus     $meeplePower    = null;
@@ -183,7 +194,7 @@ class Lineage extends AbstractCard
         return $tpl;
     }
 
-    public static function getLineageIds(): array
+    public static function getLineageCodes(): array
     {
         return array_map(function(string $code) {
                 return self::buildCode($code);
@@ -198,5 +209,15 @@ class Lineage extends AbstractCard
                 Meeple::HUMANI_WORKER
             ]
         );
+    }
+
+    public static function getStateIdByCode(string $code): int
+    {
+        return array_search($code, self::STATE_CODES);
+    }
+
+    public static function getCodeByStateId(int $id): string
+    {
+        return self::STATE_CODES[$id];
     }
 }
