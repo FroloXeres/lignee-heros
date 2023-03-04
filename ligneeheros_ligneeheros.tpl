@@ -2,6 +2,7 @@
 
 <div id="floating-cards"></div>
 <div id="overall-cards"></div>
+<div id="fullscreen-message"></div>
 <div id="map-zone">
     <div id="zoom" data-zoom="2">
         <i id="zoom_out_icon" class="fa fa-search-minus"></i>

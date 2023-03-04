@@ -26,7 +26,11 @@ class Bonus implements \JsonSerializable
     public const MEEPLE_POWER_UP = 'power_up';        // Meeple increase +1 Power for Warriors
     public const BONUS_MULTIPLY  = 'multiply';
     public const BIRTH_ALL       = 'birth_choose';    // Choose unit type at birth
-    public const SAVANT_HEALING  = 'savant_healing';         // Savant can heal units
+    public const SAVANT_HEALING  = 'savant_healing';  // Savant can heal units
+
+    public const INVENTION_FIGHT = 'invention_fight'; // Bonus apply only for invention fight cards
+
+
 
     // Used in CSS
     protected string  $code        = '';

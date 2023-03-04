@@ -108,9 +108,9 @@ class PeopleService implements \JsonSerializable
     }
 
     /** @return array<Unit> */
-    public function isLineageUnitFree(string $type): array
+    public function isLineageUnitFree(string $type): bool
     {
-        return $this->byType[$type];
+        return array_key_exists($type, $this->byType);
     }
 
     /** @return array<Unit> */

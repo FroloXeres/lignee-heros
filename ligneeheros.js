@@ -40,8 +40,8 @@ function (dojo, on, declare) {
             this.indexed = {};
             this.playerLineage = null;
             this.playerUnit = null;
+            this.$fullScreen = document.getElementById('fullscreen-message');
         },
-        
         /*
             setup:
             
@@ -62,7 +62,6 @@ function (dojo, on, declare) {
             // Setting up player boards
             for( var player_id in gamedatas.players )
             {
-
                 var player = gamedatas.players[player_id];
                          
                 // TODO: Setting up players boards if needed
@@ -816,6 +815,19 @@ function (dojo, on, declare) {
             this.updateCartridge();
         },
 
+        updateCartridgeElement: function($element, value, duration = 1000)
+        {
+            let incFct = value < 0 ?
+                function() {$element.dataset.count = parseInt($element.dataset.count) - 1} :
+                function() {$element.dataset.count = parseInt($element.dataset.count) + 1}
+            ;
+            let howMany = Math.abs(value);
+            let part = Math.floor(duration / howMany);
+            for (let i = 1; i <= howMany; i++) {
+                window.setTimeout(incFct, part * i);
+            }
+        },
+
         updateCartridge: function()
         {
             this.updateTurn();
@@ -913,6 +925,15 @@ function (dojo, on, declare) {
             });
 
             return toReplace;
+        },
+
+        displayFullScreenMessage: function(message, duration = 3000)
+        {
+            this.$fullScreen.innerHTML = '<h1>' + message + '</h1>';
+            this.$fullScreen.classList.add('display');
+
+            window.setTimeout(() => this.$fullScreen.classList.remove('display'), duration);
+            window.setTimeout(() => this.$fullScreen.innerHTML = '', duration + 2000);
         },
 
         ///////////////////////////////////////////////////
@@ -1082,9 +1103,8 @@ function (dojo, on, declare) {
             dojo.subscribe('playerDrawObjective', this, 'onObjectiveDrawn');
             this.notifqueue.setSynchronous('playerDrawObjective', 1500);
 
-
-
             dojo.subscribe('ntfyScienceHarvest', this, 'onScienceHarvest');
+            dojo.subscribe('ntfyFoodHarvest', this, 'onFoodHarvest');
 
             dojo.subscribe('ntfyStartTurn', this, 'onStartTurn');
 
@@ -1114,9 +1134,9 @@ function (dojo, on, declare) {
             return this.inherited({callee: format_string_recursive}, arguments);
         },
 
-        onDebug: function(sentData)
+        onDebug: function(message)
         {
-            console.log(sentData);
+            console.log(message);
         },
 
         onLineageChosen: function (notif)
@@ -1150,37 +1170,25 @@ function (dojo, on, declare) {
         },
 
         onStartTurn: function (notif) {
-            // Display new turn on screen
-
             // Update turn in cartridge
-            console.log('Start turn:');
-            console.log(notif);
+            this.status.currentState.turn = notif.args.turn;
+            this.updateTurn();
+
+            // Display new turn on screen
+            this.displayFullScreenMessage(this.$turn.innerHTML);
         },
 
         onScienceHarvest: function(notif) {
             // Animate science from map to Cartridge
-
+            // 'savantHarvesters', 'scienceMultiplier', 'populationBonus', 'lineageBonus'
 
             // Update science stock
-
-
-            console.log('Science harvest:');
-            console.log(notif);
+            this.updateCartridgeElement(this.$scienceStock, parseInt(notif.args.total));
         },
 
-        /*
-        Example:
-        
-        notif_cardPlayed: function( notif )
-        {
-            console.log( 'notif_cardPlayed' );
-            console.log( notif );
-            
-            // Note: notif.args contains the arguments specified during you "notifyAllPlayers" / "notifyPlayer" PHP call
-            
-            // TODO: play the card in the user interface.
-        },    
-        
-        */
-   });             
+        onFoodHarvest: function (notif) {
+            // Update food stock
+            this.updateCartridgeElement(this.$foodStock, parseInt(notif.args.total));
+        }
+    });
 });

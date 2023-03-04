@@ -142,7 +142,7 @@ $plainDesert    = new Terrain(clienttranslate('Deserted plain'), Terrain::PLAIN_
 $plainRiverRuin = new Terrain(clienttranslate('Plain ruins'), Terrain::PLAIN_RIVER_RUIN, 3, false, [$paper, $clay, $animal]);
 $plainRiverRuin
     ->addBonus(new Bonus(10, Bonus::SCIENCE_FOUND))
-    ->addBonus(new Bonus(1, Bonus::FOOD))
+    ->addBonus((new Bonus(1, Bonus::FOOD))->setDescription('[food] +1'));
 ;
 
 $desert         = new Terrain(clienttranslate('Desert'), Terrain::DESERT);
@@ -162,7 +162,7 @@ $hillRuin
     ->addBonus(new Bonus(10, Bonus::SCIENCE_FOUND))
 ;
 $hillLake       = new Terrain(clienttranslate('Hills lake'), Terrain::HILL_LAKE, 3, false, [$stone, $metal, $animal]);
-$hillLake->addBonus(new Bonus(1, Bonus::FOOD));
+$hillLake->addBonus((new Bonus(1, Bonus::FOOD))->setDescription('[food] +1'));
 $hillWoodLair   = new Terrain(clienttranslate('Hill lair'), Terrain::HILL_WOOD_LAIR, 1, false, [$wood, $gem]);
 $hillWoodLair->addBonus(new Bonus(10, Bonus::FOOD_FOUND));
 
@@ -399,9 +399,9 @@ $lineage
         ->setName("Khazhan")
         ->setDescription(clienttranslate("The Khazhan are Proud and strong warriors, so brilliant that they inspire generations!"))
         ->setMeeple($naniWarrior)
-        ->setMeeplePower((new Bonus(2, Bonus::SCIENCE))->setDescription(clienttranslate("+2[science] for [invention] [fight]")))
+        ->setMeeplePower((new Bonus(2, Bonus::SCIENCE, Bonus::INVENTION_FIGHT))->setDescription(clienttranslate("+2[science] for [invention] [fight]")))
         ->setObjective($objNaniWarrior)
-        ->setObjectiveBonus((new Bonus(2, Bonus::SCIENCE))->setDescription(clienttranslate("+2 [science]")))
+        ->setObjectiveBonus((new Bonus(2, Bonus::SCIENCE, Bonus::INVENTION_FIGHT))->setDescription(clienttranslate("+2 [science]")))
         ->setLeadingBonus(new Bonus(1, Bonus::SCIENCE, $warrior->getCode()))
         ->setArtist('Kevins Darnis')
     )

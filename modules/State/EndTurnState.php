@@ -89,11 +89,14 @@ class EndTurnState extends AbstractState
 
     public static function endTurn(\ligneeheros $game): void
     {
-        $bonusService = new BonusService($game);
+        $isLineageLeaderBonusTurn = ($game->getCurrentTurn() % 3) === 0;
+
+        $bonusService = new BonusService($game, $isLineageLeaderBonusTurn);
         $unitRepository = $game->getCardService()->getCardRepository(Unit::class);
 
         // Activate people
 
+        // todo: On 2d objective complete, player became leader : $game->setGameStateValue(CurrentStateService::GLB_LEADER, 4);
 
         // Science harvest
         self::scienceHarvest($game, $unitRepository, $bonusService);
@@ -120,24 +123,41 @@ class EndTurnState extends AbstractState
     {
         $population = (int) $game->getGameStateValue(CurrentStateService::GLB_PEOPLE_CNT);
         $scienceHarvest = (int) $game->getGameStateValue(CurrentStateService::GLB_SCIENCE_PRD);
+        $scienceHarvest *= $bonusService->getHarvestScienceMultiplier();
 
-        $scienceHarvestersCount = $unitRepository->getScienceHarvestersCount($game->mapService->getScienceHarvestCodes($game->terrains));
+        $scienceTiles = $game->mapService->getScienceHarvestCodes($game->terrains);
+        $scienceHarvestersCount = $unitRepository->getScienceHarvestersCount($scienceTiles, [Meeple::SAVANT, Meeple::NANI_SAVANT, Meeple::ELVEN_SAVANT]);
         $scienceTotalHarvesters = array_sum($scienceHarvestersCount);
+
+        // Population: gives +1 / 5 people
+        $populationBonus = floor($population / 5);
+
+        // Lineage meeple or leader bonus
+        $scienceBonus = $bonusService->getHarvestScienceBonus(
+            function() use ($unitRepository, $scienceTiles) {
+                $warriorScienceHarvestersCount = $unitRepository->getScienceHarvestersCount($scienceTiles, [Meeple::WARRIOR, Meeple::NANI_WARRIOR, Meeple::ORK_WARRIOR]);
+                return array_sum($warriorScienceHarvestersCount);
+            }
+        );
+
         $scienceToAdd =
-            $scienceHarvest * $scienceTotalHarvesters
-            + floor($population / 5)
-            + $bonusService->getHarvestScienceBonus()
+            $scienceHarvest * $scienceTotalHarvesters       // Savant harvest
+            + $populationBonus                              // + population / 5 bonus
+            + $scienceBonus                                 // Meeple bonus
         ;
 
         if ($scienceToAdd) {
             $game->incGameStateValue(CurrentStateService::GLB_SCIENCE, $scienceToAdd);
             $game->notifyAllPlayers(
                 EndTurnState::NOTIFY_SCIENCE_HARVEST,
-                clienttranslate('${count} [science] harvested'),
+                clienttranslate('${total} [science] harvested'),
                 [
-                    'i18n' => ['count'],
-                    'harvesters' => $scienceHarvestersCount,
-                    'count' => $scienceToAdd,
+                    'i18n' => ['total'],
+                    'savantHarvesters' => $scienceHarvestersCount,
+                    'scienceMultiplier' => $scienceHarvest,
+                    'populationBonus' => $populationBonus,
+                    'lineageBonus' => $scienceBonus,
+                    'total' => $scienceToAdd,
                 ]
             );
         }
@@ -147,9 +167,39 @@ class EndTurnState extends AbstractState
     {
         $foodHarvest = (int) $game->getGameStateValue(CurrentStateService::GLB_FOOD_PRD);
         $foodHarvesters = $unitRepository->getFoodHarvesters(
-            $game->mapService->getFoodHarvestCount($game->terrains)
+            $game->mapService->getFoodHarvestCodes($game->terrains),
+            [Meeple::WORKER, Meeple::HUMANI_WORKER, Meeple::ORK_WORKER]
         );
 
+        // Free worker on map
+        $foodToAdd = 0;
+        foreach ($foodHarvesters as $tileId => $tileInfo) {
+            $terrain = $game->terrains[$tileInfo['terrain']];
 
+            $tileFoodBonus = 0;
+            foreach ($terrain->getBonuses() as $bonus) {
+                if ($bonus->getCode() === Bonus::FOOD && !$bonus->getType()) {
+                    $tileFoodBonus += $bonus->getCount();
+                }
+            }
+
+            $foodToAdd += min($terrain->getFood(), $tileInfo['nb']) * ($foodHarvest + $tileFoodBonus);
+        }
+
+
+
+        if ($foodToAdd) {
+            $game->incGameStateValue(CurrentStateService::GLB_FOOD, $foodToAdd);
+            $game->notifyAllPlayers(
+                EndTurnState::NOTIFY_FOOD_HARVEST,
+                clienttranslate('${total} [food] harvested'),
+                [
+                    'i18n' => ['total'],
+                    'total' => $foodToAdd,
+                    'workerHarvesters' => $foodHarvesters,
+
+                ]
+            );
+        }
     }
 }

@@ -97,16 +97,16 @@ class MapService
     }
 
     /** @return string[] */
-    public function getFoodHarvestCount(array $terrains): array
+    public function getFoodHarvestCodes(array $terrains): array
     {
-        $foodByCode = [];
+        $foodByCodes = [];
         foreach ($terrains as $terrain) {
             /** @var Terrain $terrain */
             if ($terrain->hasFood()) {
-                $foodByCode[$terrain->getCode()] = $terrain->getFood();
+                $foodByCodes[] = $terrain->getCode();
             }
         }
-        return $foodByCode;
+        return $foodByCodes;
     }
 
     /**

@@ -25,7 +25,7 @@ class CardRepository extends AbstractCardRepository
     }
 
     /** @return array<int, int> */
-    public function getScienceHarvestersCount(array $terrainCodes): array
+    public function getScienceHarvestersCount(array $terrainCodes, array $harvesterTypes): array
     {
         if ($this->class !== Unit::class) return [];
 
@@ -38,7 +38,7 @@ class CardRepository extends AbstractCardRepository
                       AND `meeple_status` = '%s'
                       AND tile_terrain IN (%s)
                     GROUP BY m.card_location_arg",
-            join(', ', array_map(function(string $code) {return "'$code'";},[Meeple::SAVANT, Meeple::NANI_SAVANT, Meeple::ELVEN_SAVANT])),
+            join(', ', array_map(function(string $code) {return "'$code'";}, $harvesterTypes)),
             Unit::STATUS_FREE,
             join(', ', array_map(function(string $code) {return "'$code'";},$terrainCodes)),
         );
@@ -50,7 +50,7 @@ class CardRepository extends AbstractCardRepository
         );
     }
 
-    public function getFoodHarvesters(array $countByTerrains): array
+    public function getFoodHarvesters(array $terrainCodes, array $harvesterTypes): array
     {
         if ($this->class !== Unit::class) return [];
 
@@ -63,14 +63,21 @@ class CardRepository extends AbstractCardRepository
                       AND `meeple_status` = '%s'
                       AND tile_terrain IN (%s)
                     GROUP BY m.card_location_arg",
-            join(', ', array_map(function(string $code) {return "'$code'";},[Meeple::WORKER, Meeple::HUMANI_WORKER, Meeple::ORK_WORKER])),
+            join(', ', array_map(function(string $code) {return "'$code'";}, $harvesterTypes)),
             Unit::STATUS_FREE,
-            join(', ', array_map(function(string $code) {return "'$code'";}, array_keys($countByTerrains))),
+            join(', ', array_map(function(string $code) {return "'$code'";}, $terrainCodes)),
         );
         $units = $this->getObjectListFromDB($qry);
 
-
-        return [];
+        return array_combine(
+            array_map(function(array $unit) {return $unit['card_location_arg'];}, $units),
+            array_map(function(array $unit) {
+                return [
+                    'nb' => $unit['nb'],
+                    'terrain' => $unit['tile_terrain']
+                ];
+            }, $units)
+        );
     }
 
     /** @return array<'byUser': array<int, int>, 'byType': int[]> */

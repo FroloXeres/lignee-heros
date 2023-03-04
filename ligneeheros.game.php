@@ -34,6 +34,7 @@ use \LdH\Service\PeopleService;
 use LdH\Entity\Cards\Deck;
 use LdH\Entity\Map\Resource;
 use LdH\Entity\Map\Terrain;
+use LdH\Entity\Map\Tile;
 use LdH\Entity\Meeple;
 
 class ligneeheros extends Table
@@ -45,6 +46,9 @@ class ligneeheros extends Table
 
     /** @var Terrain[]  */
     public array $terrains = [];
+
+    /** @var Tile[] */
+    public array $map = [];
 
     /** @var Resource[]  */
     public array $resources = [];
@@ -294,7 +298,7 @@ class ligneeheros extends Table
         $result['terrains']  = $this->terrains?? [];
 
         // Send map details : Load Map from Db
-        $result['map'] = $this->mapService->getMapTiles($this->terrains?? [], true);;
+        $result['map'] = $this->getMapTiles();
 
         // Game states
         $result['currentState'] = $this->getCurrentState();
@@ -468,6 +472,14 @@ class ligneeheros extends Table
 
     function isLeaderPowerTurn(): bool {
         return $this->getCurrentTurn() % 3 === 0;
+    }
+
+    function getMapTiles(): array
+    {
+        if (empty($this->map)) {
+            $this->map = $this->mapService->getMapTiles($this->terrains?? [], true);
+        }
+        return $this->map;
     }
 
 //////////////////////////////////////////////////////////////////////////////

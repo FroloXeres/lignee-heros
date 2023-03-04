@@ -270,6 +270,7 @@ h2#turn::before {
     color: #065009;
     position: absolute;
 }
+#fullscreen-message,
 #overall-cards,
 #floating-cards {
     position: absolute;
@@ -280,13 +281,28 @@ h2#turn::before {
     flex-wrap: wrap;
     justify-content: space-around;
     padding: 1em;
-    max-width: 70em;
-    left: 50%;
-    transform: translateX(-50%);
 }
 #overall-cards {
     z-index: 100;
 }
+#fullscreen-message {
+    z-index: 120;
+    top: 4em;
+    font-size: 2em;
+    background-color: rgba(255, 255, 255, 0.4);
+
+    transition: opacity 2s;
+    opacity: 0;
+}
+#fullscreen-message h1 {
+    font-weight: bold;
+    font-size: 2em;
+}
+#fullscreen-message.display {
+    transition: opacity 2s;
+    opacity: 1;
+}
+
 #overall-cards:empty,
 #floating-cards:empty {display: none;}
 
