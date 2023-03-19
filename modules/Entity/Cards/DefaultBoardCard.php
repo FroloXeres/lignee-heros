@@ -62,4 +62,19 @@ class DefaultBoardCard implements BoardCardInterface
             ->setLocationArg($locationArg)
         ;
     }
+
+    public static function isHiddenCard(AbstractCard $card): bool
+    {
+        switch (get_class($card)) {
+        case Fight::class:
+        case Other::class:
+        case Disease::class:
+            return $card->getAge() !== AbstractCard::AGE_I;
+        case Objective::class:
+            return $card->isLineageObjective();
+        default: break;
+        }
+
+        return false;
+    }
 }

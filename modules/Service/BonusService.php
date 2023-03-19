@@ -8,6 +8,7 @@ use LdH\Entity\Cards\BoardCardInterface;
 use LdH\Entity\Cards\Lineage;
 use LdH\Entity\Cards\Objective;
 use LdH\Entity\Meeple;
+use LdH\Object\UnitOnMap;
 use LdH\ObjectiveStat;
 use LdH\Repository\AbstractCardRepository;
 use LdH\Repository\CardRepository;
@@ -24,16 +25,13 @@ class BonusService
     /** @var array<Bonus> */
     protected ?array $lineageBonuses = null;
 
-    public function __construct(
-        \ligneeheros $game,
-        bool $isLeaderPowerTurn = false
-    ) {
+    public function __construct(\ligneeheros $game) {
         $this->game = $game;
-        $this->isLeaderPowerTurn = $isLeaderPowerTurn;
+        $this->isLeaderPowerTurn = $game->isLeaderPowerTurn();
     }
 
     //
-    public function getHarvestFoodBonus() {
+    public function getHarvestFoodBonus2() {
         //$tiles = $this->game->getMapTiles();
         //foreach ($freeSavantMap as $tileId => $count) {
         //    $bonuses = $tiles[$tileId]->getTerrain()->getBonuses();
@@ -45,15 +43,33 @@ class BonusService
         //}
     }
 
-    public function getHarvestScienceBonus(?callable $warriorBonus = null): int {
-        $total = 0;
+    public function getHarvestFoodBonus(callable $warriorBonus): int {
+        $total = $this->getLineageBonusesOfType(Bonus::FOOD);
 
+        if ($this->hasWarriorHarvestTurn(Bonus::FOOD)) {
+            $total += $warriorBonus();
+        }
+
+        return $total;
+    }
+
+    public function getLineageBonusesOfType(string $code, ?string $type = null): int {
+        $multiply = in_array($type, [Bonus::BONUS_MULTIPLY], true);
+        $total = $multiply ? 1 : 0;
         $bonuses = $this->getLineageBonuses();
         foreach ($bonuses as $bonus) {
-            if ($bonus->getCode() === Bonus::SCIENCE && !$bonus->getType()) {
-                $total += $bonus->getCount();
+            if ($bonus->getCode() === $code && $bonus->getType() === $type) {
+                $total = $multiply ?
+                    $total * $bonus->getCount() :
+                    $total + $bonus->getCount()
+                ;
             }
         }
+        return $total;
+    }
+
+    public function getHarvestScienceBonus(callable $warriorBonus): int {
+        $total = $this->getLineageBonusesOfType(Bonus::SCIENCE);
 
         if ($this->hasWarriorHarvestTurn()) {
             $total += $warriorBonus();
@@ -62,27 +78,37 @@ class BonusService
         return $total;
     }
 
-    public function getHarvestScienceMultiplier(): int
-    {
-        $total = 1.0;
-        $bonuses = $this->getLineageBonuses();
-        foreach ($bonuses as $bonus) {
-            if ($bonus->getCode() === Bonus::SCIENCE && $bonus->getType() === Bonus::BONUS_MULTIPLY) {
-                $total *= $bonus->getCount();
-            }
-        }
-        return $total;
-    }
-
-    public function hasWarriorHarvestTurn(): bool
+    public function hasWarriorHarvestTurn(string $bonusCode = Bonus::SCIENCE): bool
     {
         $bonuses = $this->getLineageBonuses();
         foreach ($bonuses as $bonus) {
-            if ($bonus->getCode() === Bonus::SCIENCE && $bonus->getType() === Meeple::WARRIOR) {
+            if ($bonus->getCode() === $bonusCode && $bonus->getType() === Meeple::WARRIOR) {
                 return true;
             }
         }
         return false;
+    }
+
+    /** @param array<UnitOnMap> $foodHarvesters */
+    public function getFoodHarvestedOnMap(array $foodHarvesters): int
+    {
+        $foodHarvest = (int) $this->game->getGameStateValue(CurrentStateService::GLB_FOOD_PRD);
+
+        $foodToAdd = 0;
+        foreach ($foodHarvesters as $tileId => $tileInfo) {
+            $terrain = $this->game->terrains[$tileInfo->terrainCode];
+
+            $tileFoodBonus = 0;
+            foreach ($terrain->getBonuses() as $bonus) {
+                if ($bonus->getCode() === Bonus::FOOD && !$bonus->getType()) {
+                    $tileFoodBonus += $bonus->getCount();
+                }
+            }
+
+            $foodToAdd += min($terrain->getFood(), $tileInfo->count) * ($foodHarvest + $tileFoodBonus);
+        }
+
+        return $foodToAdd;
     }
 
     public function getLineageBonuses(): array
@@ -115,7 +141,6 @@ class BonusService
             }
 
             // Leader bonus
-
             if ($this->isLeaderPowerTurn) {
                 $leaderId = (int) $this->game->getGameStateValue(CurrentStateService::GLB_LEADER);
                 if ($leaderId) {

@@ -45,15 +45,38 @@ class PeopleService implements \JsonSerializable
     ];
 
     protected CardService $cardService;
+    protected ?CardRepository $unitRepository = null;
 
     public function __construct()
     {
         $this->cardService = new CardService();
     }
 
+    public function getRepository(): CardRepository
+    {
+        if ($this->unitRepository === null) {
+            $this->unitRepository = $this->cardService->getCardRepository(Unit::class);
+        }
+
+        return $this->unitRepository;
+    }
+
     public function getPopulation(): int
     {
         return $this->population;
+    }
+
+    /** @return array<int, array<int, Unit>> */
+    public function getByTypeUnits(): array
+    {
+        $units = [];
+        foreach ($this->byType as $type => $unitPosList) {
+            $units[$type] = [];
+            foreach ($unitPosList as $pos) {
+                $units[$type][] = $this->units[$pos];
+            }
+        }
+        return $units;
     }
 
     public function getPopulationAsString(): string
@@ -107,10 +130,37 @@ class PeopleService implements \JsonSerializable
         return $this;
     }
 
+    public function freeUnits(): void
+    {
+        $this->getRepository()->setAllUnitsToStatus(Unit::STATUS_FREE);
+        foreach ($this->units as $unit) {
+            $unit->setStatus(Unit::STATUS_FREE);
+        }
+    }
+
     /** @return array<Unit> */
     public function isLineageUnitFree(string $type): bool
     {
+        // todo: Missing something here?
         return array_key_exists($type, $this->byType);
+    }
+
+    public function kill(Unit $unit): void
+    {
+        foreach ($this->units as $pos => $test) {
+            if ($test->getId() === $unit->getId()) {
+                $locationPos = array_search($pos, $this->byPlace[$unit->getLocation()]);
+                if($locationPos !== false) unset($this->byPlace[$unit->getLocation()]);
+
+                $typePos = array_search($pos, $this->byType[$unit->getType()->getCode()]);
+                if($typePos !== false) unset($this->byType[$unit->getType()->getCode()]);
+
+                unset($this->byIds[$unit->getId()]);
+
+                $this->getRepository()->killUnit($unit);
+                break;
+            }
+        }
     }
 
     /** @return array<Unit> */
@@ -129,12 +179,11 @@ class PeopleService implements \JsonSerializable
             if ($this->getBgaDeck() !== null) {
                 $this->getBgaDeck()->createCards([$baby->toArray()], $location, $locationArg);
 
-                $repository = $this->cardService->getCardRepository(Unit::class);
-                $baby->setId($repository->getLastId());
+                $baby->setId($this->getRepository()->getLastId());
 
                 // No update needed if Free (Default)
                 if ($acted) {
-                    $repository->update($baby);
+                    $this->getRepository()->update($baby);
                 }
 
                 $this->addUnit($baby);

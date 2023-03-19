@@ -18,8 +18,8 @@ class Terrain implements \JsonSerializable
     public const MOUNTAIN_LAIR    = 'mountain_lair';
     public const MOUNTAIN_LAKE    = 'mountain_lake';
     public const MOUNTAIN_WOOD    = 'mountain_wood';
-    public const MOUNTAIN_TOWER   = 'mountain_tower';
     public const MOUNTAIN_RIVER   = 'mountain_river';
+    public const MOUNTAIN_DRAKON  = 'mountain_drakon';
     public const PLAIN            = 'plain';
     public const PLAIN_LAKE       = 'plain_lake';
     public const PLAIN_WOOD       = 'plain_wood';
@@ -46,6 +46,7 @@ class Terrain implements \JsonSerializable
     protected string $code      = '';
     protected int    $food      = 0;
     protected bool   $science   = false;
+    protected bool   $drakon    = false;
 
     /**
      * @var Resource[]
@@ -141,6 +142,22 @@ class Terrain implements \JsonSerializable
     public function setScience(bool $science): void
     {
         $this->science = $science;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isDrakon(): bool
+    {
+        return $this->drakon;
+    }
+
+    /**
+     * @param bool $drakon
+     */
+    public function setDrakon(bool $drakon): void
+    {
+        $this->drakon = $drakon;
     }
 
     /**

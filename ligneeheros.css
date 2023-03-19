@@ -270,6 +270,11 @@ h2#turn::before {
     color: #065009;
     position: absolute;
 }
+#fullscreen-message:empty,
+#overall-cards:empty,
+#floating-cards:empty {
+    display: none;
+}
 #fullscreen-message,
 #overall-cards,
 #floating-cards {
@@ -281,6 +286,12 @@ h2#turn::before {
     flex-wrap: wrap;
     justify-content: space-around;
     padding: 1em;
+}
+#floating-cards {
+    max-width: 70em;
+    position: relative;
+    margin: 0 auto;
+    height: 1px !important;
 }
 #overall-cards {
     z-index: 100;
@@ -306,7 +317,7 @@ h2#turn::before {
 #overall-cards:empty,
 #floating-cards:empty {display: none;}
 
-#cards-zone .card.large, #floating-cards .card.large, #overall-cards .card.large {
+#cards-zone .card.large, #floating-cards .flip.large, #overall-cards .card.large {
     width: 15em;
     margin-bottom: .5em;
 }
@@ -316,9 +327,41 @@ h2#turn::before {
 #cards-zone .card.recto:hover {
     z-index: 1;
 }
-#floating-cards .card {
+#floating-cards .flip {
     margin-right: 1em;
 }
+
+.flip {
+    width: 15em;
+    aspect-ratio: 7/11;
+    background-color: transparent;
+    perspective: 65em;
+}
+#overall-cards .flip {
+    position: absolute;
+    margin-left: 0em;
+}
+.flip-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transition: transform 1s;
+    transform-style: preserve-3d;
+}
+.flip.flipped .flip-inner {
+    transform: rotateY(180deg);
+}
+.flip .card.recto, .flip .card.verso {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+}
+.flip .card.recto {
+    transform: rotateY(180deg);
+}
+
 #tile-43, #tile-45, #tile-47, #tile-49 {
     display: none;
 }
@@ -710,7 +753,7 @@ h2#turn::before {
     margin: 2% 0 1%;
     display: flex;
     align-items: center;
-    overflow-y: auto;
+    overflow-y: hidden;
     position: relative;
     justify-content: space-evenly;
     padding-left: 15%;
@@ -777,7 +820,7 @@ h2#turn::before {
     flex-grow: 1;
     font-style: italic;
     font-size: .8em;
-    overflow-y: auto;
+    overflow-y: hidden;
     margin-bottom: 1%;
     display: flex;
     flex-direction: column;

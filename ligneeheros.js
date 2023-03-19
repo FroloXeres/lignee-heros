@@ -351,24 +351,6 @@ function (dojo, on, declare) {
                 zone.placeInZone(domUnitId, this.getPriorityByUnitStatus(unit.status));
             }
         },
-        ensurePlayerMeepleAppear: function(byMap, units)
-        {
-            // First check if it is necessary
-
-
-            // const $playerMeeple = dojo.query('.player-board:first-of-type .meeple picture svg');
-            // if ($playerMeeple.length) {
-            //     const lineageMeeple = $playerMeeple[0].id;
-            //
-            //     const $mapMeeples = dojo.query('#map-zone svg#' + lineageMeeple);
-            //     if ($mapMeeples.length) {
-            //         // Be sure this is the last unit for this tile/status
-            //         const $mapMeeple = $mapMeeples[0];
-            //         console.log($mapMeeple);
-            //
-            //     }
-            // }
-        },
         getPriorityByUnitStatus: function(status)
         {
             switch (status) {
@@ -420,7 +402,8 @@ function (dojo, on, declare) {
             this.cardZones = {
                 invention: {deck: null, onTable: null, hand: null},
                 spell: {deck: null, onTable: null, hand: null},
-                outside: null
+                floating: null,
+                overall: null,
             };
             for (let type in this.cardZones) {
                 for (let location in this.cardZones[type]) {
@@ -429,7 +412,8 @@ function (dojo, on, declare) {
             }
 
             // Floating-cards
-            this.cardZones.outside = this.createCardZone('floating-cards', true);
+            this.cardZones.floating = this.createCardZone('floating-cards');
+            this.cardZones.overall = this.createCardZone('overall-cards');
 
             // Init cards
             this.cards = gamedatas.cards;
@@ -480,8 +464,11 @@ function (dojo, on, declare) {
             if (this.cardZones.spell.onTable.items.length) {
                 this.cardZones.spell.onTable.updateDisplay();
             }
-            if (this.cardZones.outside.items.length) {
-                this.cardZones.outside.updateDisplay();
+            if (this.cardZones.floating.items.length) {
+                this.cardZones.floating.updateDisplay();
+            }
+            if (this.cardZones.overall.items.length) {
+                this.cardZones.overall.updateDisplay();
             }
         },
         initPlayerLineages: function(lineages, objectives = null)
@@ -541,24 +528,54 @@ function (dojo, on, declare) {
         },
         initLineageCards: function()
         {
-            this.createCardsInLocation(
-                this.cards?.lineage?.deck || [],
-                'lineage',
-                'deck',
-                true
-            );
+            this.distributeCards('lineage', 'deck');
         },
-        createCardZone: function(code, isOutside = false)
+        distributeCards: function (type, location)
+        {
+            if (this.cards[type] === undefined || this.cards[type][location] === undefined) return ;
+
+            let wait = 500;
+            this.createDeck(type, this.cards[type][location].length, 'overall-cards', false);
+            this.cards[type][location].forEach((card) => {
+                window.setTimeout(() => this.moveCardFromDeckToLocation(card, type, location), wait);
+                wait += 1000;
+            });
+        },
+        createCardZone: function(code)
         {
             const _self = this;
             let zone = new ebg.zone();
             zone.create(this, code);
             zone.setPattern('custom');
-            zone.itemIdToCoords = (isOutside || code.includes('deck')) ?
-                function() {return {x: 0, y: 0, w: 155, h: 245};} : this.cardZoneCoords;
+
+            switch (code) {
+                case 'floating-cards':
+                    zone.itemIdToCoords = this.lineageCardZoneCoords;
+                    break;
+                case 'spell-deck':
+                case 'invention-deck':
+                case 'overall-cards':
+                    zone.itemIdToCoords = function() {return {x: 0, y: 0, w: 155, h: 245};};
+                    break;
+                default:
+                    zone.itemIdToCoords = this.cardZoneCoords;
+            }
             this.addConditionalCheck(zone, 'updateDisplay', () => !_self.isInitializing);
 
             return zone;
+        },
+        lineageCardZoneCoords: function(i, zoneWidth, zoneHeight, count) {
+            this.item_margin = 15;
+            let cardWidth = 228;
+            let pileCnt = Math.floor((zoneWidth + this.item_margin) / (cardWidth + this.item_margin));
+            let modulo = i % pileCnt;
+            let line = Math.floor(i / pileCnt);
+            return {
+                x: modulo * (cardWidth + this.item_margin),
+                y: line * (356 + this.item_margin),
+                w: cardWidth,
+                h: 356
+            };
         },
         cardZoneCoords: function(i, zoneWidth, zoneHeight, count) {
             let cardWidth = 155;
@@ -587,7 +604,7 @@ function (dojo, on, declare) {
                 if (location === 'deck' && visibleDeck) {
                     this.createDeck(type, cards.length);
                 } else {
-                    this.createCardsInLocation(cards, type, location, !visibleDeck);
+                    this.createCardsInLocation(cards, type, location);
                 }
             }
         },
@@ -607,35 +624,82 @@ function (dojo, on, declare) {
                 this.cardZones[type]['deck'].placeInZone('deck-' + type, 0);
             }
         },
-        createCardsInLocation: function(cards, type, location, useOutsideZone)
+        createCardsInLocation: function(cards, type, location)
         {
-            let _self = this;
+            const _self = this;
+            let flip = type === 'lineage';
             cards.forEach(function(card) {
-                let cardTpl = _self.replaceIconsInObject(card);
-                cardTpl.textAsIcons = (cardTpl.text.indexOf('svg') !== -1) ? 'text_as_icon' : '';
-
-                let cardContent = _self.format_block('jstpl_card_recto', cardTpl);
-                cardContent = cardContent.replaceAll('[none]', '');
-
-                const iconify = ['lineage', 'objective', 'spell', 'invention'];
-                if (iconify.includes(card.deck)) {
-                    cardContent = cardContent.replaceAll('['+card.icon+']', _self.getIconAsText(card.icon));
-                    ['science', 'fight', 'city', 'growth', 'nature', 'spell', 'healing', 'foresight', 'science'].forEach(
-                        (iconId) => cardContent = cardContent.replace('['+iconId+']', _self.getIconAsText(iconId))
-                    );
-                }
-                if (card.deck === 'lineage') {
-                    ['objective', 'leading', 'fight', 'end_turn', card.meeple].forEach(
-                        (iconId) => cardContent = cardContent.replace('['+iconId+']', _self.getIconAsText(iconId))
-                    );
-                }
-
-                dojo.place(cardContent, 'new-card');
-                useOutsideZone ?
-                    _self.cardZones.outside.placeInZone(card.id, _self.getPriorityByCard(card)) :
-                    _self.cardZones[type][location].placeInZone(card.id, _self.getPriorityByCard(card))
-                ;
+                let cardId = _self.createCardInLocation(card, type, location, 'new-card', flip);
+                _self.moveCardToZone(card, cardId, type, location);
             });
+        },
+        moveCardToZone: function(card, cardId, type, location)
+        {
+            const target = !['invention', 'spell'].includes(type) ? this.cardZones.floating : this.cardZones[type][location];
+            target.placeInZone(cardId, this.getPriorityByCard(card));
+        },
+        createCardInLocation: function(card, type, location, where, flip = false)
+        {
+            let cardId = card.id;
+            let cardTpl = this.replaceIconsInObject(card);
+            cardTpl.textAsIcons = (cardTpl.text.indexOf('svg') !== -1) ? 'text_as_icon' : '';
+
+            let cardContent = this.format_block('jstpl_card_recto', cardTpl);
+            cardContent = cardContent.replaceAll('[none]', '');
+
+            const iconify = ['lineage', 'objective', 'spell', 'invention'];
+            if (iconify.includes(card.deck)) {
+                cardContent = cardContent.replaceAll('['+card.icon+']', this.getIconAsText(card.icon));
+                ['science', 'fight', 'city', 'growth', 'nature', 'spell', 'healing', 'foresight', 'science'].forEach(
+                    (iconId) => cardContent = cardContent.replace('['+iconId+']', this.getIconAsText(iconId))
+                );
+            }
+            if (card.deck === 'lineage') {
+                ['objective', 'leading', 'fight', 'end_turn', card.meeple].forEach(
+                    (iconId) => cardContent = cardContent.replace('['+iconId+']', this.getIconAsText(iconId))
+                );
+            }
+
+            if (flip) {
+                cardTpl.deckType = type;
+                let versoContent = this.format_block('jstpl_card_recto_back', cardTpl);
+                let $div = document.createElement('div');
+                let $divInner = document.createElement('div');
+                cardId = 'flip-' + card.id;
+                $div.id = cardId;
+                $div.classList.add('flip');
+                $divInner.classList.add('flip-inner');
+                $divInner.innerHTML = versoContent + cardContent;
+                $div.appendChild($divInner);
+                document.getElementById(where).appendChild($div);
+                this.cardZones.overall.placeInZone(cardId, 0);
+
+                window.setTimeout(() => document.getElementById(cardId).classList.add('flipped'), 100);
+            } else {
+                dojo.place(cardContent, where);
+            }
+
+            return cardId;
+        },
+        moveCardFromDeckToLocation: function(card, type, location)
+        {
+            let $deck = document.getElementById('deck-' + type);
+            let counter = this.changeDeckCounter($deck, -1);
+            let cardId = this.createCardInLocation(card, type, location, 'overall-cards', true);
+            this.moveCardToZone(card, cardId, type, location);
+
+            if (!counter) {
+                $deck.remove();
+            }
+        },
+        changeDeckCounter: function ($deck, change)
+        {
+            let $counter = $deck.getElementsByClassName('counter')[0];
+            let counter = parseInt($counter.innerHTML);
+            let newCounter = counter + change;
+            $counter.innerHTML = newCounter;
+
+            return newCounter;
         },
         getPriorityByCard: function(card)
         {
@@ -643,7 +707,7 @@ function (dojo, on, declare) {
             switch (card.type) {
                 default: priority = 10;
             }
-            priority += parseInt(card.name[0]);
+            priority += card.name.charCodeAt(0);
 
             return priority;
         },
@@ -818,8 +882,21 @@ function (dojo, on, declare) {
         updateCartridgeElement: function($element, value, duration = 1000)
         {
             let incFct = value < 0 ?
-                function() {$element.dataset.count = parseInt($element.dataset.count) - 1} :
-                function() {$element.dataset.count = parseInt($element.dataset.count) + 1}
+                () => {$element.dataset.count = parseInt($element.dataset.count) - 1} :
+                () => {$element.dataset.count = parseInt($element.dataset.count) + 1}
+            ;
+            let howMany = Math.abs(value);
+            let part = Math.floor(duration / howMany);
+            for (let i = 1; i <= howMany; i++) {
+                window.setTimeout(incFct, part * i);
+            }
+        },
+
+        updateCartridgeStock: function($element, value, duration = 1000)
+        {
+            let incFct = value < 0 ?
+                function() {$element.dataset.stock = parseInt($element.dataset.stock) - 1} :
+                function() {$element.dataset.stock = parseInt($element.dataset.stock) + 1}
             ;
             let howMany = Math.abs(value);
             let part = Math.floor(duration / howMany);
@@ -929,11 +1006,14 @@ function (dojo, on, declare) {
 
         displayFullScreenMessage: function(message, duration = 3000)
         {
+            window.clearTimeout(this.fullScreenHideTimer);
+            window.clearTimeout(this.fullScreenCleanTimer);
+
             this.$fullScreen.innerHTML = '<h1>' + message + '</h1>';
             this.$fullScreen.classList.add('display');
 
-            window.setTimeout(() => this.$fullScreen.classList.remove('display'), duration);
-            window.setTimeout(() => this.$fullScreen.innerHTML = '', duration + 2000);
+            this.fullScreenHideTimer = window.setTimeout(() => this.$fullScreen.classList.remove('display'), duration);
+            this.fullScreenCleanTimer = window.setTimeout(() => this.$fullScreen.innerHTML = '', duration + 2000);
         },
 
         ///////////////////////////////////////////////////
@@ -997,6 +1077,9 @@ function (dojo, on, declare) {
                         break;
                     case 'Principal':
                         this.addActionButton( 'pass', _('Pass'), 'onPass' );
+                        break;
+                    case 'ScienceHarvestBonus':
+                        this.addActionButton( 'sbPass', _('Pass'), 'onScienceBonusPass' );
                         break;
                 }
             }
@@ -1075,9 +1158,16 @@ function (dojo, on, declare) {
 
         onPass: function(evt) {
             dojo.stopEvent(evt);
-            if (!this.checkAction('pass')) return;
+            if (!this.checkAction('pTurnPass')) return;
 
-            this.ajaxCallWrapper('pass', {}, (response) => {}, (isError) => {});
+            this.ajaxCallWrapper('pTurnPass', {}, (response) => {}, (isError) => {});
+        },
+
+        onScienceBonusPass: function (evt) {
+            dojo.stopEvent(evt);
+            if (!this.checkAction('shBonusPass')) return;
+
+            this.ajaxCallWrapper('shBonusPass', {}, (response) => {}, (isError) => {});
         },
 
         ///////////////////////////////////////////////////
@@ -1103,10 +1193,25 @@ function (dojo, on, declare) {
             dojo.subscribe('playerDrawObjective', this, 'onObjectiveDrawn');
             this.notifqueue.setSynchronous('playerDrawObjective', 1500);
 
+            dojo.subscribe('ntfyEndTurn', this, 'onEndPhase');
+            this.notifqueue.setSynchronous('ntfyEndTurn', 1000);
+
             dojo.subscribe('ntfyScienceHarvest', this, 'onScienceHarvest');
             dojo.subscribe('ntfyFoodHarvest', this, 'onFoodHarvest');
+            this.notifqueue.setSynchronous('ntfyFoodHarvest', 1000);
+
+            dojo.subscribe('ntfyDisabledCards', this, 'onDisabledCards');
+            this.notifqueue.setSynchronous('ntfyDisabledCards', 1000);
+
+            dojo.subscribe('ntfyDiedPeople', this, 'onDiedPeople');
+            this.notifqueue.setSynchronous('ntfyDiedPeople', 1000);
+
+            dojo.subscribe('ntfyFoodStock', this, 'onFeedEnded');
+            this.notifqueue.setSynchronous('ntfyFoodStock', 1000);
 
             dojo.subscribe('ntfyStartTurn', this, 'onStartTurn');
+            this.notifqueue.setSynchronous('ntfyStartTurn', 1000);
+
 
 
             // Example 1: standard notification handling
@@ -1178,6 +1283,29 @@ function (dojo, on, declare) {
             this.displayFullScreenMessage(this.$turn.innerHTML);
         },
 
+        onDisabledCards: function (notif) {
+            console.log('Disabled cards:');
+            console.log(notif.args.disabled);
+        },
+
+        onDiedPeople: function(notif) {
+            // Remove units
+            const unitIds = notif.args.died;
+            const _self = this;
+            unitIds.forEach((unitId) => {
+
+            });
+        },
+
+        onFeedEnded: function (notif) {
+            this.updateCartridgeElement(this.$foodStock, parseInt(notif.args.foodUpdate));
+        },
+
+        onEndPhase: function (notif) {
+            // Display end phase start on screen
+            this.displayFullScreenMessage(this.status.currentState?.phase?.end);
+        },
+
         onScienceHarvest: function(notif) {
             // Animate science from map to Cartridge
             // 'savantHarvesters', 'scienceMultiplier', 'populationBonus', 'lineageBonus'
@@ -1187,6 +1315,9 @@ function (dojo, on, declare) {
         },
 
         onFoodHarvest: function (notif) {
+            // Animate food from map to Cartridge
+
+
             // Update food stock
             this.updateCartridgeElement(this.$foodStock, parseInt(notif.args.total));
         }

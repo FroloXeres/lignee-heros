@@ -112,6 +112,12 @@ CREATE TABLE IF NOT EXISTS `map` (
     UNIQUE Key `key_map_coords`(`tile_x`, `tile_y`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ;
 
+-- CREATE TABLE IF NOT EXISTS `events` (
+--     `event_id` int(10) unsigned NOT NULL UNIQUE,
+--     `when` VARCHAR(2) DEFAULT 0,
+--     PRIMARY KEY (`event_id`),
+-- ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ;
+
 -- Example 2: add a custom field to the standard "player" table
 -- ALTER TABLE `player` ADD `player_my_custom_field` INT UNSIGNED NOT NULL DEFAULT '0';
 

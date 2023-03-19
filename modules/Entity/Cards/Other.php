@@ -30,6 +30,7 @@ class Other extends AbstractCard
      * @var Bonus[]
      */
     protected array $gives = [];
+    protected int $age = self::AGE_I;
 
     /**
      * @param int $code
@@ -58,6 +59,18 @@ class Other extends AbstractCard
     {
         $this->code = self::TYPE_OTHER . '_' . $code;
         $this->setType($code);
+    }
+
+    public function getAge(): int
+    {
+        return $this->age;
+    }
+
+    public function setAge(int $age): self
+    {
+        $this->age = $age;
+
+        return $this;
     }
 
     /**

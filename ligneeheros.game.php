@@ -30,7 +30,8 @@ use LdH\Service\CurrentStateService;
 use LdH\Service\MapService;
 use LdH\Service\CardService;
 use LdH\Service\StateService;
-use \LdH\Service\PeopleService;
+use LdH\Service\PeopleService;
+use LdH\Service\BonusService;
 use LdH\Entity\Cards\Deck;
 use LdH\Entity\Map\Resource;
 use LdH\Entity\Map\Terrain;
@@ -61,6 +62,7 @@ class ligneeheros extends Table
     public ?StateService $stateService = null;
     public ?CardService  $cardService  = null;
     public ?MapService  $mapService  = null;
+    public ?BonusService $bonusService = null;
 
     /**
      * @var callable[]
@@ -425,6 +427,10 @@ class ligneeheros extends Table
                 'city' => clienttranslate('City:'),
                 'stock'   => clienttranslate('Stock:')
             ],
+            'phase' => [
+                'end' => clienttranslate('End phase begin'),
+                'start' => clienttranslate('Turn ${turn} begin'),
+            ]
         ];
 
         foreach (array_keys(CurrentStateService::CURRENT_STATES) as $stateName) {
@@ -606,6 +612,14 @@ class ligneeheros extends Table
     {
         return array_key_exists($type, $this->cards) ?
             $this->cards[$type] : null;
+    }
+
+    public function getBonusService(): ?BonusService
+    {
+        if ($this->bonusService === null) {
+            $this->bonusService = new BonusService($this);
+        }
+        return $this->bonusService;
     }
 
     /**

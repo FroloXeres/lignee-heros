@@ -19,7 +19,8 @@ class Disease extends AbstractCard
     public const ACTED_HEAL       = 305;
     public const ACTED_MOVED      = 306;
 
-    protected int    $level;
+    protected int $level;
+    protected int $age = self::AGE_I;
 
     /**
      * @param int $code
@@ -67,6 +68,18 @@ class Disease extends AbstractCard
     {
         $this->level = $level;
         $this->setType((string) $level);
+
+        return $this;
+    }
+
+    public function getAge(): int
+    {
+        return $this->age;
+    }
+
+    public function setAge(int $age): self
+    {
+        $this->age = $age;
 
         return $this;
     }

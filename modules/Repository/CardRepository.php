@@ -3,9 +3,12 @@
 namespace LdH\Repository;
 
 use LdH\Entity\Cards\BoardCardInterface;
+use LdH\Entity\Cards\Invention;
 use LdH\Entity\Cards\Objective;
+use LdH\Entity\Cards\Spell;
 use LdH\Entity\Meeple;
 use LdH\Entity\Unit;
+use LdH\Object\UnitOnMap;
 
 
 class CardRepository extends AbstractCardRepository
@@ -50,7 +53,8 @@ class CardRepository extends AbstractCardRepository
         );
     }
 
-    public function getFoodHarvesters(array $terrainCodes, array $harvesterTypes): array
+    /** @return array<UnitOnMap> */
+    public function getFreeFoodHarvestersOnMap(array $terrainCodes, array $harvesterTypes): array
     {
         if ($this->class !== Unit::class) return [];
 
@@ -72,12 +76,43 @@ class CardRepository extends AbstractCardRepository
         return array_combine(
             array_map(function(array $unit) {return $unit['card_location_arg'];}, $units),
             array_map(function(array $unit) {
-                return [
-                    'nb' => $unit['nb'],
-                    'terrain' => $unit['tile_terrain']
-                ];
+                return new UnitOnMap(
+                    (int) $unit['card_location_arg'],
+                    (int) $unit['nb'],
+                    $unit['tile_terrain']
+                );
             }, $units)
         );
+    }
+
+    public function disableAllCards(): bool
+    {
+        if (!in_array($this->class, [Invention::class, Spell::class], true)) return false;
+
+        return $this->query(sprintf(
+            "UPDATE %s SET `card_activated` = 0 WHERE 1",
+            $this->table
+        ));
+    }
+
+    public function killUnit(Unit $unit): void
+    {
+        $this->query(sprintf(
+            "DELETE FROM %s WHERE `card_id` = %s",
+            $this->table,
+            $unit->getId()
+        ));
+    }
+
+    public function setAllUnitsToStatus(string $status): bool
+    {
+        if ($this->class !== Unit::class) return false;
+
+        return $this->query(sprintf(
+            "UPDATE %s SET `meeple_status` = '%s' WHERE 1",
+            $this->table,
+            $status
+        ));
     }
 
     /** @return array<'byUser': array<int, int>, 'byType': int[]> */

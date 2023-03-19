@@ -17,6 +17,20 @@ class Unit implements \JsonSerializable
         self::STATUS_MOVED,
         self::STATUS_ACTED
     ];
+    public const NOT_FEED_ORDER = [
+        Meeple::WORKER,
+        Meeple::WARRIOR,
+        Meeple::MAGE,
+        Meeple::SAVANT,
+        Meeple::ORK_WORKER,
+        Meeple::HUMANI_WORKER,
+        Meeple::ORK_WARRIOR,
+        Meeple::NANI_WARRIOR,
+        Meeple::HUMANI_MAGE,
+        Meeple::ELVEN_MAGE,
+        Meeple::NANI_SAVANT,
+        Meeple::ELVEN_SAVANT,
+    ];
 
     public const LOCATION_MAP       = 'map';
     public const LOCATION_SPELL     = 'spell';

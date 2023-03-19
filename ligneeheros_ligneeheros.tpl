@@ -276,6 +276,13 @@
             <div class="counter">${count}</div>\
        </div>'
     ;
+    var jstpl_card_recto_back =
+        '<div class="card verso ${large} ${deckType}" id="deck-${type}" title="${name}">\
+            <div class="content">\
+                <div class="inner"></div>\
+            </div>\
+       </div>'
+    ;
 
     var jstpl_card_recto =
        '<div class="card recto ${deck} ${large} ${id}" id="${id}" data-id="${id}">\

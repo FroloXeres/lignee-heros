@@ -299,7 +299,7 @@ class MapService
                 Terrain::HILL_RUIN, Terrain::HILL_LAKE, Terrain::SWAMP,
                 Terrain::SWAMP, Terrain::SWAMP_TOWER, Terrain::DESERT,
                 Terrain::DESERT_STONE, Terrain::DESERT_STONE, Terrain::MOUNTAIN,
-                Terrain::HILL_WOOD_LAIR, Terrain::MOUNTAIN_TOWER, Terrain::MOUNTAIN_RIVER,
+                Terrain::HILL_WOOD_LAIR, Terrain::MOUNTAIN_DRAKON, Terrain::MOUNTAIN_RIVER,
                 Terrain::FOREST_TOWER, Terrain::FOREST_LAIR, Terrain::FOREST_DENSE
             ]
         ];

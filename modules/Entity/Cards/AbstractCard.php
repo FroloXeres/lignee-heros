@@ -15,6 +15,10 @@ abstract class AbstractCard implements CardInterface
     public const TYPE_OBJECTIVE = 'objective';
     public const TYPE_LINEAGE   = 'lineage';
 
+    public const AGE_I = 1;
+    public const AGE_II = 2;
+    public const AGE_III = 3;
+
     /**
      * @var BoardCardInterface[]
      */

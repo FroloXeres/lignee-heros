@@ -29,6 +29,7 @@ class Fight extends AbstractCard
 
     protected bool $toCity = false;
     protected int  $power  = 0;
+    protected int $age = self::AGE_I;
 
     /**
      * @var Bonus[]
@@ -103,6 +104,18 @@ class Fight extends AbstractCard
     public function setPower(int $power): Fight
     {
         $this->power = $power;
+
+        return $this;
+    }
+
+    public function getAge(): int
+    {
+        return $this->age;
+    }
+
+    public function setAge(int $age): self
+    {
+        $this->age = $age;
 
         return $this;
     }

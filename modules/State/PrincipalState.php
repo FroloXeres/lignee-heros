@@ -7,11 +7,13 @@ class PrincipalState extends AbstractState
     public const ID = 5;
     public const NAME = 'Principal';
 
-    public const ACTION_PASS = 'pass';
+    public const ACTION_PASS = 'pTurnPass';
 
     public const TR_PASS = 'trPass';
 
-    public const NOTIFY_PLAYER_PASS = 'playerPass';
+    public const NOTIFY_PLAYER_PASS = 'ntfyPlayerPass';
+    public const NOTIFY_START_TURN = 'ntfyStartTurn';
+
 
     public static function getId(): int
     {
@@ -55,8 +57,10 @@ class PrincipalState extends AbstractState
     {
         return function () {
             /** @var \ligneeheros $this */
+            $turn = $this->getCurrentTurn();
+            $this->notifyAllPlayers(PrincipalState::NOTIFY_START_TURN, clienttranslate('[turn] <b>${turn}</b> started'), ['i18n' => ['turn'], 'turn' => $turn]);
 
-
+            $this->gamestate->setAllPlayersMultiactive();
         };
     }
 
@@ -76,7 +80,6 @@ class PrincipalState extends AbstractState
             self::ACTION_PASS => function() {
                 /** @var \ligneeheros $this */
                 // No more action to do, launch end of turn...
-
                 $notificationParams = [
                     'i18n' => ['player_name'],
                     'player_name' => $this->getCurrentPlayerName(),

@@ -94,12 +94,12 @@ class Deck implements \Iterator
 
         $this->cards[$this->current]  = $card;
 
-        // Some cards are hidden for player (no draw possible)
-        $hidden = ($card instanceof Objective && $card->isLineageObjective());
-
         $boardCardType = $card->getBoardCardClassByCard();
         for ($i = 0; $i < $count; $i++) {
-            $boardCard = $hidden ? $boardCardType::buildBoardCard(BoardCardInterface::LOCATION_HIDDEN) : $boardCardType::buildBoardCard();
+            $boardCard = DefaultBoardCard::isHiddenCard($card) ?
+                $boardCardType::buildBoardCard(BoardCardInterface::LOCATION_HIDDEN) :
+                $boardCardType::buildBoardCard()
+            ;
             $card->addBoardCard($boardCard);
         }
 

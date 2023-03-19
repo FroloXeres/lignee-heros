@@ -8,10 +8,12 @@ use LdH\Entity\Cards\Deck;
 use LdH\Entity\Cards\Disease;
 use LdH\Entity\Cards\Fight;
 use LdH\Entity\Cards\Invention;
+use LdH\Entity\Cards\InventionBoardCard;
 use LdH\Entity\Cards\Lineage;
 use LdH\Entity\Cards\Objective;
 use LdH\Entity\Cards\Other;
 use LdH\Entity\Cards\Spell;
+use LdH\Entity\Cards\SpellBoardCard;
 use LdH\Repository\CardRepository;
 use LdH\State\ChooseLineageState;
 use LdH\State\DeadEndState;
@@ -195,6 +197,30 @@ class CardService
         }
 
         return $bgaCardsData;
+    }
+
+    /**
+     * @param array<Deck> $decks
+     * @return array<string>
+     */
+    public function disableCards(array $decks): array
+    {
+        $disabled = [];
+        foreach ($decks as $deck) {
+            $repo = $this->getCardRepoByType($deck->getType());
+            $repo->disableAllCards();
+
+            foreach ($deck->getCards() as $card) {
+                foreach ($card->getBoardCards() as $boardCard) {
+                    /** @var InventionBoardCard|SpellBoardCard $boardCard */
+                    if ($boardCard->isActivated()) {
+                        $disabled[] = $boardCard->getId();
+                        $boardCard->setActivated(false);
+                    }
+                }
+            }
+        }
+        return $disabled;
     }
 
     /**

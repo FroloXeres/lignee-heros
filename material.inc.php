@@ -130,8 +130,8 @@ $mountain       = new Terrain(clienttranslate('Mountain'), Terrain::MOUNTAIN, 0,
 $mountainLair   = new Terrain(clienttranslate('Mountain lair'), Terrain::MOUNTAIN_LAIR, 0, false, [$stone, $metal, $gem]);
 $mountainLake   = new Terrain(clienttranslate('Mountain lake'), Terrain::MOUNTAIN_LAKE, 1, false, [$stone, $metal, $animal]);
 $mountainWood   = new Terrain(clienttranslate('Wooded mountain'), Terrain::MOUNTAIN_WOOD, 0, false, [$wood, $stone, $metal]);
-$mountainTower  = new Terrain(clienttranslate('Mountain - wizard tower'), Terrain::MOUNTAIN_TOWER, 0, true, [$stone, $metal, $gem]);
-$mountainTower->addBonus(new Bonus(10, Bonus::FOOD_FOUND));
+$mountainDrakon = new Terrain(clienttranslate('Drakon lair'), Terrain::MOUNTAIN_DRAKON);
+$mountainDrakon->setDrakon(true);
 $mountainRiver  = new Terrain(clienttranslate('Mountain river'), Terrain::MOUNTAIN_RIVER, 1, false, [$stone, $metal, $gem]);
 
 $plain          = new Terrain(clienttranslate('Plain'), Terrain::PLAIN, 2, false, [$clay, $animal]);
@@ -453,7 +453,7 @@ $lineage
         ->setMeeple($orkWorker)
         ->setMeeplePower((new Bonus(1, Bonus::FOOD, Meeple::ORK_WORKER)))
         ->setObjective($objOrkWorker)
-        ->setObjectiveBonus((new Bonus(1, Bonus::FOOD))->setDescription(clienttranslate("[food]+1")))
+        ->setObjectiveBonus((new Bonus(1, Bonus::FOOD, Meeple::ORK_WORKER))->setDescription(clienttranslate("[food]+1")))
         ->setLeadingBonus(new Bonus(1, Bonus::FOOD, $warrior->getCode()))
         ->setArtist('Kevins Darnis')
     );
@@ -530,8 +530,8 @@ $tools = (new Invention(Invention::TYPE_DEVELOPMENT, Invention::TOOLS))
     ->setScience(3)
     ->setResources([$stone, $metal])->setOr(true)
     ->addUnit($worker)
-    ->addGive(new Bonus(1, Bonus::FOOD, Meeple::WORKER))
-    ->addGive(new Bonus(2, Bonus::FOOD, Meeple::WORKER));
+    ->addGive(new Bonus(1, Bonus::FOOD))
+    ->addGive(new Bonus(2, Bonus::FOOD));
 $longBow = (new Invention(Invention::TYPE_FIGHT, Invention::LONG_BOW))
     ->setName(clienttranslate("Long bow"))
     ->setDescription(clienttranslate("No need to be close to attack enemies"))
@@ -575,7 +575,7 @@ $irrigation = (new Invention(Invention::TYPE_DEVELOPMENT, Invention::IRRIGATION)
     ->setArtist('Kevins Darnis')
     ->setScience(5)
     ->addUnit($worker)
-    ->addGive(new Bonus(1, Bonus::FOOD, Meeple::WORKER));
+    ->addGive(new Bonus(1, Bonus::FOOD));
 $domestication = (new Invention(Invention::TYPE_DEVELOPMENT, Invention::DOMESTICATION))
     ->setName(clienttranslate("Domestication"))
     ->setDescription(clienttranslate("Some animals can be domesticated, not all..."))
@@ -1115,30 +1115,59 @@ $this->cards[$magic->getType()] = $magic;
 $exploreDisease
     ->addCard((new Disease(Disease::LEVEL_2, Disease::NO_WIZARD))
         ->setName("Mentalite aïgué")
-        ->setDescription(clienttranslate("Wizards on tile become workers.")),
-        2
+        ->setDescription(clienttranslate("Wizards on tile become workers."))
+        ->setAge(AbstractCard::AGE_II)
+    )
+    ->addCard((new Disease(Disease::LEVEL_2, Disease::NO_WIZARD))
+        ->setName("Mentalite aïgué")
+        ->setDescription(clienttranslate("Wizards on tile become workers."))
+        ->setAge(AbstractCard::AGE_III),
+  2
     )
     ->addCard((new Disease(Disease::LEVEL_3, Disease::ACTED_ZONE))
         ->setName("Vide-boyau")
-        ->setDescription(clienttranslate("Flip units (1 tile distance) to unavailable. They can't do more action this turn.")),
-        3
+        ->setDescription(clienttranslate("Flip units (1 tile distance) to unavailable. They can't do more action this turn."))
+        ->setAge(AbstractCard::AGE_I)
+    )
+    ->addCard((new Disease(Disease::LEVEL_3, Disease::ACTED_ZONE))
+        ->setName("Vide-boyau")
+        ->setDescription(clienttranslate("Flip units (1 tile distance) to unavailable. They can't do more action this turn."))
+        ->setAge(AbstractCard::AGE_II)
+    )
+    ->addCard((new Disease(Disease::LEVEL_3, Disease::ACTED_ZONE))
+        ->setName("Vide-boyau")
+        ->setDescription(clienttranslate("Flip units (1 tile distance) to unavailable. They can't do more action this turn."))
+        ->setAge(AbstractCard::AGE_III)
     )
     ->addCard((new Disease(Disease::LEVEL_1, Disease::ACTED_MOVED_HEAL))
         ->setName("Fièvre draconique")
         ->setDescription(clienttranslate("Units on tile can't move or do anything until they are healed."))
+        ->setAge(AbstractCard::AGE_III)
     )
     ->addCard((new Disease(Disease::LEVEL_1, Disease::DEAD))
         ->setName("Mort-soif")
         ->setDescription(clienttranslate("Units on tile die if not healed this turn."))
+        ->setAge(AbstractCard::AGE_III)
     )
     ->addCard((new Disease(Disease::LEVEL_1, Disease::ACTED_HEAL))
         ->setName("Creuse-os")
         ->setDescription(clienttranslate("Units on tile can't do anything until they are healed (Move is possible)."))
+        ->setAge(AbstractCard::AGE_II)
     )
     ->addCard((new Disease(Disease::LEVEL_2, Disease::ACTED_MOVED))
         ->setName("Jambe-coton")
-        ->setDescription(clienttranslate("Units on tile can't move or do anything this turn.")),
-        2
+        ->setDescription(clienttranslate("Units on tile can't move or do anything this turn."))
+        ->setAge(AbstractCard::AGE_I)
+    )
+    ->addCard((new Disease(Disease::LEVEL_2, Disease::ACTED_MOVED))
+        ->setName("Jambe-coton")
+        ->setDescription(clienttranslate("Units on tile can't move or do anything this turn."))
+        ->setAge(AbstractCard::AGE_II)
+    )
+    ->addCard((new Disease(Disease::LEVEL_2, Disease::ACTED_MOVED))
+        ->setName("Jambe-coton")
+        ->setDescription(clienttranslate("Units on tile can't move or do anything this turn."))
+        ->setAge(AbstractCard::AGE_III)
     )
 ;
 $this->cards[$exploreDisease->getType()] = $exploreDisease;
@@ -1357,7 +1386,7 @@ $this->terrains = [
     $mountainLair->getCode()   => $mountainLair,
     $mountainLake->getCode()   => $mountainLake,
     $mountainRiver->getCode()  => $mountainRiver,
-    $mountainTower->getCode()  => $mountainTower,
+    $mountainDrakon->getCode() => $mountainDrakon,
     $mountainWood->getCode()   => $mountainWood,
 
     $plain->getCode()          => $plain,

@@ -50,3 +50,23 @@ services:
         public: true
         tags: ['ldh.state']
 
+    LdH\State\EndOfEndTurnState:
+        public: true
+        tags: ['ldh.state']
+
+    LdH\State\FoodHarvestBonusState:
+        public: true
+        tags: ['ldh.state']
+
+    LdH\State\FoodHarvestState:
+        public: true
+        tags: ['ldh.state']
+
+    LdH\State\ScienceHarvestBonusState:
+        public: true
+        tags: ['ldh.state']
+
+    LdH\State\ScienceHarvestState:
+        public: true
+        tags: ['ldh.state']
+
