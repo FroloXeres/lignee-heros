@@ -68,6 +68,8 @@
     * @return void
     */
     function __call(string $name, array $arguments) {
+        var_dump("Call " . $name);
+
         if (array_key_exists($name, $this->actionMethods)) {
             self::setAjaxMode();
 

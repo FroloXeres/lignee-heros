@@ -19,16 +19,8 @@ class DeadEndState extends AbstractState
         $this->description       = clienttranslate("Everyone is waiting...");
         $this->descriptionMyTurn = clienttranslate("Nothing to do but wait");
         $this->action            = 'st' . $this->name;
-        $this->args              = 'arg' . $this->name;
         $this->possibleActions   = ['wait'];
         $this->transitions       = ["" => StateInterface::STATE_END_ID];
-    }
-
-    public function getStateArgMethod(): ?callable
-    {
-        return function () {
-            return [];
-        };
     }
 
     public function getStateActionMethod(): ?callable

@@ -25,18 +25,9 @@ class FoodHarvestState extends AbstractState
         $this->type              = self::TYPE_GAME;
         $this->description       = clienttranslate("Food harvest phase");
         $this->action            = 'st' . $this->name;
-        $this->args              = 'arg' . $this->name;
         $this->transitions       = [
             '' => EndOfEndTurnState::ID,
         ];
-    }
-
-    public function getStateArgMethod(): ?callable
-    {
-        return function () {
-            /** @var \ligneeheros $this */
-            return [];
-        };
     }
 
     public function getStateActionMethod(): ?callable

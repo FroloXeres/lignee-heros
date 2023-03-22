@@ -25,7 +25,6 @@ class FoodHarvestBonusState extends AbstractState
         $this->description       = clienttranslate("Use invention or spell to increase food harvest");
         $this->descriptionMyTurn = clienttranslate("Use invention or spell to increase food harvest");
         $this->action            = 'st' . $this->name;
-        $this->args              = 'arg' . $this->name;
         $this->possibleActions   = [
             self::ACTION_PASS,
         ];
@@ -34,14 +33,6 @@ class FoodHarvestBonusState extends AbstractState
             // Add Invention activation
             // Add Spell activation
         ];
-    }
-
-    public function getStateArgMethod(): ?callable
-    {
-        return function () {
-            /** @var \ligneeheros $this */
-            return [];
-        };
     }
 
     public function getStateActionMethod(): ?callable

@@ -37,7 +37,10 @@ class StateService
         $callables = [];
 
         foreach ($this->states as $state) {
-            $callables['arg' . $state->getName()] = $state->getStateArgMethod();
+            $argMethod = $state->getStateArgMethod();
+            if (is_callable($argMethod)) {
+                $callables['arg' . $state->getName()] = $argMethod;
+            }
         }
 
         return  $callables;

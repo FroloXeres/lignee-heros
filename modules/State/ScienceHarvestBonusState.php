@@ -28,20 +28,11 @@ class ScienceHarvestBonusState extends AbstractState
         $this->possibleActions   = [
             self::ACTION_PASS,
         ];
-        $this->args              = 'arg' . $this->name;
         $this->transitions       = [
             self::TR_PASS => ScienceHarvestState::ID,
             // Add Invention activation
             // Add Spell activation
         ];
-    }
-
-    public function getStateArgMethod(): ?callable
-    {
-        return function () {
-            /** @var \ligneeheros $this */
-            return [];
-        };
     }
 
     public function getStateActionMethod(): ?callable

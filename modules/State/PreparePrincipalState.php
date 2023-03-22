@@ -20,18 +20,9 @@ class PreparePrincipalState extends AbstractState
         $this->descriptionMyTurn = clienttranslate("Turn is about to start");
         $this->action            = 'st' . $this->name;
         $this->possibleActions   = [];
-        $this->args              = 'arg' . $this->name;
         $this->transitions       = [
             "" => PrincipalState::ID,
         ];
-    }
-
-    public function getStateArgMethod(): ?callable
-    {
-        // Send data for this state
-        return function () {
-            return [];
-        };
     }
 
     public function getStateActionMethod(): ?callable

@@ -324,12 +324,6 @@ class ligneeheros extends Table
     {
         $args['players'] = [];
 
-        $players = $this->loadPlayersBasicInfos();
-        foreach ($players as $playerId => $playerInfos) {
-            $args['players'][$playerId] = [
-                'isActive' => ($playerInfos['player_is_multiactive'] === '1'),
-            ];
-        }
         return $args;
     }
 
@@ -512,6 +506,10 @@ class ligneeheros extends Table
         }
     }
 
+    // Sniff :'(
+    function argPrincipal(): array {return $this->stateArgMethods['argPrincipal']();}
+    function argChooseLineage(): array {return $this->stateArgMethods['argChooseLineage']();}
+    function argEndPrincipal(): array {return $this->stateArgMethods['argEndPrincipal']();}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////// Zombie

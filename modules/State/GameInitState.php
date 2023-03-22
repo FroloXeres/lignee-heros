@@ -37,10 +37,7 @@ class GameInitState extends AbstractState
 
     public function getStateArgMethod(): ?callable
     {
-        return function () {
-            // No data to send for this
-            return [];
-        };
+        return null;
     }
 
     public function getStateActionMethod(): ?callable

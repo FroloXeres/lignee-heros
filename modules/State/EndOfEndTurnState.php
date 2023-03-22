@@ -30,20 +30,9 @@ class EndOfEndTurnState extends AbstractState
         $this->type              = self::TYPE_GAME;
         $this->description       = clienttranslate("Inventions effect and People feeding");
         $this->action            = 'st' . $this->name;
-        $this->args              = 'arg' . $this->name;
         $this->transitions       = [
             self::TR_PRINCIPAL => PrincipalState::ID,
         ];
-    }
-
-    public function getStateArgMethod(): ?callable
-    {
-        return function () {
-            /** @var \ligneeheros $this */
-            return [
-
-            ];
-        };
     }
 
     public function getStateActionMethod(): ?callable

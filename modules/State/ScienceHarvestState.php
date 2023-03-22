@@ -27,18 +27,9 @@ class ScienceHarvestState extends AbstractState
         $this->type              = self::TYPE_GAME;
         $this->description       = clienttranslate("Science harvest phase");
         $this->action            = 'st' . $this->name;
-        $this->args              = 'arg' . $this->name;
         $this->transitions       = [
             self::TR_FOOD_HARVEST => FoodHarvestBonusState::ID,
         ];
-    }
-
-    public function getStateArgMethod(): ?callable
-    {
-        return function () {
-            /** @var \ligneeheros $this */
-            return [];
-        };
     }
 
     public function getStateActionMethod(): ?callable

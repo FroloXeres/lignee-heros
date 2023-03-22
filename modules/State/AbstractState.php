@@ -60,7 +60,7 @@ abstract class AbstractState implements StateInterface
      *
      * @var string
      */
-    protected string $args;
+    protected ?string $args = null;
 
     /**
      * Do we need to call 'getGameProgression' at the beginning of this game state (At least, one state as to call)
@@ -106,7 +106,10 @@ abstract class AbstractState implements StateInterface
     /**
      * @return callable[]|null
      */
-    abstract public function getStateArgMethod(): ?callable;
+    public function getStateArgMethod(): ?callable
+    {
+        return null;
+    }
 
     /**
      * @return callable[]|null
@@ -133,6 +136,10 @@ abstract class AbstractState implements StateInterface
 
         if (in_array($this->getType(), [self::TYPE_ACTIVE, self::TYPE_MULTI_ACTIVE])) {
             $stateAsArray['descriptionmyturn'] = $this->descriptionMyTurn;
+
+            if (is_callable($this->getStateArgMethod())) {
+                $stateAsArray['args'] = $this->args;
+            }
 
             if (empty($this->possibleActions)) {
                 throw new \Exception(sprintf('possibleActions as to be set for state %s of type %s', $this->name, $this->type));
