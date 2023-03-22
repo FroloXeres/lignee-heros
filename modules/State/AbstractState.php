@@ -138,7 +138,7 @@ abstract class AbstractState implements StateInterface
             $stateAsArray['descriptionmyturn'] = $this->descriptionMyTurn;
 
             if (is_callable($this->getStateArgMethod())) {
-                $stateAsArray['args'] = $this->args;
+                $stateAsArray['args'] = 'callArgMethod';
             }
 
             if (empty($this->possibleActions)) {

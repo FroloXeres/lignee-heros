@@ -506,10 +506,16 @@ class ligneeheros extends Table
         }
     }
 
-    // Sniff :'(
-    function argPrincipal(): array {return $this->stateArgMethods['argPrincipal']();}
-    function argChooseLineage(): array {return $this->stateArgMethods['argChooseLineage']();}
-    function argEndPrincipal(): array {return $this->stateArgMethods['argEndPrincipal']();}
+    function callArgMethod(): array
+    {
+        $state = $this->gamestate->state();
+        $methodName = 'arg' . $state['name'];
+        if (array_key_exists($methodName, $this->stateArgMethods)) {
+            return $this->stateArgMethods[$methodName]();
+        }
+
+        return [];
+    }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////// Zombie
