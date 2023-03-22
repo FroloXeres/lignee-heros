@@ -108,6 +108,9 @@ CREATE TABLE IF NOT EXISTS `map` (
     `tile_disabled` tinyint(1) unsigned DEFAULT FALSE,
     `tile_far` tinyint(1) unsigned NOT NULL DEFAULT 0,
     `tile_terrain` VARCHAR(30) DEFAULT NULL,
+    `tile_resource1` tinyint(1) DEFAULT NULL,
+    `tile_resource2` tinyint(1) DEFAULT NULL,
+    `tile_resource3` tinyint(1) DEFAULT NULL,
     PRIMARY KEY (`tile_id`),
     UNIQUE Key `key_map_coords`(`tile_x`, `tile_y`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ;

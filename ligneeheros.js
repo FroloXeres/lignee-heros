@@ -627,7 +627,7 @@ function (dojo, on, declare) {
         createCardsInLocation: function(cards, type, location)
         {
             const _self = this;
-            let flip = type === 'lineage';
+            let flip = type === 'lineage' || type === 'objective';
             cards.forEach(function(card) {
                 let cardId = _self.createCardInLocation(card, type, location, 'new-card', flip);
                 _self.moveCardToZone(card, cardId, type, location);

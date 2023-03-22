@@ -77,7 +77,10 @@ class MapService
         ))
         ->setTerrain($this->terrains[
             $data['tile_terrain']
-        ]);
+        ])
+        ->setResource1used($data['tile_resource1'] !== null ? $data['tile_resource1'] === '1' : null)
+        ->setResource2used($data['tile_resource2'] !== null ? $data['tile_resource2'] === '1' : null)
+        ->setResource3used($data['tile_resource3'] !== null ? $data['tile_resource3'] === '1' : null);
     }
 
     /** @return string[] */
@@ -241,6 +244,9 @@ class MapService
 
             if ($fillTerrain) {
                 $tile->setTerrain($terrains[$line['tile_terrain']]?? null);
+                $tile->setResource1used($line['tile_resource1'] !== null ? $line['tile_resource1'] === '1' : null);
+                $tile->setResource2used($line['tile_resource2'] !== null ? $line['tile_resource2'] === '1' : null);
+                $tile->setResource3used($line['tile_resource3'] !== null ? $line['tile_resource3'] === '1' : null);
             }
 
             $tiles[] = $tile;
@@ -265,7 +271,15 @@ class MapService
             if (!$tile->isDisabled()) {
                 $key   = $keys[$tile->getHowFar()]++;
                 $code  = $terrainByDistance[$tile->getHowFar()][$key];
-                $tile->setTerrain($terrains[$code]);
+
+                $terrain = $terrains[$code];
+                $tile->setTerrain($terrain);
+
+                $i = 1;
+                foreach ($terrain->getResources() as $resource) {
+                    $setter = 'setResource'.($i++).'used';
+                    $tile->$setter(false);
+                }
             }
         }
 

@@ -23,6 +23,22 @@ class Meeple
     public const ORK_WARRIOR   = 'ork_warrior';
     public const ORK_WORKER    = 'ork_worker';
 
+    public const HARVESTERS = [
+        self::WORKER,
+        self::ORK_WORKER,
+        self::HUMANI_WORKER
+    ];
+    public const WARRIORS = [
+        self::WARRIOR,
+        self::ORK_WARRIOR,
+        self::NANI_WARRIOR
+    ];
+    public const SAVANTS = [
+        self::SAVANT,
+        self::NANI_SAVANT,
+        self::ELVEN_SAVANT
+    ];
+
     public string  $code         = '';
     public string  $name         = '';
     public string  $plural       = '';

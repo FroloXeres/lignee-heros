@@ -138,6 +138,11 @@ class PeopleService implements \JsonSerializable
         }
     }
 
+    public function canHarvestResources(): bool
+    {
+        return $this->getRepository()->canHarvestResources();
+    }
+
     /** @return array<Unit> */
     public function isLineageUnitFree(string $type): bool
     {

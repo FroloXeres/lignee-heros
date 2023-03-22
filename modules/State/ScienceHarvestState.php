@@ -53,7 +53,7 @@ class ScienceHarvestState extends AbstractState
             $scienceHarvest *= $bonusService->getLineageBonusesOfType(Bonus::SCIENCE, Bonus::BONUS_MULTIPLY);
 
             $scienceTiles = $this->mapService->getScienceHarvestCodes($this->terrains);
-            $scienceHarvestersCount = $unitRepository->getScienceHarvestersCount($scienceTiles, [Meeple::SAVANT, Meeple::NANI_SAVANT, Meeple::ELVEN_SAVANT]);
+            $scienceHarvestersCount = $unitRepository->getScienceHarvestersCount($scienceTiles, Meeple::SAVANTS);
             $scienceTotalHarvesters = array_sum($scienceHarvestersCount);
 
             // Population: gives +1 / 5 people
@@ -62,7 +62,7 @@ class ScienceHarvestState extends AbstractState
             // Lineage meeple or leader bonus
             $scienceBonus = $bonusService->getHarvestScienceBonus(
                 function() use ($unitRepository, $scienceTiles) {
-                    $warriorScienceHarvestersCount = $unitRepository->getScienceHarvestersCount($scienceTiles, [Meeple::WARRIOR, Meeple::NANI_WARRIOR, Meeple::ORK_WARRIOR]);
+                    $warriorScienceHarvestersCount = $unitRepository->getScienceHarvestersCount($scienceTiles, Meeple::WARRIORS);
                     return array_sum($warriorScienceHarvestersCount);
                 }
             );

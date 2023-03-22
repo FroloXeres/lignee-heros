@@ -320,7 +320,7 @@ class ligneeheros extends Table
         return $result;
     }
 
-    function addPlayersInfosForArgs(&$args): array
+    function addPlayersInfosForArgs($args): array
     {
         $args['players'] = [];
 

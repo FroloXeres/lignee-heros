@@ -38,11 +38,11 @@ class CardRepository extends AbstractCardRepository
                         JOIN `map` mp ON m.card_location = 'map' AND m.card_location_arg = mp.tile_id 
                     WHERE 
                         m.card_type IN (%s) 
-                      AND `meeple_status` = '%s'
+                      AND `meeple_status` <> '%s'
                       AND tile_terrain IN (%s)
                     GROUP BY m.card_location_arg",
             join(', ', array_map(function(string $code) {return "'$code'";}, $harvesterTypes)),
-            Unit::STATUS_FREE,
+            Unit::STATUS_ACTED,
             join(', ', array_map(function(string $code) {return "'$code'";},$terrainCodes)),
         );
         $units = $this->getObjectListFromDB($qry);
@@ -54,7 +54,7 @@ class CardRepository extends AbstractCardRepository
     }
 
     /** @return array<UnitOnMap> */
-    public function getFreeFoodHarvestersOnMap(array $terrainCodes, array $harvesterTypes): array
+    public function getUnitsOnMapByTypeAndNotStatus(array $terrainCodes, array $unitTypes, string $status): array
     {
         if ($this->class !== Unit::class) return [];
 
@@ -64,11 +64,11 @@ class CardRepository extends AbstractCardRepository
                         JOIN `map` mp ON m.card_location = 'map' AND m.card_location_arg = mp.tile_id 
                     WHERE 
                         m.card_type IN (%s) 
-                      AND `meeple_status` = '%s'
+                      AND `meeple_status` <> '%s'
                       AND tile_terrain IN (%s)
                     GROUP BY m.card_location_arg",
-            join(', ', array_map(function(string $code) {return "'$code'";}, $harvesterTypes)),
-            Unit::STATUS_FREE,
+            join(', ', array_map(function(string $code) {return "'$code'";}, $unitTypes)),
+            $status,
             join(', ', array_map(function(string $code) {return "'$code'";}, $terrainCodes)),
         );
         $units = $this->getObjectListFromDB($qry);
@@ -83,6 +83,26 @@ class CardRepository extends AbstractCardRepository
                 );
             }, $units)
         );
+    }
+
+    public function canHarvestResources(): bool
+    {
+        if ($this->class !== Unit::class) return false;
+
+        $qry = sprintf(
+            "SELECT COUNT(m.card_id) as nb
+                    FROM `meeple` m 
+                        JOIN `map` mp ON m.card_location = 'map' AND m.card_location_arg = mp.tile_id 
+                    WHERE 
+                        m.card_type IN (%s) 
+                      AND `meeple_status` <> '%s'
+                      AND (`tile_resource1` = 0 OR `tile_resource2` = 0 OR `tile_resource3` = 0)",
+            join(', ', array_map(function(string $code) {return "'$code'";}, Meeple::HARVESTERS)),
+            Unit::STATUS_ACTED,
+        );
+        $nb = $this->getUniqueValueFromDB($qry);
+
+        return $nb && $nb > 0;
     }
 
     public function disableAllCards(): bool

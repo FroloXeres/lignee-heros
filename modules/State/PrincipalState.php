@@ -8,6 +8,7 @@ class PrincipalState extends AbstractState
     public const NAME = 'Principal';
 
     public const ACTION_PASS = 'pTurnPass';
+    public const ACTION_RESOURCE_HARVEST = 'resourceHarvest';
 
     public const TR_PASS = 'trPass';
 
@@ -24,11 +25,12 @@ class PrincipalState extends AbstractState
     {
         $this->name              = self::NAME;
         $this->type              = self::TYPE_MULTI_ACTIVE;
-        $this->description       = clienttranslate('${actplayer} has to choose an action to do');
-        $this->descriptionMyTurn = clienttranslate("Please choose an action to do");
+        $this->description       = clienttranslate('Everyone have to choose an action or pass');
+        $this->descriptionMyTurn = clienttranslate("Please choose an action: ");
         $this->action            = 'st' . $this->name;
         $this->possibleActions   = [
             self::ACTION_PASS,
+            self::ACTION_RESOURCE_HARVEST,
         ];
         $this->args              = 'arg' . $this->name;
         $this->transitions       = [
@@ -40,16 +42,10 @@ class PrincipalState extends AbstractState
     {
         return function () {
             /** @var \ligneeheros $this */
-            // Available actions for this turn
             $args = [
-                'actions' => [],
+                'actions' => PrincipalState::getAvailableActions($this),
             ];
-            $this->addPlayersInfosForArgs($args);
-
-            // todo: Check for available actions
-
-
-            return $args;
+            return $this->addPlayersInfosForArgs($args);
         };
     }
 
@@ -93,5 +89,16 @@ class PrincipalState extends AbstractState
                 $this->gamestate->setPlayerNonMultiactive($this->getCurrentPlayerId(), PrincipalState::TR_PASS);
             },
         ];
+    }
+
+    public static function getAvailableActions(\ligneeheros $game): array
+    {
+        $actions = [PrincipalState::ACTION_PASS];
+
+        if ($game->getPeople()->canHarvestResources()) {
+            $actions[] = PrincipalState::ACTION_RESOURCE_HARVEST;
+        }
+
+        return $actions;
     }
 }

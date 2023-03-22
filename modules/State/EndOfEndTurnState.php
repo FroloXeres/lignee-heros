@@ -28,7 +28,7 @@ class EndOfEndTurnState extends AbstractState
     {
         $this->name              = self::NAME;
         $this->type              = self::TYPE_GAME;
-        $this->description       = clienttranslate("End of turn");
+        $this->description       = clienttranslate("Inventions effect and People feeding");
         $this->action            = 'st' . $this->name;
         $this->args              = 'arg' . $this->name;
         $this->transitions       = [

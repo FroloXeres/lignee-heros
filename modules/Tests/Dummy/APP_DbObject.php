@@ -9,6 +9,10 @@ class APP_DbObject {
         return [];
     }
 
+    public function getUniqueValueFromDB(string $sql) {
+        return null;
+    }
+
     public function getObjectListFromDB(string $sql, bool $bUniqueValue = false): array {
         return [];
     }

@@ -46,14 +46,14 @@ class FoodHarvestState extends AbstractState
             $unitRepository = $this->getCardService()->getCardRepository(Unit::class);
 
             $foodTiles = $this->mapService->getFoodHarvestCodes($this->terrains);
-            $foodHarvesters = $unitRepository->getFreeFoodHarvestersOnMap($foodTiles, [Meeple::WORKER, Meeple::HUMANI_WORKER, Meeple::ORK_WORKER]);
+            $foodHarvesters = $unitRepository->getUnitsOnMapByTypeAndNotStatus($foodTiles, Meeple::HARVESTERS, Unit::STATUS_ACTED);
             $foodOnMap = $this->getBonusService()->getFoodHarvestedOnMap($foodHarvesters);
             $lineageFoodBonus = $this->getBonusService()->getHarvestFoodBonus(
                 function() use ($unitRepository, $foodTiles) {
                     return array_sum(
                         array_map(
                             function(UnitOnMap $unitOnMap) {return $unitOnMap->count;},
-                            $unitRepository->getFreeFoodHarvestersOnMap($foodTiles, [Meeple::WARRIOR, Meeple::NANI_WARRIOR, Meeple::ORK_WARRIOR])
+                            $unitRepository->getUnitsOnMapByTypeAndNotStatus($foodTiles, Meeple::WARRIORS, Unit::STATUS_ACTED)
                         )
                     );
                 }

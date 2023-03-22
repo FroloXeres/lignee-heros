@@ -45,6 +45,22 @@ class Tile implements \JsonSerializable {
      */
     protected ?Terrain $terrain = null;
 
+    /**
+     * @column="tile_resource1"
+     */
+    protected ?bool $resource1used = null;
+
+    /**
+     * @column="tile_resource2"
+     */
+    protected ?bool $resource2used = null;
+
+    /**
+     * @column="tile_resource3"
+     */
+    protected ?bool $resource3used = null;
+
+
     public function __construct(int $id, int $x, int $y, int $howFar = 0, bool $disabled = false, bool $flip = false)
     {
         $this->id       = $id;
@@ -160,6 +176,42 @@ class Tile implements \JsonSerializable {
         return $this;
     }
 
+    public function isResource1used(): ?bool
+    {
+        return $this->resource1used;
+    }
+
+    public function setResource1used(?bool $resource1used): self
+    {
+        $this->resource1used = $resource1used;
+
+        return $this;
+    }
+
+    public function isResource2used(): ?bool
+    {
+        return $this->resource2used;
+    }
+
+    public function setResource2used(?bool $resource2used): self
+    {
+        $this->resource2used = $resource2used;
+
+        return $this;
+    }
+
+    public function isResource3used(): ?bool
+    {
+        return $this->resource3used;
+    }
+
+    public function setResource3used(?bool $resource3used): self
+    {
+        $this->resource3used = $resource3used;
+
+        return $this;
+    }
+
     public function jsonSerialize(): array
     {
         return [
@@ -167,7 +219,10 @@ class Tile implements \JsonSerializable {
             'x'       => $this->x,
             'y'       => $this->y,
             'howFar'  => $this->howFar,
-            'terrain' => $this->terrain ? $this->terrain->getCode() : ''
+            'terrain' => $this->terrain ? $this->terrain->getCode() : '',
+            'resource1' => $this->resource1used,
+            'resource2' => $this->resource2used,
+            'resource3' => $this->resource3used,
         ];
     }
 }
