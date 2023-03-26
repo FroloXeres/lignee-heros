@@ -36,7 +36,7 @@ class FoodHarvestState extends AbstractState
             /** @var \ligneeheros $this */
             $unitRepository = $this->getCardService()->getCardRepository(Unit::class);
 
-            $foodTiles = $this->mapService->getFoodHarvestCodes($this->terrains);
+            $foodTiles = $this->getMapService()->getFoodHarvestCodes($this->terrains);
             $foodHarvesters = $unitRepository->getUnitsOnMapByTypeAndNotStatus($foodTiles, Meeple::HARVESTERS, Unit::STATUS_ACTED);
             $foodOnMap = $this->getBonusService()->getFoodHarvestedOnMap($foodHarvesters);
             $lineageFoodBonus = $this->getBonusService()->getHarvestFoodBonus(

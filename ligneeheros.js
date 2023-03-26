@@ -37,6 +37,7 @@ function (dojo, on, declare) {
                 currentState: {},
 
             };
+            this.actions = {};
             this.indexed = {};
             this.playerLineage = null;
             this.playerUnit = null;
@@ -67,26 +68,26 @@ function (dojo, on, declare) {
                 // TODO: Setting up players boards if needed
             }
 
-            this.status.isInitializing = true;
             this.isActive = gamedatas.isActive;
-            this.setupGameState(gamedatas);
-            this.setupGameData(gamedatas);
-            this.initCards(gamedatas);
-
-            this.setupMap();
-
-            this.initPeople(gamedatas.people);
-            this.initTooltips(gamedatas.tooltips);
-
-            // Setup game notifications to handle (see "setupNotifications" method below)
-            this.setupNotifications();
-            this.status.isInitializing = false;
-
-            this.postInitCardUpdate();
+            new Promise((resolve) => {
+                this.status.isInitializing = true;
+                resolve(gamedatas);
+            })
+            .then(this.setupGameState.bind(this))
+            .then(() => this.setupGameData(gamedatas))
+            .then(() => this.initCards(gamedatas))
+            .then(() => this.setupMap())
+            .then(() => this.initPeople(gamedatas.people))
+            .then(() => this.initTooltips(gamedatas.tooltips))
+            .then(() => this.setupNotifications())
+            .then(() => this.status.isInitializing = false)
+            .then(() => this.postInitCardUpdate())
+            .then(() => this.initInteractEvents());
         },
 
         setupGameState: function(gamedatas)
         {
+            //console.log('Gate state init')
             this.status.currentState  = gamedatas.currentState;
             this.initCartridge();
             this.initEvents()
@@ -94,6 +95,7 @@ function (dojo, on, declare) {
 
         setupGameData: function(gamedatas)
         {
+            //console.log('Init resources/map');
             this.resources = gamedatas.resources;
             for (let code in this.resources) {
                 if (this.resources.hasOwnProperty(code)) {
@@ -115,10 +117,18 @@ function (dojo, on, declare) {
 
         setupMap: function()
         {
+            //console.log('Init map');
             let _self       = this;
             let tileTerrain = {};
             let tileContent = null;
-            _self.map.forEach(function(tile) {
+            for (let tileId in _self.map) {
+                let tile = _self.map[tileId];
+
+                let harvested = {
+                    resource1: tile.resource1 === true ? ' used' : '',
+                    resource2: tile.resource2 === true ? ' used' : '',
+                    resource3: tile.resource3 === true ? ' used' : ''
+                };
                 tileTerrain = _self.replaceIconsInObject(
                     _self.terrains[tile.terrain]
                 );
@@ -128,9 +138,9 @@ function (dojo, on, declare) {
                     resource1: tileTerrain.resources[0]? _self.getIconAsText(tileTerrain.resources[0]) : '',
                     resource2: tileTerrain.resources[1]? _self.getIconAsText(tileTerrain.resources[1]) : '',
                     resource3: tileTerrain.resources[2]? _self.getIconAsText(tileTerrain.resources[2]) : '',
-                    resource1Class: tileTerrain.resources[0]? tileTerrain.resources[0] : '',
-                    resource2Class: tileTerrain.resources[1]? tileTerrain.resources[1] : '',
-                    resource3Class: tileTerrain.resources[2]? tileTerrain.resources[2] : '',
+                    resource1Class: tileTerrain.resources[0]? tileTerrain.resources[0] + harvested.resource1 : '',
+                    resource2Class: tileTerrain.resources[1]? tileTerrain.resources[1] + harvested.resource2 : '',
+                    resource3Class: tileTerrain.resources[2]? tileTerrain.resources[2] + harvested.resource3 : '',
                     name: tileTerrain.name,
                     bonus: tileTerrain.bonusAsTxt,
                     food: tileTerrain.food? '' : 'none',
@@ -142,7 +152,7 @@ function (dojo, on, declare) {
                 dojo.place(tileContent, 'tile-content-'+tile.id);
                 dojo.query('#tile-' + tile.id + ' .map-hex-content')
                     .addClass('tile_reveal tile_' + tileTerrain.code);
-            });
+            }
 
             _self.initMapZones();
             _self.initZoom();
@@ -294,17 +304,18 @@ function (dojo, on, declare) {
         // All about People/Unit
         initPeople: function(people)
         {
+            //console.log('Init people');
             this.initMapPeople(people.byPlace.map, people.byType, people.units);
             this.initInventionPeople(people.byPlace.invention, people.units);
             this.initSpellPeople(people.byPlace.spell, people.units);
         },
         initInventionPeople: function(byInvention, units)
         {
-
+            //console.log('Init invention people');
         },
         initSpellPeople: function(bySpell, units)
         {
-
+            //console.log('Init spell people');
         },
         getDomIdByUnit: function(unit)
         {
@@ -312,6 +323,7 @@ function (dojo, on, declare) {
         },
         initMapPeople: function(byMap, byType, units)
         {
+            //console.log('Init map people');
             // Save player unit if defined
             if (this.playerLineage) {
                 let id = byType[this.playerLineage.meeple];
@@ -395,7 +407,7 @@ function (dojo, on, declare) {
         },
         initCards: function(gamedatas)
         {
-            this.decks         = gamedatas.decks;
+            //console.log('Init cards');
             this.selectedCards = [];
 
             // Init zones
@@ -446,6 +458,7 @@ function (dojo, on, declare) {
         },
         postInitCardUpdate: function()
         {
+            //console.log('Post init cards');
             if (this.cardZones.invention.deck.items.length) {
                 this.cardZones.invention.deck.updateDisplay();
             }
@@ -471,6 +484,11 @@ function (dojo, on, declare) {
                 this.cardZones.overall.updateDisplay();
             }
         },
+        initInteractEvents: function()
+        {
+            this.evts['onHarvestResource'] = on(dojo.query('.resource.interactive'), 'click', this.onHarvestResource.bind(this));
+        },
+
         initPlayerLineages: function(lineages, objectives = null)
         {
             const _self = this;
@@ -532,6 +550,7 @@ function (dojo, on, declare) {
         },
         distributeCards: function (type, location)
         {
+            if (this.cards === undefined) this.cards = this.gamedatas.cards;
             if (this.cards[type] === undefined || this.cards[type][location] === undefined) return ;
 
             let wait = 500;
@@ -610,7 +629,7 @@ function (dojo, on, declare) {
         },
         createDeck: function(type, count, place = 'new-card', moveInZone = true)
         {
-            let deck        = this.decks[type];
+            let deck        = this.gamedatas.decks[type];
             let deckContent = this.format_block('jstpl_card_verso', {
                 large: deck.large ? 'large' : '',
                 canDraw: deck.canDraw ? 'inactive' : '',
@@ -715,6 +734,7 @@ function (dojo, on, declare) {
         // Tooltips
         initTooltips: function(tooltips)
         {
+            //console.log('Init tooltips');
             for (let domId in tooltips.id) {
                 if (tooltips.id.hasOwnProperty(domId)) {
                     this.addTooltipToId(domId, tooltips.id[domId]);
@@ -751,10 +771,9 @@ function (dojo, on, declare) {
 
         initEvents: function()
         {
+            //console.log('Init events');
             this.evts = {};
             this.evts['onChooseLineage'] = on(dojo.query('#floating-cards'), 'click', this.onChooseLineage.bind(this));
-
-
         },
 
         removeEvent: function(key)
@@ -818,6 +837,7 @@ function (dojo, on, declare) {
 
         initCartridge: function()
         {
+            //console.log('Init cartridge');
             const cartridge = this.format_block('jstpl_cartridge', {turn: 1});
             dojo.place(cartridge, 'player_boards', 'before');
 
@@ -1027,8 +1047,10 @@ function (dojo, on, declare) {
             console.log('EnteringState:');
             console.log(args);
 
+            this.actions = {};
             switch( stateName ) {
             case 'ChooseLineage' :
+                debugger;
                 this.initLineageCards();
 
                 const chooseBtn = dojo.query('#chooseLineage');
@@ -1040,6 +1062,8 @@ function (dojo, on, declare) {
                 break;
             case 'Principal' :
                 this.isActive = args['isActive'];
+                this.actions = args.args.actions;
+
                 break;
             }
         },
@@ -1070,16 +1094,36 @@ function (dojo, on, declare) {
             }
 
             if(this.isCurrentPlayerActive()) {
+                if (args.actions !== undefined) {
+                    this.actions = args.actions;
+                }
+
                 switch(stateName) {
                     case 'ChooseLineage':
                         this.addActionButton( 'chooseLineage', _('Yes'), 'onSelectLineage' );
                         this.addActionButton( 'cancelChooseLineage', _('No'), 'onUnselectLineage' );
                         break;
-                    case 'Principal':
-                        this.addActionButton( 'pass', _('Pass'), 'onPass' );
-                        break;
                     case 'ScienceHarvestBonus':
                         this.addActionButton( 'sbPass', _('Pass'), 'onScienceBonusPass' );
+                        break;
+                    // case 'Principal':
+                    //  break;
+                    default:
+                        for (let action in this.actions) {
+                            let buttonName = this.actions[action].button === undefined ? this.actions[action] : this.actions[action].button;
+                            let lastStatusUpdate = this.actions[action].status || {};
+                            this.addActionButton(action, buttonName, (evt) => {
+                                dojo.stopEvent(evt);
+                                if (!this.checkAction(action)) return;
+
+                                let jsMethod = 'onAct' + action.charAt(0).toUpperCase() + action.slice(1);
+                                if (this[jsMethod]) {
+                                    this[jsMethod](action, lastStatusUpdate);
+                                } else {
+                                    this.ajaxCallWrapper(action, {}, (response) => {}, (isError) => {});
+                                }
+                            });
+                        }
                         break;
                 }
             }
@@ -1129,6 +1173,76 @@ function (dojo, on, declare) {
             _ make a call to the game server
         
         */
+        onActPTurnPass: function(action) {
+            this.ajaxCallWrapper(action, {}, (response) => {}, (isError) => {});
+        },
+
+        onActResourceHarvest: function(action, status) {
+            console.log(action, status);
+
+            //this.ajaxCallWrapper(action, {}, (response) => {}, (isError) => {});
+        },
+
+        onHarvestResource: function(evt) {
+            evt.stopPropagation();
+
+            let dom = evt.currentTarget;
+            if (dom.classList.contains('used')) {
+
+                console.log('Resource already used');
+                return ;
+            }
+
+            let parts = dom.id.match(/(\d+)-(\d+)/g)[0].split('-');
+            let tileId = parseInt(parts[0]);
+            let unitId = this.getFirstAvailableHarvesterOnTile(tileId);
+            if (unitId === null) {
+                console.log('No free harvester found');
+                return ;
+            }
+
+            let resourceNb = parseInt(parts[1]);
+            let resourceCode = this.getResourceCodeOnTileByPos(tileId, resourceNb);
+            if (resourceCode === null) {
+                console.log('Wrong resource. Maybe it is not available anymore');
+                return ;
+            }
+
+            this.ajaxCallWrapper('resourceHarvest', {tileId: tileId, unitId: unitId, resource: resourceCode}, (response) => {
+                debugger;
+                console.log(response);
+                dom.classList.add('used');
+
+                // Animate resource token, from tile to cartridge
+
+                // Animate harvester, flip to acted side and move to zone
+
+                // Update available actions
+
+            }, (isError) => {
+                debugger;
+                console.log(isError);
+            });
+        },
+
+        getFirstAvailableHarvesterOnTile: function (tileId)
+        {
+            let tileHarvestInfo = this.actions?.resourceHarvest?.status[tileId];
+            if (tileHarvestInfo !== undefined) {
+                return tileHarvestInfo.harvesters.slice(-1);
+            }
+            return null;
+        },
+
+        getResourceCodeOnTileByPos: function (tileId, pos)
+        {
+            let tileHarvestInfo = this.actions?.resourceHarvest?.status[tileId];
+            if (tileHarvestInfo !== undefined) {
+                return Object.keys(tileHarvestInfo.resources)[pos - 1];
+            }
+            return null;
+        },
+
         onSelectLineage: function(evt)  {
             dojo.stopEvent(evt);
 
@@ -1184,6 +1298,7 @@ function (dojo, on, declare) {
         */
         setupNotifications: function()
         {
+            //console.log('Init notifications');
             dojo.subscribe( 'debug', this, "onDebug" );
 
             // Animation after lineage choose
@@ -1212,7 +1327,7 @@ function (dojo, on, declare) {
             dojo.subscribe('ntfyStartTurn', this, 'onStartTurn');
             this.notifqueue.setSynchronous('ntfyStartTurn', 1000);
 
-
+            dojo.subscribe('ntfyResourceHarvested', this, 'onResourceHarvested');
 
             // Example 1: standard notification handling
             // dojo.subscribe( 'cardPlayed', this, "notif_cardPlayed" );
@@ -1233,7 +1348,7 @@ function (dojo, on, declare) {
                     log = this.replaceIconsInString(log);
                 }
             } catch (e) {
-                console.error(log,args,"Exception thrown", e.stack);
+                console.error(log, args, "Exception thrown", e.stack);
             }
 
             return this.inherited({callee: format_string_recursive}, arguments);
@@ -1281,6 +1396,11 @@ function (dojo, on, declare) {
 
             // Display new turn on screen
             this.displayFullScreenMessage(this.$turn.innerHTML);
+        },
+
+        onResourceHarvested: function(notif) {
+            //
+
         },
 
         onDisabledCards: function (notif) {

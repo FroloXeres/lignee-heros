@@ -2,6 +2,7 @@
 
 namespace LdH\Service;
 
+use LdH\Entity\Map\Resource;
 use LdH\Entity\Meeple;
 
 class CurrentStateService
@@ -65,6 +66,12 @@ class CurrentStateService
         self::GLB_CTY_DFS     => 19,
         self::GLB_LEADER      => 34,
     ];
+
+    public static function getStateByResource(Resource $resource): string
+    {
+        $const = 'GLB_'.strtoupper($resource->getCode()).'_STK';
+        return constant('self::' . $const);
+    }
 
     public static function getStateByMeepleType(Meeple $meeple): string
     {

@@ -3,6 +3,7 @@
 namespace LdH\Service;
 
 use LdH\Entity\Map\City;
+use LdH\Entity\Map\Resource;
 use LdH\Entity\Map\Terrain;
 use LdH\Entity\Map\Tile;
 use LdH\Repository\MapRepository;
@@ -32,6 +33,16 @@ class MapService
         $this->mapRepository->updateCity($city);
     }
 
+    public function harvestResource(Tile $tile, Resource $resource): void
+    {
+        $this->mapRepository->harvestTileResource($tile, $resource);
+    }
+
+    public function renewResources(): void
+    {
+        $this->mapRepository->renewResources();
+    }
+
     /**
      * @param Terrain[] $terrains
      */
@@ -58,15 +69,29 @@ class MapService
         );
     }
 
-    public function getCentralTile(): Tile
+    public function getCentralTile(): ?Tile
+    {
+        return $this->getTileByCoordinates(0, 0);
+    }
+
+    public function getTileByCoordinates(int $x, int $y): ?Tile
     {
         return $this->buildFromData(
-            $this->mapRepository->getTileInfosByPosition(0, 0)
+            $this->mapRepository->getTileInfosByPosition($x, $y)
         );
     }
 
-    protected function buildFromData($data): Tile
+    public function getTileById(int $id): ?Tile
     {
+        return $this->buildFromData(
+            $this->mapRepository->getTileInfosById($id)
+        );
+    }
+
+    protected function buildFromData(array $data): ?Tile
+    {
+        if (empty($data)) return null;
+
         return (new Tile(
             (int) $data['tile_id'],
             (int) $data['tile_x'],
@@ -249,7 +274,7 @@ class MapService
                 $tile->setResource3used($line['tile_resource3'] !== null ? $line['tile_resource3'] === '1' : null);
             }
 
-            $tiles[] = $tile;
+            $tiles[$tile->getId()] = $tile;
         }
 
         return $tiles;
@@ -277,8 +302,9 @@ class MapService
 
                 $i = 1;
                 foreach ($terrain->getResources() as $resource) {
-                    $setter = 'setResource'.($i++).'used';
+                    $setter = 'setResource'.$i.'used';
                     $tile->$setter(false);
+                    $i++;
                 }
             }
         }

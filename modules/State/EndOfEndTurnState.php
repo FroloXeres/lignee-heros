@@ -15,6 +15,7 @@ class EndOfEndTurnState extends AbstractState
 
     public const TR_PRINCIPAL = 'trPrincipal';
 
+    public const NOTIFY_RENEW_RESOURCES = 'ntfyRenewResources';
     public const NOTIFY_DISABLED_CARDS = 'ntfyDisabledCards';
     public const NOTIFY_DIED_PEOPLE = 'ntfyDiedPeople';
     public const NOTIFY_FOOD_STOCK = 'ntfyFoodStock';
@@ -42,9 +43,11 @@ class EndOfEndTurnState extends AbstractState
             // Apply end of turn inventions effects
 
 
-            //  Resource tokens consumed
-            // For animation purpose
-
+            //  Resource tokens regenerated
+            $this->getMapService()->renewResources();
+            $this->notifyAllPlayers(EndOfEndTurnState::NOTIFY_RENEW_RESOURCES, clienttranslate('Harvested resources are available again'), [
+                'status' => $this->getPeople()->getHarvestableResources($this->terrains),
+            ]);
 
             // Population feed (maybe dead people)
             EndOfEndTurnState::feedPeople($this, $this->getPeople());

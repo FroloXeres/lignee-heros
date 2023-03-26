@@ -161,8 +161,13 @@ abstract class AbstractRepository extends \APP_DbObject
             $value = $propertyValue === null ? 'NULL' : ($propertyValue ? '1' : '0');
             break;
         case 'string' :
-            if ($field->enum !== null && !isset($field->enum[$propertyValue])) {
-                throw new \InvalidArgumentException('Try to set a forbidden value for ' . $property->getName());
+            if ($field->enum !== null && !in_array($propertyValue, $field->enum)) {
+                throw new \BgaUserException(sprintf(
+                    'Try to set a forbidden value for %s, has "%s", but only [%s] allowed',
+                    $property->getName(),
+                    $propertyValue,
+                    join(', ', $field->enum)
+                ));
             }
 
             $value = $propertyValue !== null ? "'" . self::escapeStringForDB($propertyValue) . "'" : 'NULL';

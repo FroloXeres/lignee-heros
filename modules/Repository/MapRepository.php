@@ -3,6 +3,8 @@
 namespace LdH\Repository;
 
 use LdH\Entity\Map\City;
+use LdH\Entity\Map\Resource;
+use LdH\Entity\Map\Terrain;
 use LdH\Entity\Map\Tile;
 
 class MapRepository extends AbstractRepository
@@ -30,20 +32,81 @@ class MapRepository extends AbstractRepository
         );
     }
 
-    public function updateCity(City $city): void
+    public function flipTile(Tile $tile): void
     {
         $this->query(
             sprintf(
-                'UPDATE `'.$this->table.'` SET `tile_terrain` = "%s" WHERE tile_x = 0 AND tile_y = 0',
-                $city->getCode()
+                'UPDATE `%s` SET `tile_revealed` = 1 WHERE tile_id = %s',
+                $this->table,
+                $tile->getId()
             )
         );
     }
 
+    public function renewResources():void
+    {
+        $this->query(sprintf('UPDATE `%s` SET `tile_resource1` = 0 WHERE `tile_resource1` = 1', $this->table));
+        $this->query(sprintf('UPDATE `%s` SET `tile_resource2` = 0 WHERE `tile_resource2` = 1', $this->table));
+        $this->query(sprintf('UPDATE `%s` SET `tile_resource3` = 0 WHERE `tile_resource3` = 1', $this->table));
+    }
+
+    public function harvestTileResource(Tile $tile, Resource $resource): bool
+    {
+        $pos = array_search($resource->getCode(), array_keys($tile->getTerrain()->getResources()));
+        $setter = 'setResource'.($pos + 1).'used';
+        $tile->$setter(true);
+
+        if ($pos !== false) {
+            $field = 'tile_resource' . ($pos + 1);
+            return $this->query(
+                sprintf(
+                    'UPDATE `%s` SET `%s` = 1 WHERE tile_id = %s',
+                    $this->table,
+                    $field,
+                    $tile->getId()
+                )
+            );
+        }
+
+        return false;
+    }
+
+    public function updateCity(City $city): void
+    {
+        $this->query(
+            sprintf(
+                'UPDATE `%s` SET %s WHERE tile_x = 0 AND tile_y = 0',
+                $this->table,
+                join(', ', self::getDefaultDbTerrainFieldAndValues($city))
+            )
+        );
+    }
+
+    public static function getDefaultDbTerrainFieldAndValues(Terrain $terrain): array
+    {
+        $fields = ['`tile_terrain` = "'.$terrain->getCode().'"'];
+
+        $resources = array_values($terrain->getResources());
+        for ($i = 1; $i < 3; $i++) {
+            $fields[] = '`tile_resource'.$i.'` = '.(array_key_exists($i - 1, $resources) ? '0' : 'NULL');
+        }
+
+        return $fields;
+    }
+
     public function getTileInfosByPosition(int $x = 0, int $y = 0): array
     {
-        return $this->selectAsObject(
-            sprintf('SELECT * FROM `'.$this->table.'` WHERE `tile_x` = %s AND `tile_y` = %s', $x, $y)
-        )[0];
+        $tileInfos = $this->selectAsObject(
+            sprintf('SELECT * FROM `%s` WHERE `tile_x` = %s AND `tile_y` = %s', $this->table, $x, $y)
+        );
+        return count($tileInfos) === 1 ? $tileInfos[0] : [];
+    }
+
+    public function getTileInfosById(int $id): array
+    {
+        $tileInfos = $this->selectAsObject(
+            sprintf('SELECT * FROM `%s` WHERE `tile_id` = %s', $this->table, $id)
+        );
+        return count($tileInfos) === 1 ? $tileInfos[0] : [];
     }
 }

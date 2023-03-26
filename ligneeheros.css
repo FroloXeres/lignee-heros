@@ -1263,6 +1263,13 @@ svg.svg-icon {
     padding: .1em;
     z-index: 2;
 }
+#map-zone .tile .resource.used {
+    background-color: #065009;
+    cursor: not-allowed;
+}
+.tile .resource.used svg {
+    display: none;
+}
 .tile .resource:not(.food):not(.science) {
     border: .15em solid #065009;
     border-radius: 50%;

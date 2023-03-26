@@ -47,7 +47,7 @@ class GameInitState extends AbstractState
 
             // Choose random city (notify)
             $city = GameInitState::getRandomCity($this->terrains);
-            $this->mapService->updateCity($city);
+            $this->getMapService()->updateCity($city);
 
             // -> Draw city inventions (notify)
             /** @var Deck $inventions */

@@ -118,8 +118,7 @@ class ligneeheros extends Table
         $this->container->addCompilerPass(new StateCompilerPass());
         $this->container->compile();
 
-        $this->mapService = $this->getService(MapService::class);
-        $this->mapService->setTerrains($this->terrains);
+        $this->getMapService()->setTerrains($this->terrains);
     }
 
     /**
@@ -257,7 +256,7 @@ class ligneeheros extends Table
     public function initTables()
     {
         // Generate map
-        $this->mapService->createInitialMap($this->terrains);
+        $this->getMapService()->createInitialMap($this->terrains);
 
         // Init cards
         if (!empty($this->cards)) {
@@ -477,7 +476,7 @@ class ligneeheros extends Table
     function getMapTiles(): array
     {
         if (empty($this->map)) {
-            $this->map = $this->mapService->getMapTiles($this->terrains?? [], true);
+            $this->map = $this->getMapService()->getMapTiles($this->terrains?? [], true);
         }
         return $this->map;
     }
@@ -597,6 +596,14 @@ class ligneeheros extends Table
 //        // Please add your future database scheme changes here
 //
 //
+    }
+
+    public function getMapService(): MapService
+    {
+        if ($this->mapService === null) {
+            $this->mapService = $this->getService(MapService::class);
+        }
+        return $this->mapService;
     }
 
     public function getPeople(): PeopleService

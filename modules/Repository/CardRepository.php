@@ -8,6 +8,7 @@ use LdH\Entity\Cards\Objective;
 use LdH\Entity\Cards\Spell;
 use LdH\Entity\Meeple;
 use LdH\Entity\Unit;
+use LdH\Object\TileHarvestResources;
 use LdH\Object\UnitOnMap;
 
 
@@ -85,24 +86,40 @@ class CardRepository extends AbstractCardRepository
         );
     }
 
-    public function canHarvestResources(): bool
+    /** @return array<TileHarvestResources> */
+    public function getHarvestableResourcesAndUnits(): array
     {
-        if ($this->class !== Unit::class) return false;
+        if ($this->class !== Unit::class) return [];
 
+        $tiles = [];
         $qry = sprintf(
-            "SELECT COUNT(m.card_id) as nb
-                    FROM `meeple` m 
+            "SELECT m.`card_id`, mp.`tile_id`, mp.`tile_terrain`, mp.`tile_resource1`, mp.`tile_resource2`, mp.`tile_resource3`
+                    FROM `%s` m 
                         JOIN `map` mp ON m.card_location = 'map' AND m.card_location_arg = mp.tile_id 
                     WHERE 
                         m.card_type IN (%s) 
                       AND `meeple_status` <> '%s'
                       AND (`tile_resource1` = 0 OR `tile_resource2` = 0 OR `tile_resource3` = 0)",
+            $this->table,
             join(', ', array_map(function(string $code) {return "'$code'";}, Meeple::HARVESTERS)),
             Unit::STATUS_ACTED,
         );
-        $nb = $this->getUniqueValueFromDB($qry);
+        $data = $this->getObjectListFromDB($qry);
+        foreach ($data as $line) {
+            $tileId = (int) $line['tile_id'];
+            if (!array_key_exists($tileId, $tiles)) {
+                $tiles[$tileId] = new TileHarvestResources();
+                $tiles[$tileId]->tileId = $tileId;
+                $tiles[$tileId]->terrain = $line['tile_terrain'];
+                for ($i = 0; $i < 2; $i++) {
+                    $tileResourceKey = 'tile_resource' . ($i + 1);
+                    $tiles[$tileId]->resources[$i] = $line[$tileResourceKey] === null ? null : ($line[$tileResourceKey] === '1');
+                }
+            }
+            $tiles[$tileId]->harvesters[] = (int) $line['card_id'];
+        }
 
-        return $nb && $nb > 0;
+        return $tiles;
     }
 
     public function disableAllCards(): bool

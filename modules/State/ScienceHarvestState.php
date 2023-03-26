@@ -43,7 +43,7 @@ class ScienceHarvestState extends AbstractState
             $scienceHarvest = (int) $this->getGameStateValue(CurrentStateService::GLB_SCIENCE_PRD);
             $scienceHarvest *= $bonusService->getLineageBonusesOfType(Bonus::SCIENCE, Bonus::BONUS_MULTIPLY);
 
-            $scienceTiles = $this->mapService->getScienceHarvestCodes($this->terrains);
+            $scienceTiles = $this->getMapService()->getScienceHarvestCodes($this->terrains);
             $scienceHarvestersCount = $unitRepository->getScienceHarvestersCount($scienceTiles, Meeple::SAVANTS);
             $scienceTotalHarvesters = array_sum($scienceHarvestersCount);
 

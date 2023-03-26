@@ -4,6 +4,8 @@ namespace LdH\Service;
 
 use LdH\Entity\Cards\AbstractCard;
 use LdH\Entity\Cards\BoardCardInterface;
+use LdH\Entity\Map\Terrain;
+use LdH\Object\TileHarvestResources;
 use LdH\Repository\CardRepository;
 use LdH\Entity\Unit;
 use LdH\Entity\Meeple;
@@ -64,6 +66,12 @@ class PeopleService implements \JsonSerializable
     public function getPopulation(): int
     {
         return $this->population;
+    }
+
+    public function getUnitById(int $unitId): ?Unit
+    {
+        $pos = $this->byIds[$unitId] ?? null;
+        return $this->units[$pos] ?? null;
     }
 
     /** @return array<int, array<int, Unit>> */
@@ -138,9 +146,29 @@ class PeopleService implements \JsonSerializable
         }
     }
 
-    public function canHarvestResources(): bool
+    /**
+     * @param array<Terrain> $terrains
+     *
+     * @return array<TileHarvestResources>
+     */
+    public function getHarvestableResources(array $terrains): array
     {
-        return $this->getRepository()->canHarvestResources();
+        $list = $this->getRepository()->getHarvestableResourcesAndUnits();
+
+        // Replace resources array by resource key
+        foreach ($list as $tileHarvestResource) {
+            $resources = array_values($terrains[$tileHarvestResource->terrain]->getResources());
+            $byResourceKey = [];
+            foreach ($tileHarvestResource->resources as $key => $used) {
+                if ($used === null) break;
+
+                $resourceCode = $resources[$key]->getCode();
+                $byResourceKey[$resourceCode] = $used;
+            }
+            $tileHarvestResource->resources = $byResourceKey;
+        }
+
+        return $list;
     }
 
     /** @return array<Unit> */

@@ -2,6 +2,10 @@
 
 namespace LdH\State;
 
+use LdH\Entity\Unit;
+use LdH\Service\CurrentStateService;
+
+
 class PrincipalState extends AbstractState
 {
     public const ID = 5;
@@ -13,6 +17,7 @@ class PrincipalState extends AbstractState
     public const TR_PASS = 'trPass';
 
     public const NOTIFY_PLAYER_PASS = 'ntfyPlayerPass';
+    public const NOTIFY_RESOURCE_HARVESTED = 'ntfyResourceHarvested';
     public const NOTIFY_START_TURN = 'ntfyStartTurn';
 
 
@@ -67,6 +72,24 @@ class PrincipalState extends AbstractState
                 /** @var \action_ligneeheros $this */
                 $this->game->{PrincipalState::ACTION_PASS}();
             },
+            self::ACTION_RESOURCE_HARVEST => function() {
+                /** @var \action_ligneeheros $this */
+                $tileId = (int) $this->getArg('tileId', AT_posint, true);
+                $unitId = (int) $this->getArg('unitId', AT_posint, true);
+                $resourceCode = $this->getArg('resource', AT_alphanum, true);
+
+                $available = $this->game->getPeople()->getHarvestableResources($this->game->terrains);
+                echo $this->game->_('You can\'t harvest this resource with this unit');
+                if (!array_key_exists($tileId, $available) ||
+                    !in_array($unitId, $available[$tileId]->harvesters) ||
+                    !array_key_exists($resourceCode, $available[$tileId]->resources) ||
+                    $available[$tileId]->resources[$resourceCode] !== false
+                ) {
+                    throw new \BgaUserException($this->game->_('You can\'t harvest this resource with this unit'));
+                } else {
+                    $this->game->{PrincipalState::ACTION_RESOURCE_HARVEST}($tileId, $unitId, $resourceCode);
+                }
+            },
         ];
     }
 
@@ -88,16 +111,46 @@ class PrincipalState extends AbstractState
 
                 $this->gamestate->setPlayerNonMultiactive($this->getCurrentPlayerId(), PrincipalState::TR_PASS);
             },
+            self::ACTION_RESOURCE_HARVEST => function(int $tileId, int $unitId, string $resourceCode) {
+                /** @var \ligneeheros $this */
+                $tile = $this->getMapTiles()[$tileId];
+                $resource = $this->resources[$resourceCode];
+                $this->getMapService()->harvestResource($tile, $resource);
+
+                $unit = $this->getPeople()->getUnitById($unitId);
+                $unit->setStatus(Unit::STATUS_ACTED);
+                $this->getPeople()->getRepository()->update($unit);
+
+                $this->incGameStateValue(CurrentStateService::getStateByResource($resource), 1);
+
+                // Send new available actions
+
+
+                $this->notifyAllPlayers(
+                    PrincipalState::NOTIFY_RESOURCE_HARVESTED,
+                    clienttranslate('${player_name} use ['.$unit->getType()->getCode().'] to harvest ['.$resourceCode.']'),
+                    [
+                        'i18n' => ['player_name'],
+                        'player_name' => $this->getCurrentPlayerName(),
+                    ]
+                );
+            },
         ];
     }
 
     public static function getAvailableActions(\ligneeheros $game): array
     {
-        $actions = [PrincipalState::ACTION_PASS];
+        $actions = [];
 
-        if ($game->getPeople()->canHarvestResources()) {
-            $actions[] = PrincipalState::ACTION_RESOURCE_HARVEST;
+        $list = $game->getPeople()->getHarvestableResources($game->terrains);
+        if (count($list)) {
+            $actions[PrincipalState::ACTION_RESOURCE_HARVEST] = [
+                'button' => clienttranslate('Harvest'),
+                'status' => $list
+            ];
         }
+
+        $actions[PrincipalState::ACTION_PASS] = clienttranslate('Pass');
 
         return $actions;
     }

@@ -147,7 +147,7 @@ class ChooseLineageState extends AbstractState
             /** @var \ligneeheros $this */
 
             // Notify for GameInit choices
-            $tile = $this->mapService->getCentralTile();
+            $tile = $this->getMapService()->getCentralTile();
 
             /** @var City $city */
             $city = $tile->getTerrain();
