@@ -110,7 +110,7 @@ html, body {
     position: absolute;
     z-index: 0;
 }
-h2#turn {
+h2#turn-title {
     text-align: center;
     font-size: 1.25em;
     margin: .3em auto;
@@ -118,7 +118,7 @@ h2#turn {
     justify-content: center;
     align-items: center;
 }
-h2#turn::before {
+h2#turn-title::before {
     display: block;
     content: '';
     background: url("img/icons.svg") 90% 0% no-repeat;
@@ -130,16 +130,16 @@ h2#turn::before {
 #cartridge > div > div {
     line-height: 2em;
 }
-#people-people::after, #people-worker::after, #people-warrior::after, #people-savant::after, #people-mage::after,
-#military-power::after, #military-defense::after,
-#city-life::after, #city-defense::after,
-#harvest-food::after, #harvest-science::after,
-#stock-science::after,
-#stock-wood::after, #stock-animal::after, #stock-gem::after, #stock-paper::after, #stock-metal::after, #stock-stone::after, #stock-clay::after, #stock-medic::after {
+#ctg-people::after, #ctg-worker::after, #ctg-warrior::after, #ctg-savant::after, #ctg-mage::after,
+#ctg-science::after,
+#ctg-foodProduction::after, #ctg-scienceProduction::after,
+#ctg-warriorPower::after, #ctg-warriorDefense::after,
+#ctg-life::after, #ctg-cityDefense::after,
+#ctg-wood::after, #ctg-animal::after, #ctg-gem::after, #ctg-paper::after, #ctg-metal::after, #ctg-stone::after, #ctg-clay::after, #ctg-medic::after {
     content: attr(data-count);
     font-weight: bold;
 }
-#stock-food::after {
+#ctg-food::after {
     content: attr(data-count)" / "attr(data-stock);
     font-weight: bold;
 }
@@ -151,7 +151,7 @@ h2#turn::before {
     justify-content: flex-start;
     align-items: center;
 }
-#people-people {
+#ctg-people {
     flex-grow: 1;
     margin-left: 1em;
 }

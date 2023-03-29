@@ -77,6 +77,7 @@ class EndOfEndTurnState extends AbstractState
         $population = $peopleService->getPopulation();
 
         $died = [];
+        $cartridge = ['count' => []];
         if ($food < $population) {
             // Choose people who will die...
             $notFeedPeople = $population - $food;
@@ -89,8 +90,11 @@ class EndOfEndTurnState extends AbstractState
                 for ($i = 0; $i < $diedCount; $i++) {
                     $unit = $units[$i];
                     $died[] = $unit->getId();
-                    $game->incGameStateValue(CurrentStateService::GLB_PEOPLE_CNT, -1);
-                    $game->incGameStateValue(CurrentStateService::getStateByMeepleType($unit->getType()), -1);
+                    $cartridge['count'][CurrentStateService::GLB_PEOPLE_CNT] = $game->incGameStateValue(CurrentStateService::GLB_PEOPLE_CNT, -1);
+
+                    $peopleType = CurrentStateService::getStateByMeepleType($unit->getType());
+                    $cartridge['count'][$peopleType] = $game->incGameStateValue($peopleType, -1);
+
                     $peopleService->kill($unit);
                 }
 
@@ -103,7 +107,8 @@ class EndOfEndTurnState extends AbstractState
             $game->notifyAllPlayers(EndOfEndTurnState::NOTIFY_DIED_PEOPLE, clienttranslate('${count} people has died because of lack of [food]'), [
                 'i18n' => ['count'],
                 'count' => count($died),
-                'died' => $died
+                'died' => $died,
+                'cartridge' => $cartridge,
             ]);
         }
 
@@ -113,7 +118,7 @@ class EndOfEndTurnState extends AbstractState
         $game->notifyAllPlayers(EndOfEndTurnState::NOTIFY_FOOD_STOCK, clienttranslate('After people feed, it stays ${food} [food]'), [
             'i18n' => ['food'],
             'food' => $foodResidual,
-            'foodUpdate' => $foodResidual - $food,
+            'cartridge' => CurrentStateService::getCartridgeUpdate(CurrentStateService::GLB_FOOD, $foodResidual),
         ]);
     }
 }

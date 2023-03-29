@@ -59,7 +59,15 @@ class PrincipalState extends AbstractState
         return function () {
             /** @var \ligneeheros $this */
             $turn = $this->getCurrentTurn();
-            $this->notifyAllPlayers(PrincipalState::NOTIFY_START_TURN, clienttranslate('[turn] <b>${turn}</b> started'), ['i18n' => ['turn'], 'turn' => $turn]);
+            $this->notifyAllPlayers(
+                PrincipalState::NOTIFY_START_TURN,
+                clienttranslate('[turn] <b>${turn}</b> started'),
+                [
+                    'i18n' => ['turn'],
+                    'turn' => $turn,
+                    'cartridge' => CurrentStateService::getCartridgeUpdate(CurrentStateService::GLB_TURN, $turn)
+                ]
+            );
 
             $this->gamestate->setAllPlayersMultiactive();
         };
@@ -121,10 +129,8 @@ class PrincipalState extends AbstractState
                 $unit->setStatus(Unit::STATUS_ACTED);
                 $this->getPeople()->getRepository()->update($unit);
 
-                $this->incGameStateValue(CurrentStateService::getStateByResource($resource), 1);
-
-                // Send new available actions
-
+                $resourceState = CurrentStateService::getStateByResource($resource);
+                $count = $this->incGameStateValue($resourceState, 1);
 
                 $this->notifyAllPlayers(
                     PrincipalState::NOTIFY_RESOURCE_HARVESTED,
@@ -132,6 +138,13 @@ class PrincipalState extends AbstractState
                     [
                         'i18n' => ['player_name'],
                         'player_name' => $this->getCurrentPlayerName(),
+                        'animation' => [
+                            'tileId' => $tileId,
+                            'resourceCode' => $resourceCode,
+                            'unitId' => $unitId,
+                        ],
+                        'cartridge' => CurrentStateService::getCartridgeUpdate($resourceState, $count),
+                        'actions' => PrincipalState::getAvailableActions($this)
                     ]
                 );
             },

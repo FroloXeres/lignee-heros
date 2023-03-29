@@ -65,17 +65,18 @@ class ScienceHarvestState extends AbstractState
             ;
 
             if ($scienceToAdd) {
-                $this->incGameStateValue(CurrentStateService::GLB_SCIENCE, $scienceToAdd);
+                $count = $this->incGameStateValue(CurrentStateService::GLB_SCIENCE, $scienceToAdd);
                 $this->notifyAllPlayers(
                     ScienceHarvestState::NOTIFY_SCIENCE_HARVEST,
                     clienttranslate('${total} [science] harvested'),
                     [
                         'i18n' => ['total'],
+                        'total' => $scienceToAdd,
                         'savantHarvesters' => $scienceHarvestersCount,
                         'scienceMultiplier' => $scienceHarvest,
                         'populationBonus' => $populationBonus,
                         'lineageBonus' => $scienceBonus,
-                        'total' => $scienceToAdd,
+                        'cartridge' => CurrentStateService::getCartridgeUpdate(CurrentStateService::GLB_SCIENCE, $count),
                     ]
                 );
             }

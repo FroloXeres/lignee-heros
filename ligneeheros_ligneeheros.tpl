@@ -202,50 +202,50 @@
     var jstpl_cartridge =
         '<div id="cartridge">\
             <div id="new-unit"></div>\
-            <h2 id="turn" data-turn="1">Turn ${turn}</h2>\
+            <h2 id="turn-title" data-count="1">Turn</h2>\
             <div class="board-overall">\
                 <div class="people">\
                     <div id="people-title"></div>\
-                    <div id="people-people" data-count="0"></div>\
+                    <div id="ctg-people" data-count="0"></div>\
                 </div>\
                 <div class="people-types">\
-                    <div id="people-worker" data-count="0"></div>\
-                    <div id="people-warrior" data-count="0"></div>\
-                    <div id="people-savant" data-count="0"></div>\
-                    <div id="people-mage" data-count="0"></div>\
+                    <div id="ctg-worker" data-icon="unit,worker" data-count="0"></div>\
+                    <div id="ctg-warrior" data-icon="unit,warrior" data-count="0"></div>\
+                    <div id="ctg-savant" data-icon="unit,savant" data-count="0"></div>\
+                    <div id="ctg-mage" data-icon="unit,mage" data-count="0"></div>\
                 </div>\
                 <div class="stock">\
                     <div id="stock-title"></div>\
-                    <div id="stock-food" data-count="0" data-stock="0"></div>\
-                    <div id="stock-science" data-count="0"></div>\
+                    <div id="ctg-food" data-icon="food_stock" data-count="0" data-stock="0"></div>\
+                    <div id="ctg-science" data-icon="science_stock" data-count="0"></div>\
                 </div>\
                 <div class="harvest">\
                     <div id="harvest-title"></div>\
-                    <div id="harvest-food" data-count="0"></div>\
-                    <div id="harvest-science" data-count="0"></div>\
+                    <div id="ctg-foodProduction" data-icon="food" data-count="0"></div>\
+                    <div id="ctg-scienceProduction" data-icon="science" data-count="0"></div>\
                 </div>\
                 <div class="military">\
                     <div id="military-title"></div>\
-                    <div id="military-power" data-count="0"></div>\
-                    <div id="military-defense" data-count="0"></div>\
+                    <div id="ctg-warriorPower" data-icon="power" data-count="0"></div>\
+                    <div id="ctg-warriorDefense" data-icon="defense_warrior" data-count="0"></div>\
                 </div>\
                 <div class="city">\
                     <div id="city-title"></div>\
-                    <div id="city-life" data-count="0"></div>\
-                    <div id="city-defense" data-count="0"></div>\
+                    <div id="ctg-life" data-icon="growth" data-count="0"></div>\
+                    <div id="ctg-cityDefense" data-icon="defense_city" data-count="0"></div>\
                 </div>\
                 <div class="stock-resources">\
                     <div class="group">\
-                        <div id="stock-wood" data-count="0"></div>\
-                        <div id="stock-animal" data-count="0"></div>\
-                        <div id="stock-stone" data-count="0"></div>\
-                        <div id="stock-metal" data-count="0"></div>\
+                        <div id="ctg-wood" data-icon="wood" data-count="0"></div>\
+                        <div id="ctg-animal" data-icon="animal" data-count="0"></div>\
+                        <div id="ctg-stone" data-icon="stone" data-count="0"></div>\
+                        <div id="ctg-metal" data-icon="metal" data-count="0"></div>\
                     </div>\
                     <div class="group">\
-                        <div id="stock-clay" data-count="0"></div>\
-                        <div id="stock-paper" data-count="0"></div>\
-                        <div id="stock-medic" data-count="0"></div>\
-                        <div id="stock-gem" data-count="0"></div>\
+                        <div id="ctg-clay" data-icon="clay" data-count="0"></div>\
+                        <div id="ctg-paper" data-icon="paper" data-count="0"></div>\
+                        <div id="ctg-medic" data-icon="medic" data-count="0"></div>\
+                        <div id="ctg-gem" data-icon="gem" data-count="0"></div>\
                     </div>\
                 </div>\
             </div>\

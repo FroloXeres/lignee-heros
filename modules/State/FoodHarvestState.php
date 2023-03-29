@@ -52,7 +52,7 @@ class FoodHarvestState extends AbstractState
             $foodToAdd = $foodOnMap + $lineageFoodBonus;
 
             if ($foodToAdd) {
-                $this->incGameStateValue(CurrentStateService::GLB_FOOD, $foodToAdd);
+                $count = $this->incGameStateValue(CurrentStateService::GLB_FOOD, $foodToAdd);
                 $this->notifyAllPlayers(
                     FoodHarvestState::NOTIFY_FOOD_HARVEST,
                     clienttranslate('${total} [food] harvested'),
@@ -61,6 +61,7 @@ class FoodHarvestState extends AbstractState
                         'total' => $foodToAdd,
                         'workerHarvesters' => $foodHarvesters,
                         'lineageBonus' => $lineageFoodBonus,
+                        'cartridge' => CurrentStateService::getCartridgeUpdate(CurrentStateService::GLB_FOOD, $count)
                     ]
                 );
             }

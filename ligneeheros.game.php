@@ -91,7 +91,7 @@ class ligneeheros extends Table
         // Note: afterwards, you can get/set the global variables with getGameStateValue/setGameStateInitialValue/setGameStateValue
         parent::__construct();
 
-        self::initGameStateLabels(CurrentStateService::CURRENT_STATES);
+        self::initGameStateLabels(array_merge(CurrentStateService::CARTRIDGE_COUNT, CurrentStateService::CURRENT_STATES));
 
         // Use of Symfony DIC
         $this->initContainer();
@@ -222,6 +222,9 @@ class ligneeheros extends Table
     private function initGlobalValues()
     {
         // Init global values with their initial values
+        foreach (array_keys(CurrentStateService::CARTRIDGE_COUNT) as $stateName) {
+            $this->setGameStateInitialValue($stateName, 0);
+        }
         foreach (array_keys(CurrentStateService::CURRENT_STATES) as $stateName) {
             $this->setGameStateInitialValue($stateName, 0);
         }
@@ -412,26 +415,36 @@ class ligneeheros extends Table
     function getCurrentState(): array
     {
         $states = [
-            'title' => [
-                'turn'    => clienttranslate('Turn'),
-                'people'  => clienttranslate('People:'),
-                'harvest' => clienttranslate('Harvest:'),
-                'military' => clienttranslate('Warrior:'),
-                'city' => clienttranslate('City:'),
-                'stock'   => clienttranslate('Stock:')
+            'cartridge' => [
+                'title' => [
+                    'turn'    => clienttranslate('Turn'),
+                    'people'  => clienttranslate('People:'),
+                    'harvest' => clienttranslate('Harvest:'),
+                    'military' => clienttranslate('Warrior:'),
+                    'city' => clienttranslate('City:'),
+                    'stock'   => clienttranslate('Stock:')
+                ],
+                'count' => [],
+                'stock' => [
+                    'food' => (int) $this->getGameStateValue(CurrentStateService::GLB_FOOD_STK)
+                ]
             ],
+            'current' => [],
             'phase' => [
                 'end' => clienttranslate('End phase begin'),
                 'start' => clienttranslate('Turn ${turn} begin'),
             ]
         ];
-
+        foreach (array_keys(CurrentStateService::CARTRIDGE_COUNT) as $stateName) {
+            $states['cartridge']['count'][$stateName] = (int) $this->getGameStateValue($stateName);
+        }
         foreach (array_keys(CurrentStateService::CURRENT_STATES) as $stateName) {
-            $states[$stateName] = (int) $this->getGameStateValue($stateName);
+            $states['current'][$stateName] = (int) $this->getGameStateValue($stateName);
         }
 
-        // Computed states
-        $states['turn'] = $this->getCurrentTurn($states[CurrentStateService::GLB_TURN_LFT]);
+        // Add current turn
+        $states['turn'] = $this->getCurrentTurn();
+        $states['cartridge']['count']['turn'] = $states['turn'];
 
         return $states;
     }

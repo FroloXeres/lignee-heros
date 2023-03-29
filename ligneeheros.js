@@ -15,6 +15,544 @@
  *
  */
 
+class Utility {
+    static PEOPLE_TYPES = ['worker', 'warrior', 'savant', 'mage'];
+    static RESOURCE_TYPES = ['wood', 'animal', 'stone', 'metal', 'clay', 'paper', 'medic', 'gem'];
+
+
+    /**
+     * @param {Object}   object     Object to override
+     * @param {String}   method     Method of object to override
+     * @param {function} extended   Extended method for object
+     * @param {Boolean}  before     Execute middleware method before
+     */
+    static addMiddleware(object, method, extended, before = true) {
+        const existingMethod = object[method];
+        object[method] = function () {
+            before ? extended.call(object) : existingMethod.call(object);
+            before ? existingMethod.call(object) : extended.call(object);
+        };
+    };
+
+    static getIcon(iconId, addClass = '') {
+        const $clone = document.querySelector('#icons svg#'+iconId)?.cloneNode(true);
+        if ($clone === undefined) {
+            console.error('Icon '+iconId+' not found');
+            return document.createElement('svg');
+        }
+        if (addClass.length) {
+            $clone.classList.add(addClass);
+        }
+
+        return $clone;
+    };
+
+    static getWrappedIcon(iconId, wrapId, cssClass = '') {
+        return '<div id="' + wrapId + '" class="wrapped-icon interactive ' + iconId + ' ' + cssClass + '">' + Utility.getIconAsText(iconId, cssClass) + '</div>';
+    };
+
+    static getIconAsText(iconId, cssClass = '') {
+        let addClass = cssClass.length ? [cssClass] : [];
+        if (['worker', 'warrior', 'savant', 'mage', 'all', 'monster'].includes(iconId)) {
+            addClass.push(iconId);
+            iconId = 'unit';
+        }
+
+        const $icon = document.querySelector('#icons svg#'+iconId)
+        if ($icon !== null) {
+            const $clone = $icon.cloneNode(true);
+            if (addClass.length) {
+                addClass.forEach((cssClass) => $clone.classList.add(cssClass));
+            }
+            return $clone.outerHTML;
+        } else return iconId;
+    };
+
+    static replaceIconsInObject(cardObject) {
+        for (let attr in cardObject) {
+            if (cardObject.hasOwnProperty(attr)) {
+                let value = cardObject[attr];
+                if (typeof value === 'string' || value instanceof String) {
+                    cardObject[attr] = Utility.replaceIconsInString(value);
+                }
+            }
+        }
+
+        return cardObject;
+    };
+
+    static replaceIconsInString(toReplace) {
+        [... toReplace.matchAll(/\[invention\] \[([a-z_]+)\]/ig)].forEach((found) => {
+            toReplace = toReplace.replace(found[0], '<div class="double">'+Utility.getIconAsText('invention')+Utility.getIconAsText(found[1])+'</div>');
+        });
+        [... toReplace.matchAll(/\[spell\] \[([a-z_]+)\]/ig)].forEach((found) => {
+            toReplace = toReplace.replace(found[0], '<div class="double">'+Utility.getIconAsText('spell')+Utility.getIconAsText(found[1])+'</div>');
+        });
+        [... toReplace.matchAll(/\[([a-z_]+)\]/ig)].forEach((found) => {
+            toReplace = toReplace.replace(found[0], Utility.getIconAsText(found[1]));
+        });
+
+        return toReplace;
+    };
+}
+
+class Animation {
+    static TYPE_UNIT_MOVE = 'moveUnit';
+    static TYPE_UNIT_ACT = 'actUnit';
+    static TYPE_UNIT_DIED = 'diedUnit';
+    static TYPE_UPDATE_CARTRIDGE = 'updateCartridge';
+    static TYPE_MOVE_TO_CARTRIDGE = 'moveToCartridge';
+    static TYPE_CARD_FLIP = 'flipCard';
+    static TYPE_CARD_ACTIVATE = 'activateCard';
+    static TYPE_CARD_DISABLE = 'disableCard';
+    static TYPE_CARD_DRAW = 'drawCard';
+
+    type = null;
+
+    // Dom element Id
+    subject = null;
+
+    // Dom element Id
+    target = null;
+
+    duration = 0;
+
+    timers = [];
+
+    callback = null;
+
+    constructor(type, subject, target = null, duration = 0) {
+        this.type = type;
+        this.subject = subject;
+        this.target = target;
+        this.duration = duration;
+    }
+
+    animate(callback) {
+        this.callback = callback;
+
+        switch (this.type) {
+            case Animation.TYPE_UNIT_ACT: this.unitAct(callback); break;
+            default:
+                console.log("Animate ["+this.type+"] of #" + this.subject);
+                this.onAnimationEnd();
+                break;
+        }
+    }
+
+    stop() {
+        this.timers.forEach(timer => window.clearTimeout(timer));
+    }
+
+    onAnimationEnd() {
+        this.timers.forEach(timer => window.clearTimeout(timer));
+        this.callback();
+    }
+
+    /** Unit change zone and flip from "moved/free" to "acted" */
+    unitAct(callback) {
+        console.log('Unit act' + this.subject.id);
+
+        callback();
+    }
+}
+class CartridgeAnimation extends Animation {
+    // this.subject is Cartridge class
+    // this.target is key/state object
+
+    animate(callback) {
+        this.callback = callback;
+
+        let $element = this.subject.$state[this.target.key][this.target.state];
+        let before = parseInt($element.dataset.count);
+        let after = this.subject.state[this.target.key][this.target.state];
+        let value = after - before;
+        if (before === after) callback();
+
+        $element.style.color = 'darkred';
+        let incFct = value < 0 ?
+            () => {$element.dataset.count = parseInt($element.dataset.count) - 1} :
+            () => {$element.dataset.count = parseInt($element.dataset.count) + 1}
+        ;
+        let howMany = Math.abs(value);
+        let part = Math.floor(this.duration / howMany);
+        for (let i = 1; i <= howMany; i++) {
+            this.timers.push(
+                window.setTimeout(incFct, part * i)
+            );
+        }
+        this.timers.push(
+            window.setTimeout(
+                () => this.onAnimationEnd($element),
+                this.duration
+            )
+        );
+    }
+
+    onAnimationEnd($element) {
+        $element.style.color = null;
+        super.onAnimationEnd();
+    }
+}
+
+class Animator {
+    toAnimate = [];
+    animation = null;
+    animationInProgress = false;
+
+    constructor() {
+
+    }
+
+    addAnimation(animation, delay = 0) {
+        let letsGo = () => {
+            this.toAnimate.push(animation);
+            if (!this.animationInProgress) this.launchAnimations();
+        };
+
+        if (delay) window.setTimeout(() => letsGo(), delay);
+        else letsGo();
+    }
+
+    launchAnimations() {
+        if (this.toAnimate.length) {
+            this.animation = this.toAnimate.shift();
+
+            this.animationInProgress = true;
+            this.animation.animate(() => {
+                // End of animation
+                this.animation = null;
+                this.animationInProgress = false;
+
+                this.launchAnimations();
+            });
+        }
+    }
+}
+
+class Cartridge {
+    static ANIMATION_DURATION = 1000;
+
+    /** @param {Animator} animator */
+    animator = null;
+
+    state = {
+        title: {
+            turn: '',
+            people: '',
+            harvest: '',
+            military: '',
+            city: '',
+            stock: '',
+        },
+        stock: {
+            food: 0,
+        },
+        count: {
+            turn: 1,
+            people: 10,
+            worker: 0,
+            warrior: 0,
+            savant: 0,
+            mage: 0,
+            food: 0,
+            foodStock: 0,
+            science: 0,
+            foodProduction: 2,
+            scienceProduction: 1,
+            warriorPower: 1,
+            warriorDefense: 0,
+            life: 1,
+            cityDefense: 1,
+            wood: 0,
+            animal: 0,
+            stone: 0,
+            metal: 0,
+            clay: 0,
+            paper: 0,
+            medic: 0,
+            gem: 0,
+        }
+    };
+    $state = {
+        title: {},
+        count: {},
+    };
+
+    people = {};
+    resources = {};
+
+    built = false;
+
+    /** @param {Animator} animator */
+    constructor(animator) {
+        this.animator = animator;
+    }
+
+    update(currentState, animate = false) {
+        if (!this.built) return;
+
+        ['title', 'count', 'stock'].forEach(key => {
+            if (currentState[key] !== undefined) {
+                for (let state in currentState[key]) {
+                    this.state[key][state] = currentState[key][state];
+
+                    this.updateDom(key, state, animate);
+                }
+            }
+        });
+    }
+
+    build(game) {
+        // Create cartridge
+        document.getElementById('player_boards').insertAdjacentHTML('beforebegin', game.format_block('jstpl_cartridge', {turn: this.state.count.turn}));
+
+        for (let title in this.state.title) {
+            this.$state.title[title] = document.getElementById(title + '-title');
+        }
+
+        for (let count in this.state.count) {
+            this.$state.count[count] = document.getElementById('ctg-' + count);
+            if (this.$state.count[count] === null) continue;
+
+            if (this.$state.count[count].dataset?.icon !== undefined) {
+                let icon = this.$state.count[count].dataset.icon.split(',');
+                this.$state.count[count].appendChild(
+                    Utility.getIcon(icon[0], icon[1] || '')
+                );
+            }
+        }
+
+        this.built = true;
+    }
+
+    getTurnTitle() {
+        return _(this.state.title.turn) + ' ' + this.state.count.turn;
+    }
+
+    updateDom(key, state, animate = false) {
+        if (animate && key === 'title') animate = false;
+
+        if (animate && this.$state.count[state] !== null) {
+            this.animator.addAnimation(new CartridgeAnimation(
+                Animation.TYPE_UPDATE_CARTRIDGE,
+                this,
+                {key: key, state: state},
+                Cartridge.ANIMATION_DURATION
+            ));
+        } else {
+            switch (key) {
+                case 'title':
+                    this.$state.title[state].innerHTML = state === 'turn' ?
+                        this.getTurnTitle() :
+                        _(this.state.title[state])
+                    ;
+                    break;
+                case 'count':
+                case 'stock':
+                    if (this.$state.count[state] !== null) {
+                        this.$state.count[state].dataset[key] = this.state[key][state];
+                    }
+                    break;
+            }
+        }
+    }
+}
+
+class Map {
+    game = null;
+    mapZones = [];
+
+    revealed = [];
+    terrains = [];
+    resources = [];
+
+    animator = null;
+
+    /**
+     * @param {bgagame.ligneeheros} game
+     * @param {Animator} animator*
+     */
+    constructor(game, animator) {
+        this.game = game;
+        this.animator = animator;
+    }
+
+    init(revealed, terrains, resources) {
+        this.revealed = revealed;
+        this.terrains = terrains;
+        this.resources = resources;
+    }
+
+    buildMap(animate= false) {
+        let _self = this;
+        let tileTerrain = {};
+        let tileContent = null;
+        for (let tileId in _self.revealed) {
+            let tile = _self.revealed[tileId];
+
+            let harvested = {
+                resource1: tile.resource1 === true ? ' used' : '',
+                resource2: tile.resource2 === true ? ' used' : '',
+                resource3: tile.resource3 === true ? ' used' : ''
+            };
+            tileTerrain = Utility.replaceIconsInObject(
+                _self.terrains[tile.terrain]
+            );
+            tileContent = this.game.format_block('jstpl_tile', {
+                id: tile.id,
+                count: tileTerrain.resources.length,
+                resource1: tileTerrain.resources[0] ? Utility.getIconAsText(tileTerrain.resources[0]) : '',
+                resource2: tileTerrain.resources[1] ? Utility.getIconAsText(tileTerrain.resources[1]) : '',
+                resource3: tileTerrain.resources[2] ? Utility.getIconAsText(tileTerrain.resources[2]) : '',
+                resource1Class: tileTerrain.resources[0] ? tileTerrain.resources[0] + harvested.resource1 : '',
+                resource2Class: tileTerrain.resources[1] ? tileTerrain.resources[1] + harvested.resource2 : '',
+                resource3Class: tileTerrain.resources[2] ? tileTerrain.resources[2] + harvested.resource3 : '',
+                name: tileTerrain.name,
+                bonus: tileTerrain.bonusAsTxt,
+                food: tileTerrain.food ? '' : 'none',
+                foodCount: tileTerrain.food,
+                foodIcon: Utility.getIconAsText('food'),
+                science: tileTerrain.science ? '' : 'none',
+                scienceIcon: Utility.getIconAsText('science')
+            });
+            document.getElementById('tile-content-' + tile.id).innerHTML = tileContent;
+
+            let revealed = document.getElementById('tile-' + tile.id)?.getElementsByClassName('map-hex-content');
+            revealed.length && [...revealed].forEach(($tile) => {
+                $tile.classList.add('tile_reveal');
+                $tile.classList.add('tile_' + tileTerrain.code);
+            });
+        }
+
+        this.initMapZones();
+        this.initZoom();
+        this.scrollToTile(0, 0);
+        this.updateMapZones();
+    }
+
+    scrollToTile(x, y)
+    {
+        const map = dojo.query('#map-zone');
+        const tile = dojo.query('[data-coord="'+x+'_'+y+'"]');
+        if (map.length && tile.length) {
+            map[0].scrollTo(tile[0].offsetLeft / 2, tile[0].offsetTop / 2);
+        }
+    }
+
+    getMapZone(zoneId) {
+        return this.mapZones[zoneId];
+    }
+
+    // Zones
+    initMapZones() {
+        const _self = this;
+        const tiles = dojo.query('.tile:not(.tile_disabled)');
+        tiles.forEach(function(tile) {
+            let item = tile.closest('.map-hex-item');
+            let id = item.id.replace('tile-', '');
+
+            ['warrior', 'worker', 'mage', 'savant', 'lineage'].forEach(function(unitType) {
+                let zone = new ebg.zone();
+                let code = Map.getZoneIdByTileIdAndType(id, unitType);
+                zone.create(_self.game, code);
+                zone.setPattern('custom');
+
+                Utility.addMiddleware(zone, 'updateDisplay', _self.zoneDisplayItemsMiddleWare);
+                zone.itemIdToCoords = _self.mapZoneCoords;
+                _self.mapZones[code] = zone;
+            });
+        });
+    }
+    updateMapZones() {
+        for (let code in this.mapZones) {
+            if (this.mapZones.hasOwnProperty(code)) {
+                this.mapZones[code].updateDisplay();
+            }
+        }
+    }
+    mapZoneCoords(i, width, maxWidth, count) {
+        const item = this.items[i];
+
+        return {
+            x: 0,
+            y: item.weight * (width - this.item_margin),
+            w: width,
+            h: width
+        };
+    }
+    static getZoneIdByTileIdAndType(id, type) {
+        let zoneType = 'lineage';
+        switch (type) {
+            case 'warrior':
+            case 'worker':
+            case 'mage':
+            case 'savant':
+                zoneType = type;
+                break;
+        }
+
+        return 'map-explore-' + id + '-' + zoneType;
+    }
+    zoneDisplayItemsMiddleWare() {
+        /** @var this */
+        const countByWeight = [0, 0, 0];
+        const idByWeight = [null, null, null];
+        this.items.forEach(function(item) {
+            countByWeight[item.weight]++;
+            idByWeight[item.weight] = item.id;
+        });
+        countByWeight.forEach(function(count, weight) {
+            const $units = dojo.query('#'+idByWeight[weight]);
+            if (!$units.length) return ;
+            if (countByWeight[weight] > 1) {
+                $units[0].setAttribute('data-count', count);
+            } else {
+                $units[0].removeAttribute('data-count');
+            }
+        });
+    }
+
+    // Zoom
+    initZoom() {
+        this.ZOOMS = [50, 70, 90, 110, 130];
+        this.MAX_ZOOM = 4;
+        this.MIN_ZOOM = 0;
+        this.$mapZone = document.getElementsByClassName('map-hex-grid').item(0);
+        this.$zoom = document.getElementById('zoom');
+
+        this.$zoomOut = document.getElementById('zoom_out_icon');
+        this.$zoomOut.addEventListener('click', () => this.onZoomOut());
+
+        this.$zoomIn = document.getElementById('zoom_in_icon');
+        this.$zoomIn.addEventListener('click', () => this.onZoomIn());
+        }
+    onZoomIn() {
+        if (this.getZoom() < this.MAX_ZOOM) {
+            this.incDecZoom();
+            this.applyZoom();
+            this.toggleZoom();
+        }
+    }
+    onZoomOut() {
+        if (this.getZoom() > this.MIN_ZOOM) {
+            this.incDecZoom(false);
+            this.applyZoom();
+            this.toggleZoom();
+        }
+    }
+    toggleZoom() {
+        this.$zoomIn.style.color = (this.getZoom() === this.MAX_ZOOM) ? '#666' : '#000';
+        this.$zoomOut.style.color = (this.getZoom() === this.MIN_ZOOM) ? '#666' : '#000';
+    }
+    applyZoom() {
+        this.$mapZone.style.width = this.ZOOMS[this.getZoom()]+'em';
+        this.updateMapZones();
+    }
+    getZoom() {return parseInt(this.$zoom.dataset.zoom);}
+    incDecZoom(inc = true) {this.$zoom.dataset.zoom = this.getZoom() + (inc ? 1 : -1);}
+}
+
 define([
     "dojo", "dojo/on", "dojo/_base/declare",
     "ebg/core/gamegui",
@@ -24,24 +562,22 @@ define([
 function (dojo, on, declare) {
     return declare("bgagame.ligneeheros", ebg.core.gamegui, {
         constructor: function(){
-            this.map       = [];
-            this.resources = [];
-            this.terrains  = [];
-
+            this.gamedatas = {};
             this.status = {
                 isInitializing: false,
                 state: {
                     lineageChosen: true,
-
                 },
-                currentState: {},
-
             };
             this.actions = {};
             this.indexed = {};
             this.playerLineage = null;
             this.playerUnit = null;
             this.$fullScreen = document.getElementById('fullscreen-message');
+
+            this.animator = new Animator();
+            this.map = new Map(this, this.animator);
+            this.cartridge = new Cartridge(this.animator);
         },
         /*
             setup:
@@ -55,28 +591,27 @@ function (dojo, on, declare) {
             
             "gamedatas" argument contains all datas retrieved by your "getAllDatas" PHP method.
         */
-        setup: function( gamedatas )
-        {
+        setup: function(gamedatas) {
             // Don't forget to use Mobile config: https://en.doc.boardgamearena.com/Your_game_mobile_version
-            console.log( gamedatas );
-
-            // Setting up player boards
-            for( var player_id in gamedatas.players )
-            {
-                var player = gamedatas.players[player_id];
-                         
-                // TODO: Setting up players boards if needed
-            }
+            console.log(gamedatas);
 
             this.isActive = gamedatas.isActive;
+            this.map.init(gamedatas.map, gamedatas.terrains, gamedatas.resources);
+
             new Promise((resolve) => {
                 this.status.isInitializing = true;
-                resolve(gamedatas);
+                resolve();
             })
-            .then(this.setupGameState.bind(this))
-            .then(() => this.setupGameData(gamedatas))
+            .then(() => {
+                this.cartridge.build(this);
+                this.map.buildMap();
+                this.initEvents();
+            })
+            .then(() => {
+                this.cartridge.update(gamedatas.currentState.cartridge);
+                this.translateGameData();
+            })
             .then(() => this.initCards(gamedatas))
-            .then(() => this.setupMap())
             .then(() => this.initPeople(gamedatas.people))
             .then(() => this.initTooltips(gamedatas.tooltips))
             .then(() => this.setupNotifications())
@@ -85,145 +620,18 @@ function (dojo, on, declare) {
             .then(() => this.initInteractEvents());
         },
 
-        setupGameState: function(gamedatas)
+        translateGameData: function()
         {
-            //console.log('Gate state init')
-            this.status.currentState  = gamedatas.currentState;
-            this.initCartridge();
-            this.initEvents()
-        },
-
-        setupGameData: function(gamedatas)
-        {
-            //console.log('Init resources/map');
-            this.resources = gamedatas.resources;
-            for (let code in this.resources) {
-                if (this.resources.hasOwnProperty(code)) {
-                    this.resources[code].name = _(this.resources[code].name);
-                    this.resources[code].description = _(this.resources[code].description);
+            for (let code in this.gamedatas.resources) {
+                if (this.gamedatas.resources.hasOwnProperty(code)) {
+                    this.gamedatas.resources[code].name = _(this.gamedatas.resources[code].name);
+                    this.gamedatas.resources[code].description = _(this.gamedatas.resources[code].description);
                 }
             }
 
-            this.terrains  = gamedatas.terrains;
-            for (let code in this.terrains) {
-                if (this.terrains.hasOwnProperty(code)) {
-                    this.terrains[code].name = _(this.terrains[code].name);
-                }
-            }
-
-            this.map       = gamedatas.map;
-            this.mapZones  = {};
-        },
-
-        setupMap: function()
-        {
-            //console.log('Init map');
-            let _self       = this;
-            let tileTerrain = {};
-            let tileContent = null;
-            for (let tileId in _self.map) {
-                let tile = _self.map[tileId];
-
-                let harvested = {
-                    resource1: tile.resource1 === true ? ' used' : '',
-                    resource2: tile.resource2 === true ? ' used' : '',
-                    resource3: tile.resource3 === true ? ' used' : ''
-                };
-                tileTerrain = _self.replaceIconsInObject(
-                    _self.terrains[tile.terrain]
-                );
-                tileContent = _self.format_block('jstpl_tile', {
-                    id: tile.id,
-                    count: tileTerrain.resources.length,
-                    resource1: tileTerrain.resources[0]? _self.getIconAsText(tileTerrain.resources[0]) : '',
-                    resource2: tileTerrain.resources[1]? _self.getIconAsText(tileTerrain.resources[1]) : '',
-                    resource3: tileTerrain.resources[2]? _self.getIconAsText(tileTerrain.resources[2]) : '',
-                    resource1Class: tileTerrain.resources[0]? tileTerrain.resources[0] + harvested.resource1 : '',
-                    resource2Class: tileTerrain.resources[1]? tileTerrain.resources[1] + harvested.resource2 : '',
-                    resource3Class: tileTerrain.resources[2]? tileTerrain.resources[2] + harvested.resource3 : '',
-                    name: tileTerrain.name,
-                    bonus: tileTerrain.bonusAsTxt,
-                    food: tileTerrain.food? '' : 'none',
-                    foodCount: tileTerrain.food,
-                    foodIcon: _self.getIconAsText('food'),
-                    science: tileTerrain.science? '' : 'none',
-                    scienceIcon: _self.getIconAsText('science')
-                });
-                dojo.place(tileContent, 'tile-content-'+tile.id);
-                dojo.query('#tile-' + tile.id + ' .map-hex-content')
-                    .addClass('tile_reveal tile_' + tileTerrain.code);
-            }
-
-            _self.initMapZones();
-            _self.initZoom();
-            _self.scrollToTile(0, 0);
-        },
-
-        initZoom: function()
-        {
-            this.ZOOMS = [50, 70, 90, 110, 130];
-            this.MAX_ZOOM = 4;
-            this.MIN_ZOOM = 0;
-            this.$mapZone = dojo.query('.map-hex-grid')[0];
-            this.$zoom = dojo.query('#zoom')[0];
-            this.$zoomOut = dojo.query('#zoom_out_icon')[0];
-            this.$zoomIn = dojo.query('#zoom_in_icon')[0];
-            on(this.$zoomIn, 'click', this.onZoomIn.bind(this));
-            on(this.$zoomOut, 'click', this.onZoomOut.bind(this));
-        },
-
-        onZoomIn: function()
-        {
-            if (this.getZoom() < this.MAX_ZOOM) {
-                this.incDecZoom();
-                this.applyZoom();
-                this.toggleZoom();
-            }
-        },
-        onZoomOut: function()
-        {
-            if (this.getZoom() > this.MIN_ZOOM) {
-                this.incDecZoom(false);
-                this.applyZoom();
-                this.toggleZoom();
-            }
-        },
-        toggleZoom: function () {
-            this.$zoomIn.style.color = (this.getZoom() === this.MAX_ZOOM) ? '#666' : '#000';
-            this.$zoomOut.style.color = (this.getZoom() === this.MIN_ZOOM) ? '#666' : '#000';
-        },
-        applyZoom: function() {
-            this.$mapZone.style.width = this.ZOOMS[this.getZoom()]+'em';
-            this.updateMapZones();
-        },
-        getZoom: function() {return parseInt(this.$zoom.dataset.zoom);},
-        incDecZoom: function(inc = true) {this.$zoom.dataset.zoom = this.getZoom() + (inc ? 1 : -1);},
-
-        initMapZones: function()
-        {
-            const _self = this;
-            const tiles = dojo.query('.tile:not(.tile_disabled)');
-            tiles.forEach(function(tile) {
-                let item = tile.closest('.map-hex-item');
-                let id = item.id.replace('tile-', '');
-
-                ['warrior', 'worker', 'mage', 'savant', 'lineage'].forEach(function(unitType) {
-                    let zone = new ebg.zone();
-                    let code = _self.getZoneIdByTileIdAndType(id, unitType);
-                    zone.create(_self, code);
-                    zone.setPattern('custom');
-
-                    _self.addMiddleware(zone, 'updateDisplay', _self.zoneDisplayItemsMiddleWare);
-                    zone.itemIdToCoords = _self.mapZoneCoords;
-                    _self.mapZones[code] = zone;
-                });
-            });
-        },
-        updateMapZones: function()
-        {
-            for (let code in this.mapZones) {
-                if (this.mapZones.hasOwnProperty(code)) {
-                    this.mapZones[code].updateDisplay();
+            for (let code in this.gamedatas.terrains) {
+                if (this.gamedatas.terrains.hasOwnProperty(code)) {
+                    this.gamedatas.terrains[code].name = _(this.gamedatas.terrains[code].name);
                 }
             }
         },
@@ -241,64 +649,6 @@ function (dojo, on, declare) {
                     existingMethod.call(object);
                 }
             };
-        },
-
-        /**
-         * @param {Object}   object     Object to override
-         * @param {String}   method     Method of object to override
-         * @param {function} extended   Extended method for object
-         * @param {Boolean}  before     Execute middleware method before
-         */
-        addMiddleware: function(object, method, extended, before = true)
-        {
-            const existingMethod = object[method];
-            object[method] = function () {
-                before ? extended.call(object) : existingMethod.call(object);
-                before ? existingMethod.call(object) : extended.call(object);
-            };
-        },
-
-        zoneDisplayItemsMiddleWare: function()
-        {
-            const countByWeight = [0, 0, 0];
-            const idByWeight = [null, null, null];
-            this.items.forEach(function(item) {
-                countByWeight[item.weight]++;
-                idByWeight[item.weight] = item.id;
-            });
-            countByWeight.forEach(function(count, weight) {
-                const $units = dojo.query('#'+idByWeight[weight]);
-                if (!$units.length) return ;
-                if (countByWeight[weight] > 1) {
-                    $units[0].setAttribute('data-count', count);
-                } else {
-                    $units[0].removeAttribute('data-count');
-                }
-            });
-        },
-        mapZoneCoords: function(i, width, maxWidth, count) {
-            const item = this.items[i];
-
-            return {
-                x: 0,
-                y: item.weight * (width - this.item_margin),
-                w: width,
-                h: width
-            };
-        },
-        getZoneIdByTileIdAndType: function(id, type)
-        {
-            let zoneType = 'lineage';
-            switch (type) {
-                case 'warrior':
-                case 'worker':
-                case 'mage':
-                case 'savant':
-                    zoneType = type;
-                    break;
-            }
-
-            return 'map-explore-' + id + '-' + zoneType;
         },
 
         // All about People/Unit
@@ -345,8 +695,8 @@ function (dojo, on, declare) {
         },
         updateOrCreateUnit: function(unit)
         {
-            let zoneId = this.getZoneIdByTileIdAndType(unit.location, unit.type);
-            let zone = this.mapZones[zoneId];
+            let zoneId = Map.getZoneIdByTileIdAndType(unit.location, unit.type);
+            let zone = this.map.getMapZone(zoneId);
             const domUnitId = this.getDomIdByUnit(unit);
             let domUnits = dojo.query(domUnitId);
             if (domUnits.length) {
@@ -359,7 +709,6 @@ function (dojo, on, declare) {
                 this.createUnit(unit.type, domUnitId, unit.status);
 
                 // todo: Animate unit creation (From board to map)
-
                 zone.placeInZone(domUnitId, this.getPriorityByUnitStatus(unit.status));
             }
         },
@@ -381,17 +730,8 @@ function (dojo, on, declare) {
         },
         createUnit: function(iconId, domUnitId, unitStatus)
         {
-            const newUnit = this.getWrappedIcon(iconId, domUnitId, unitStatus);
+            const newUnit = Utility.getWrappedIcon(iconId, domUnitId, unitStatus);
             dojo.place(newUnit, 'new-unit');
-        },
-
-        scrollToTile: function(x, y)
-        {
-            const map = dojo.query('#map-zone');
-            const tile = dojo.query('[data-coord="'+x+'_'+y+'"]');
-            if (map.length && tile.length) {
-                map[0].scrollTo(tile[0].offsetLeft / 2, tile[0].offsetTop / 2);
-            }
         },
 
         // All about cards
@@ -507,19 +847,19 @@ function (dojo, on, declare) {
             }
 
             const _self = this;
-            lineage = _self.replaceIconsInObject(lineage);
+            lineage = Utility.replaceIconsInObject(lineage);
             const lineageBoard = _self.format_block('jstpl_lineage_board', {
                 playerId: lineage.location_arg,
                 name: lineage.name,
-                lineageIcon: _self.getIconAsText('lineage'),
-                meeple: _self.getIconAsText(lineage.meeple),
+                lineageIcon: Utility.getIconAsText('lineage'),
+                meeple: Utility.getIconAsText(lineage.meeple),
                 meeplePower: lineage.meeplePower,
                 objectiveCompleted: lineage.completed ? 'icon-complete' : '',
-                objectiveIcon: _self.getIconAsText('objective'),
+                objectiveIcon: Utility.getIconAsText('objective'),
                 objective: lineage.objective,
                 leader: lineage.leader ? 'leader' : '',
-                leadingIcon: _self.getIconAsText('leading'),
-                leadTypeIcon: _self.getIconAsText(lineage.leadType),
+                leadingIcon: Utility.getIconAsText('leading'),
+                leadTypeIcon: Utility.getIconAsText(lineage.leadType),
                 leadType: lineage.leadType,
                 leadPower: lineage.leadPower
             });
@@ -531,12 +871,12 @@ function (dojo, on, declare) {
             const qryPic = '#overall_player_board_' + this.player_id + ' .hidden-one picture';
             const qryLabel = '#overall_player_board_' + this.player_id + ' .hidden-one label';
 
-            objective = this.replaceIconsInObject(objective);
+            objective = Utility.replaceIconsInObject(objective);
             const $pic = dojo.query(qryPic);
             if ($pic.length) {
                 $pic[0].title = objective.name;
                 $pic[0].className = objective.completed ? 'icon-complete' : '';
-                $pic[0].innerHTML = this.getIconAsText(objective.icon);
+                $pic[0].innerHTML = Utility.getIconAsText(objective.icon);
             }
 
             const $label = dojo.query(qryLabel);
@@ -660,7 +1000,7 @@ function (dojo, on, declare) {
         createCardInLocation: function(card, type, location, where, flip = false)
         {
             let cardId = card.id;
-            let cardTpl = this.replaceIconsInObject(card);
+            let cardTpl = Utility.replaceIconsInObject(card);
             cardTpl.textAsIcons = (cardTpl.text.indexOf('svg') !== -1) ? 'text_as_icon' : '';
 
             let cardContent = this.format_block('jstpl_card_recto', cardTpl);
@@ -668,14 +1008,14 @@ function (dojo, on, declare) {
 
             const iconify = ['lineage', 'objective', 'spell', 'invention'];
             if (iconify.includes(card.deck)) {
-                cardContent = cardContent.replaceAll('['+card.icon+']', this.getIconAsText(card.icon));
+                cardContent = cardContent.replaceAll('['+card.icon+']', Utility.getIconAsText(card.icon));
                 ['science', 'fight', 'city', 'growth', 'nature', 'spell', 'healing', 'foresight', 'science'].forEach(
-                    (iconId) => cardContent = cardContent.replace('['+iconId+']', this.getIconAsText(iconId))
+                    (iconId) => cardContent = cardContent.replace('['+iconId+']', Utility.getIconAsText(iconId))
                 );
             }
             if (card.deck === 'lineage') {
                 ['objective', 'leading', 'fight', 'end_turn', card.meeple].forEach(
-                    (iconId) => cardContent = cardContent.replace('['+iconId+']', this.getIconAsText(iconId))
+                    (iconId) => cardContent = cardContent.replace('['+iconId+']', Utility.getIconAsText(iconId))
                 );
             }
 
@@ -804,226 +1144,6 @@ function (dojo, on, declare) {
             dojo.query('#cancelChooseLineage')[0].classList.remove('hidden');
         },
 
-        getIcon(iconId, addClass = '')
-        {
-            const $clone = document.querySelector('#icons svg#'+iconId).cloneNode(true);
-            if (addClass.length) {
-                $clone.classList.add(addClass);
-            }
-
-            return $clone;
-        },
-        getWrappedIcon(iconId, wrapId, cssClass = '')
-        {
-            return '<div id="' + wrapId + '" class="wrapped-icon interactive ' + iconId + ' ' + cssClass + '">' + this.getIconAsText(iconId, cssClass) + '</div>';
-        },
-        getIconAsText(iconId, cssClass = '')
-        {
-            let addClass = cssClass.length ? [cssClass] : [];
-            if (['worker', 'warrior', 'savant', 'mage', 'all', 'monster'].includes(iconId)) {
-                addClass.push(iconId);
-                iconId = 'unit';
-            }
-
-            const $icon = document.querySelector('#icons svg#'+iconId)
-            if ($icon !== null) {
-                const $clone = $icon.cloneNode(true);
-                if (addClass.length) {
-                    addClass.forEach((cssClass) => $clone.classList.add(cssClass));
-                }
-                return $clone.outerHTML;
-            } else return iconId;
-        },
-
-        initCartridge: function()
-        {
-            //console.log('Init cartridge');
-            const cartridge = this.format_block('jstpl_cartridge', {turn: 1});
-            dojo.place(cartridge, 'player_boards', 'before');
-
-            this.$turn   = document.querySelector('h2#turn');
-
-            this.$peopleTitle = document.querySelector('#people-title');
-            this.$peopleAll = document.querySelector('#people-people');
-
-            this.$peopleWorker = document.querySelector('#people-worker');
-            this.$peopleWarrior = document.querySelector('#people-warrior');
-            this.$peopleSavant = document.querySelector('#people-savant');
-            this.$peopleMage = document.querySelector('#people-mage');
-            dojo.place(this.getIcon('unit', 'worker'), this.$peopleWorker, 'first');
-            dojo.place(this.getIcon('unit', 'warrior'), this.$peopleWarrior, 'first');
-            dojo.place(this.getIcon('unit', 'savant'), this.$peopleSavant, 'first');
-            dojo.place(this.getIcon('unit', 'mage'), this.$peopleMage, 'first');
-
-            this.$harvestTitle = document.querySelector('#harvest-title');
-            this.$foodHarvest = document.querySelector('#harvest-food');
-            this.$scienceHarvest = document.querySelector('#harvest-science');
-            dojo.place(this.getIcon('food'), this.$foodHarvest, 'first');
-            dojo.place(this.getIcon('science'), this.$scienceHarvest, 'first');
-
-            this.$militaryTitle = document.querySelector('#military-title');
-            this.$powerMilitary = document.querySelector('#military-power');
-            this.$defenseMilitary = document.querySelector('#military-defense');
-            dojo.place(this.getIcon('power'), this.$powerMilitary, 'first');
-            dojo.place(this.getIcon('defense_warrior'), this.$defenseMilitary, 'first');
-
-            this.$cityTitle = document.querySelector('#city-title');
-            this.$cityLife = document.querySelector('#city-life');
-            this.$cityDefense = document.querySelector('#city-defense');
-            dojo.place(this.getIcon('growth'), this.$cityLife, 'first');
-            dojo.place(this.getIcon('defense_city'), this.$cityDefense, 'first');
-
-            this.$stockTitle = document.querySelector('#stock-title');
-            this.$foodStock = document.querySelector('#stock-food');
-            this.$scienceStock = document.querySelector('#stock-science');
-            dojo.place(this.getIcon('food_stock'), this.$foodStock, 'first');
-            dojo.place(this.getIcon('science_stock'), this.$scienceStock, 'first');
-
-            this.$woodStock = document.querySelector('#stock-wood');
-            this.$animalStock = document.querySelector('#stock-animal');
-            this.$stoneStock = document.querySelector('#stock-stone');
-            this.$metalStock = document.querySelector('#stock-metal');
-            this.$clayStock = document.querySelector('#stock-clay');
-            this.$paperStock = document.querySelector('#stock-paper');
-            this.$medicStock = document.querySelector('#stock-medic');
-            this.$gemStock = document.querySelector('#stock-gem');
-            dojo.place(this.getIcon('wood'), this.$woodStock, 'first');
-            dojo.place(this.getIcon('animal'), this.$animalStock, 'first');
-            dojo.place(this.getIcon('stone'), this.$stoneStock, 'first');
-            dojo.place(this.getIcon('metal'), this.$metalStock, 'first');
-            dojo.place(this.getIcon('clay'), this.$clayStock, 'first');
-            dojo.place(this.getIcon('paper'), this.$paperStock, 'first');
-            dojo.place(this.getIcon('medic'), this.$medicStock, 'first');
-            dojo.place(this.getIcon('gem'), this.$gemStock, 'first');
-
-            this.updateCartridge();
-        },
-
-        updateCartridgeElement: function($element, value, duration = 1000)
-        {
-            let incFct = value < 0 ?
-                () => {$element.dataset.count = parseInt($element.dataset.count) - 1} :
-                () => {$element.dataset.count = parseInt($element.dataset.count) + 1}
-            ;
-            let howMany = Math.abs(value);
-            let part = Math.floor(duration / howMany);
-            for (let i = 1; i <= howMany; i++) {
-                window.setTimeout(incFct, part * i);
-            }
-        },
-
-        updateCartridgeStock: function($element, value, duration = 1000)
-        {
-            let incFct = value < 0 ?
-                function() {$element.dataset.stock = parseInt($element.dataset.stock) - 1} :
-                function() {$element.dataset.stock = parseInt($element.dataset.stock) + 1}
-            ;
-            let howMany = Math.abs(value);
-            let part = Math.floor(duration / howMany);
-            for (let i = 1; i <= howMany; i++) {
-                window.setTimeout(incFct, part * i);
-            }
-        },
-
-        updateCartridge: function()
-        {
-            this.updateTurn();
-            this.updatePeople();
-            this.updateHarvest();
-            this.updateMilitary();
-            this.updateCity();
-            this.updateStock();
-        },
-
-        updateTurn: function()
-        {
-
-            this.$turn.dataset.turn = this.status.currentState?.turn || 1;
-            this.$turn.innerHTML    = this.status.currentState?.title?.turn + ' ' + this.$turn.dataset.turn;
-        },
-
-        updatePeople: function()
-        {
-            this.$peopleTitle.innerHTML = this.status.currentState?.title?.people || '';
-
-            this.$peopleAll.dataset.count = this.status.currentState?.peopleCount || 0;
-            this.$peopleWorker.dataset.count = this.status.currentState?.workerCount || 0;
-            this.$peopleWarrior.dataset.count = this.status.currentState?.warriorCount || 0;
-            this.$peopleSavant.dataset.count = this.status.currentState?.savantCount || 0;
-            this.$peopleMage.dataset.count = this.status.currentState?.mageCount || 0;
-        },
-
-        updateHarvest: function()
-        {
-            this.$harvestTitle.innerHTML = this.status.currentState?.title?.harvest || '';
-
-            this.$foodHarvest.dataset.count = this.status.currentState?.foodProduction || 0;
-            this.$scienceHarvest.dataset.count = this.status.currentState?.scienceProduction || 0;
-        },
-
-        updateMilitary: function()
-        {
-            this.$militaryTitle.innerHTML = this.status.currentState?.title?.military || '';
-
-            this.$powerMilitary.dataset.count = this.status.currentState?.warriorPower || 0;
-            this.$defenseMilitary.dataset.count = this.status.currentState?.warriorDefense || 0;
-        },
-
-        updateCity: function()
-        {
-            this.$cityTitle.innerHTML = this.status.currentState?.title?.city || '';
-
-            this.$cityLife.dataset.count = this.status.currentState?.life || 0;
-            this.$cityDefense.dataset.count = this.status.currentState?.cityDefense || 0;
-        },
-
-        updateStock: function()
-        {
-            this.$stockTitle.innerHTML = this.status.currentState?.title?.stock || '';
-
-            this.$foodStock.dataset.count = this.status.currentState?.food;
-            this.$scienceStock.dataset.count = this.status.currentState?.science || 0;
-            this.$foodStock.dataset.stock = this.status.currentState?.foodStock || 0;
-
-            this.$woodStock.dataset.count = this.status.currentState?.woodStock || 0;
-            this.$animalStock.dataset.count = this.status.currentState?.animalStock || 0;
-            this.$stoneStock.dataset.count = this.status.currentState?.stoneStock || 0;
-            this.$metalStock.dataset.count = this.status.currentState?.metalStock || 0;
-            this.$clayStock.dataset.count = this.status.currentState?.clayStock || 0;
-            this.$paperStock.dataset.count = this.status.currentState?.paperStock || 0;
-            this.$medicStock.dataset.count = this.status.currentState?.medicStock || 0;
-            this.$gemStock.dataset.count = this.status.currentState?.gemStock || 0;
-        },
-
-        replaceIconsInObject: function(cardObject)
-        {
-            for (let attr in cardObject) {
-                if (cardObject.hasOwnProperty(attr)) {
-                    let value = cardObject[attr];
-                    if (typeof value === 'string' || value instanceof String) {
-                        cardObject[attr] = this.replaceIconsInString(value);
-                    }
-                }
-            }
-
-            return cardObject;
-        },
-
-        replaceIconsInString: function(toReplace)
-        {
-            [... toReplace.matchAll(/\[invention\] \[([a-z_]+)\]/ig)].forEach((found) => {
-                toReplace = toReplace.replace(found[0], '<div class="double">'+this.getIconAsText('invention')+this.getIconAsText(found[1])+'</div>');
-            });
-            [... toReplace.matchAll(/\[spell\] \[([a-z_]+)\]/ig)].forEach((found) => {
-                toReplace = toReplace.replace(found[0], '<div class="double">'+this.getIconAsText('spell')+this.getIconAsText(found[1])+'</div>');
-            });
-            [... toReplace.matchAll(/\[([a-z_]+)\]/ig)].forEach((found) => {
-                toReplace = toReplace.replace(found[0], this.getIconAsText(found[1]));
-            });
-
-            return toReplace;
-        },
-
         displayFullScreenMessage: function(message, duration = 3000)
         {
             window.clearTimeout(this.fullScreenHideTimer);
@@ -1050,7 +1170,6 @@ function (dojo, on, declare) {
             this.actions = {};
             switch( stateName ) {
             case 'ChooseLineage' :
-                debugger;
                 this.initLineageCards();
 
                 const chooseBtn = dojo.query('#chooseLineage');
@@ -1106,8 +1225,6 @@ function (dojo, on, declare) {
                     case 'ScienceHarvestBonus':
                         this.addActionButton( 'sbPass', _('Pass'), 'onScienceBonusPass' );
                         break;
-                    // case 'Principal':
-                    //  break;
                     default:
                         for (let action in this.actions) {
                             let buttonName = this.actions[action].button === undefined ? this.actions[action] : this.actions[action].button;
@@ -1120,7 +1237,7 @@ function (dojo, on, declare) {
                                 if (this[jsMethod]) {
                                     this[jsMethod](action, lastStatusUpdate);
                                 } else {
-                                    this.ajaxCallWrapper(action, {}, (response) => {}, (isError) => {});
+                                    this.ajaxCallWrapper(action);
                                 }
                             });
                         }
@@ -1140,14 +1257,13 @@ function (dojo, on, declare) {
         */
         ajaxCallWrapper: function(action, args, onResponse, onError)
         {
-            if (typeof  args === 'undefined' || typeof args.lock === 'undefined') {
-                args.lock = true;
-            }
+            if (typeof args === 'undefined') {args = {};}
+            if (typeof args.lock === 'undefined') {args.lock = true;}
             if (typeof onResponse === 'undefined') {
-                onResponse = (result) => {console.log(result);};
+                onResponse = (result) => {console.log('ActionResponse', action, result);};
             }
             if (typeof onError === 'undefined') {
-                onError = (error) => {console.log(error);};
+                onError = (error) => {error && console.log('ActionError', error);};
             }
 
             this.ajaxcall(
@@ -1174,7 +1290,7 @@ function (dojo, on, declare) {
         
         */
         onActPTurnPass: function(action) {
-            this.ajaxCallWrapper(action, {}, (response) => {}, (isError) => {});
+            this.ajaxCallWrapper(action);
         },
 
         onActResourceHarvest: function(action, status) {
@@ -1209,19 +1325,7 @@ function (dojo, on, declare) {
             }
 
             this.ajaxCallWrapper('resourceHarvest', {tileId: tileId, unitId: unitId, resource: resourceCode}, (response) => {
-                debugger;
-                console.log(response);
                 dom.classList.add('used');
-
-                // Animate resource token, from tile to cartridge
-
-                // Animate harvester, flip to acted side and move to zone
-
-                // Update available actions
-
-            }, (isError) => {
-                debugger;
-                console.log(isError);
             });
         },
 
@@ -1248,12 +1352,7 @@ function (dojo, on, declare) {
 
             if (this.selectedCards[0] !== 'undefined' && this.checkAction('selectLineage') && !this.status.state.lineageChosen) {
                 this.status.state.lineageChosen = true;
-                this.ajaxCallWrapper(
-                    'selectLineage',
-                    {lineage: this.selectedCards[0]},
-                    (response) => {},
-                    (isError) => {},
-                );
+                this.ajaxCallWrapper('selectLineage', {lineage: this.selectedCards[0]});
             }
         },
 
@@ -1274,14 +1373,14 @@ function (dojo, on, declare) {
             dojo.stopEvent(evt);
             if (!this.checkAction('pTurnPass')) return;
 
-            this.ajaxCallWrapper('pTurnPass', {}, (response) => {}, (isError) => {});
+            this.ajaxCallWrapper('pTurnPass');
         },
 
         onScienceBonusPass: function (evt) {
             dojo.stopEvent(evt);
             if (!this.checkAction('shBonusPass')) return;
 
-            this.ajaxCallWrapper('shBonusPass', {}, (response) => {}, (isError) => {});
+            this.ajaxCallWrapper('shBonusPass');
         },
 
         ///////////////////////////////////////////////////
@@ -1345,7 +1444,7 @@ function (dojo, on, declare) {
             try {
                 if (log && args && !args.processed) {
                     args.processed = true;
-                    log = this.replaceIconsInString(log);
+                    log = Utility.replaceIconsInString(log);
                 }
             } catch (e) {
                 console.error(log, args, "Exception thrown", e.stack);
@@ -1391,15 +1490,24 @@ function (dojo, on, declare) {
 
         onStartTurn: function (notif) {
             // Update turn in cartridge
-            this.status.currentState.turn = notif.args.turn;
-            this.updateTurn();
+            this.cartridge.update(notif.args.cartridge);
 
             // Display new turn on screen
-            this.displayFullScreenMessage(this.$turn.innerHTML);
+            this.displayFullScreenMessage(this.cartridge.$state.title.turn.innerHTML);
         },
 
         onResourceHarvested: function(notif) {
-            //
+            console.log('onResourceHarvested', notif);
+
+
+            // dom.classList.add('used');
+
+            // Animate resource token, from tile to cartridge
+            let initialInfos = notif.args?.animation;
+
+            notif?.args?.cartridge && this.cartridge.update(notif.args.cartridge, true);
+
+            // Animate harvester, flip to acted side and move to zone
 
         },
 
@@ -1409,6 +1517,10 @@ function (dojo, on, declare) {
         },
 
         onDiedPeople: function(notif) {
+            if (notif.args?.cartridge) {
+                this.cartridge.update(notif.args?.cartridge, true);
+            }
+
             // Remove units
             const unitIds = notif.args.died;
             const _self = this;
@@ -1418,12 +1530,14 @@ function (dojo, on, declare) {
         },
 
         onFeedEnded: function (notif) {
-            this.updateCartridgeElement(this.$foodStock, parseInt(notif.args.foodUpdate));
+            if (notif?.args?.cartridge) {
+                this.cartridge.update(notif?.args?.cartridge, true);
+            }
         },
 
         onEndPhase: function (notif) {
             // Display end phase start on screen
-            this.displayFullScreenMessage(this.status.currentState?.phase?.end);
+            this.displayFullScreenMessage(this.gamedatas.currentState?.phase?.end);
         },
 
         onScienceHarvest: function(notif) {
@@ -1431,7 +1545,9 @@ function (dojo, on, declare) {
             // 'savantHarvesters', 'scienceMultiplier', 'populationBonus', 'lineageBonus'
 
             // Update science stock
-            this.updateCartridgeElement(this.$scienceStock, parseInt(notif.args.total));
+            if (notif?.args?.cartridge) {
+                this.cartridge.update(notif?.args?.cartridge, true);
+            }
         },
 
         onFoodHarvest: function (notif) {
@@ -1439,7 +1555,9 @@ function (dojo, on, declare) {
 
 
             // Update food stock
-            this.updateCartridgeElement(this.$foodStock, parseInt(notif.args.total));
+            if (notif?.args?.cartridge) {
+                this.cartridge.update(notif?.args?.cartridge, true);
+            }
         }
     });
 });
