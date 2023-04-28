@@ -2,6 +2,7 @@
 
 namespace LdH\State;
 
+use LdH\Object\FullScreenMessage;
 use LdH\Service\CurrentStateService;
 
 class EndTurnState extends AbstractState
@@ -52,7 +53,9 @@ class EndTurnState extends AbstractState
             $turn = $this->getCurrentTurn();
 
             if ($turn < CurrentStateService::LAST_TURN) {
-                $this->notifyAllPlayers(EndTurnState::NOTIFY_END_TURN, clienttranslate('[end_turn] phase'), []);
+                $this->notifyAllPlayers(EndTurnState::NOTIFY_END_TURN, clienttranslate('[end_turn] phase'), [
+                    'fullscreen' => new FullScreenMessage('End phase begin', 0)
+                ]);
 
                 $this->gamestate->nextState(EndTurnState::TR_SCIENCE_HARVEST);
                 return ;

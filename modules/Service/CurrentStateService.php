@@ -8,6 +8,7 @@ use LdH\Entity\Meeple;
 class CurrentStateService
 {
     public const GLB_TURN    = 'turn';
+    public const GLB_SPELL_MASTERED    = 'spellMastered';
     public const GLB_TURN_LFT    = 'turnLeft';
     public const GLB_PEOPLE_CNT  = 'people';
     public const GLB_WORKER_CNT  = 'worker';
@@ -66,8 +67,9 @@ class CurrentStateService
         self::GLB_GEM_STK     => 26,
     ];
     public const CURRENT_STATES = [
-        self::GLB_TURN_LFT    => 10,
-        self::GLB_LEADER      => 34,
+        self::GLB_TURN_LFT       => 10,
+        self::GLB_LEADER         => 34,
+        self::GLB_SPELL_MASTERED => 35
     ];
 
     public static function getStateByResource(Resource $resource): string

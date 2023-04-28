@@ -14,9 +14,11 @@ class EndOfEndTurnState extends AbstractState
     public const NAME = 'EndOfEndTurn';
 
     public const TR_PRINCIPAL = 'trPrincipal';
+    public const TR_END = 'trAllDied';
 
     public const NOTIFY_RENEW_RESOURCES = 'ntfyRenewResources';
     public const NOTIFY_DISABLED_CARDS = 'ntfyDisabledCards';
+    public const NOTIFY_PEOPLE_FREE = 'ntfyPeopleFree';
     public const NOTIFY_DIED_PEOPLE = 'ntfyDiedPeople';
     public const NOTIFY_FOOD_STOCK = 'ntfyFoodStock';
 
@@ -33,6 +35,7 @@ class EndOfEndTurnState extends AbstractState
         $this->action            = 'st' . $this->name;
         $this->transitions       = [
             self::TR_PRINCIPAL => PrincipalState::ID,
+            self::TR_END => AllDiedState::ID,
         ];
     }
 
@@ -40,17 +43,17 @@ class EndOfEndTurnState extends AbstractState
     {
         return function () {
             /** @var \ligneeheros $this */
-            // Apply end of turn inventions effects
+            // todo: Apply end of turn inventions effects
 
 
             //  Resource tokens regenerated
             $this->getMapService()->renewResources();
             $this->notifyAllPlayers(EndOfEndTurnState::NOTIFY_RENEW_RESOURCES, clienttranslate('Harvested resources are available again'), [
-                'status' => $this->getPeople()->getHarvestableResources($this->terrains),
+                'map' => $this->getPeople()->getHarvestableResources($this->terrains),
             ]);
 
-            // Population feed (maybe dead people)
-            EndOfEndTurnState::feedPeople($this, $this->getPeople());
+            // Population feed (maybe dead people, Maybe all!)
+            if (!EndOfEndTurnState::feedPeople($this, $this->getPeople())) return ;
 
             // Inventions/spells are no more activated
             $disabled = $this->getCardService()->disableCards([
@@ -62,7 +65,13 @@ class EndOfEndTurnState extends AbstractState
             ]);
 
             // Units are free
-            $this->getPeople()->freeUnits();
+            $units = $this->getPeople()->freeUnits();
+            $this->notifyAllPlayers(EndOfEndTurnState::NOTIFY_PEOPLE_FREE, clienttranslate('All units can be used again'), [
+                'units' => $units,
+            ]);
+
+            // Can master a spell
+            $this->setGameStateValue(CurrentStateService::GLB_SPELL_MASTERED, false);
 
             // Next turn
             $this->incGameStateValue(CurrentStateService::GLB_TURN_LFT, -1);
@@ -70,20 +79,21 @@ class EndOfEndTurnState extends AbstractState
         };
     }
 
-    public static function feedPeople(\ligneeheros $game, PeopleService $peopleService): void
+    public static function feedPeople(\ligneeheros $game, PeopleService $peopleService): bool
     {
         $food = (int) $game->getGameStateValue(CurrentStateService::GLB_FOOD);
         $foodStock = (int) $game->getGameStateValue(CurrentStateService::GLB_FOOD_STK);
         $population = $peopleService->getPopulation();
 
         $died = [];
+        $diedCount = 0;
         $cartridge = ['count' => []];
         if ($food < $population) {
             // Choose people who will die...
             $notFeedPeople = $population - $food;
-            $units = $peopleService->getByTypeUnits();
+            $byTypeUnits = $peopleService->getByTypeUnits();
             foreach (Unit::NOT_FEED_ORDER as $unitType) {
-                $units = $units[$unitType];
+                $units = $byTypeUnits[$unitType] ?? [];
                 $unitCount = count($units);
                 $diedCount = min($unitCount, $notFeedPeople);
 
@@ -111,6 +121,10 @@ class EndOfEndTurnState extends AbstractState
                 'cartridge' => $cartridge,
             ]);
         }
+        if ($diedCount === $population) {
+            $game->gamestate->nextState(EndOfEndTurnState::TR_END);
+            return false;
+        }
 
         // Not stocked food is lost
         $foodResidual = min($foodStock, max(0, $food - $population));
@@ -120,5 +134,7 @@ class EndOfEndTurnState extends AbstractState
             'food' => $foodResidual,
             'cartridge' => CurrentStateService::getCartridgeUpdate(CurrentStateService::GLB_FOOD, $foodResidual),
         ]);
+
+        return true;
     }
 }

@@ -6,6 +6,7 @@ use LdH\Entity\Cards\AbstractCard;
 use LdH\Entity\Cards\BoardCardInterface;
 use LdH\Entity\Cards\Lineage;
 use LdH\Entity\Map\City;
+use LdH\Entity\Meeple;
 use LdH\Entity\Unit;
 use LdH\Service\CurrentStateService;
 use LdH\Service\MessageHelper;
@@ -76,7 +77,8 @@ class ChooseLineageState extends AbstractState
                 $this->getCardService()->moveTheseCardsTo([$lineageCard], BoardCardInterface::LOCATION_HAND, $playerId);
 
                 // Add lineage Meeple to city (auto-saved)
-                $this->incGameStateValue(CurrentStateService::getStateByMeepleType($lineageCard->getMeeple()), 1);
+                $stateConst = CurrentStateService::getStateByMeepleType($lineageCard->getMeeple());
+                $newCount = $this->incGameStateValue($stateConst, 1);
                 $lineageUnits = $this->getPeople()->birth(
                     $lineageCard->getMeeple(),
                     Unit::LOCATION_MAP,
@@ -84,6 +86,7 @@ class ChooseLineageState extends AbstractState
                     1,
                     false
                 );
+                $unit = $lineageUnits[0];
 
                 // Add lineage objective to player's hand
                 $objective = $lineageCard->getObjective();
@@ -95,7 +98,8 @@ class ChooseLineageState extends AbstractState
                     'lineage' => $lineageCard->getName(),
                     'lineageId' => $lineageCard->getCode(),
                     'playerId' => $playerId,
-                    'unit' => $lineageUnits[0] ?? [],
+                    'unit' => $unit,
+                    'cartridge' => CurrentStateService::getCartridgeUpdate($stateConst, $newCount)
                 ];
                 $this->notifyAllPlayers(
                     ChooseLineageState::NOTIFY_PLAYER_CHOSEN,
@@ -125,10 +129,44 @@ class ChooseLineageState extends AbstractState
                     $notificationParams
                 );
 
+                // Check if last player to choose
+                $userLeft = self::getUniqueValueFromDB("SELECT COUNT(player_is_multiactive) as nb FROM player");
+                if ($userLeft < 2) {
+                    ChooseLineageState::drawStartSpell($this);
+                }
+
                 // If all player choose Lineage, next step...
                 $this->gamestate->setPlayerNonMultiActive($playerId, '');
             }
         ];
+    }
+
+    public static function drawStartSpell(\ligneeheros $game): void
+    {
+        $units = $game->getPeople()->getByTypeUnits();
+        if (count($units[Meeple::MAGE])) {
+            // Draw one spell
+            $spellDeck = $game->cards[AbstractCard::TYPE_MAGIC];
+            $spellDeck->getBgaDeck()->pickCardsForLocation(1, BoardCardInterface::LOCATION_DEFAULT, BoardCardInterface::LOCATION_HAND, 0, true);
+
+            $game->getCardService()->updateCardsFromDb($spellDeck);
+            $pickedList = $spellDeck->getCardsOnLocation(BoardCardInterface::LOCATION_HAND);
+
+            $picked = end($pickedList);
+            $game->notifyAllPlayers(
+                GameInitState::NOTIFY_START_SPELL_PICKED,
+                clienttranslate('Your mage(s) now master [spell] ${spell}'),
+                [
+                    'i18n' => ['spell'],
+                    'spell' => $picked->getName(),
+                    'cards' => [
+                        AbstractCard::TYPE_MAGIC => [
+                            BoardCardInterface::LOCATION_HAND => $picked
+                        ]
+                    ]
+                ]
+            );
+        }
     }
 
     public function getStateArgMethod(): ?callable
@@ -163,22 +201,23 @@ class ChooseLineageState extends AbstractState
                 ]
             );
 
-            $cityInventions = array_values($city->getInventions());
             $inventions = $this->cards[AbstractCard::TYPE_INVENTION];
             $this->getCardService()->updateCardsFromDb($inventions);
 
             $this->notifyAllPlayers(
                 GameInitState::NOTIFY_CITY_INVENTIONS,
-                clienttranslate('You have discovered 2 [invention]: <b>${invention1}</b> and <b>${invention2}</b> and you can research <b>${revealed}</b>.'),
+                clienttranslate('You have discovered some [invention]: <b>${start}</b> and you can research <b>${revealed}</b>.'),
                 [
-                    'i18n' => ['invention1', 'invention2', 'others'],
-                    'invention1' => $cityInventions[0]->getName(),
-                    'invention2'=> $cityInventions[1]->getName(),
+                    'i18n' => ['start', 'revealed'],
+                    'start' => MessageHelper::formatList(
+                        array_map(
+                            fn(AbstractCard $invention) => $invention->getName(),
+                            $inventions->getCardsOnLocation(BoardCardInterface::LOCATION_HAND)
+                        )
+                    ),
                     'revealed' => MessageHelper::formatList(
                         array_map(
-                            function(AbstractCard $card) {
-                                return $card->getName();
-                            },
+                            fn(AbstractCard $card) => $card->getName(),
                             $inventions->getCardsOnLocation(BoardCardInterface::LOCATION_ON_TABLE)
                         )
                     )

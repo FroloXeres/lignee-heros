@@ -67,8 +67,8 @@ $elvenMage = (new Meeple(Meeple::ELVEN_MAGE))
     ->setName(clienttranslate("Fal'san'in unit"))
     ->setPlural(clienttranslate("Fal'san'in lineage"));
 $elvenSavant = (new Meeple(Meeple::ELVEN_SAVANT))
-    ->setName(clienttranslate('Reth\'los unit'))
-    ->setPlural(clienttranslate("Reth\'los lineage"));
+    ->setName(clienttranslate("Reth'los unit"))
+    ->setPlural(clienttranslate("Reth'los lineage"));
 $naniWarrior = (new Meeple(Meeple::NANI_WARRIOR))
     ->setName(clienttranslate('Khazhan unit'))
     ->setPlural(clienttranslate("Khazhan lineage"));
@@ -128,7 +128,12 @@ $this->resources = [
 
 $mountain       = new Terrain(clienttranslate('Mountain'), Terrain::MOUNTAIN, 0, false, [$stone, $metal, $gem]);
 $mountainLair   = new Terrain(clienttranslate('Mountain lair'), Terrain::MOUNTAIN_LAIR, 0, false, [$stone, $metal, $gem]);
+$mountainLair
+    ->addBonus(new Bonus(1, Bonus::BIRTH, Meeple::WARRIOR))
+    ->addBonus(new Bonus(10, Bonus::FOOD_FOUND))
+;
 $mountainLake   = new Terrain(clienttranslate('Mountain lake'), Terrain::MOUNTAIN_LAKE, 1, false, [$stone, $metal, $animal]);
+
 $mountainWood   = new Terrain(clienttranslate('Wooded mountain'), Terrain::MOUNTAIN_WOOD, 0, false, [$wood, $stone, $metal]);
 $mountainDrakon = new Terrain(clienttranslate('Drakon lair'), Terrain::MOUNTAIN_DRAKON);
 $mountainDrakon->setDrakon(true);
@@ -136,13 +141,12 @@ $mountainRiver  = new Terrain(clienttranslate('Mountain river'), Terrain::MOUNTA
 
 $plain          = new Terrain(clienttranslate('Plain'), Terrain::PLAIN, 2, false, [$clay, $animal]);
 $plainLake      = new Terrain(clienttranslate('Plain lake'), Terrain::PLAIN_LAKE, 3, false, [$paper, $clay, $animal]);
-$plainLake->addBonus((new Bonus(1, Bonus::FOOD))->setDescription('[food]+1'));
 $plainWood      = new Terrain(clienttranslate('Wooded plain'), Terrain::PLAIN_WOOD, 1, false, [$wood, $animal]);
 $plainDesert    = new Terrain(clienttranslate('Deserted plain'), Terrain::PLAIN_DESERT, 0, false, [$clay]);
 $plainRiverRuin = new Terrain(clienttranslate('Plain ruins'), Terrain::PLAIN_RIVER_RUIN, 3, false, [$paper, $clay, $animal]);
 $plainRiverRuin
     ->addBonus(new Bonus(10, Bonus::SCIENCE_FOUND))
-    ->addBonus((new Bonus(1, Bonus::FOOD))->setDescription('[food] +1'));
+    ->addBonus(new Bonus(1, Bonus::DRAW_CARD, AbstractCard::TYPE_INVENTION));
 ;
 
 $desert         = new Terrain(clienttranslate('Desert'), Terrain::DESERT);
@@ -150,30 +154,46 @@ $desertStone    = new Terrain(clienttranslate('Stone desert'), Terrain::DESERT_S
 
 $swamp          = new Terrain(clienttranslate('Swamp'), Terrain::SWAMP, 0, false, [$paper, $medic]);
 $swampLair      = new Terrain(clienttranslate('Swamp lair'), Terrain::SWAMP_LAIR, 0, false, [$paper, $medic]);
+$swampLair
+    ->addBonus(new Bonus(1, Bonus::BIRTH, Meeple::WARRIOR))
+    ->addBonus(new Bonus(10, Bonus::FOOD_FOUND))
+;
 $swampTower     = new Terrain(clienttranslate('Swamp - wizard tower'), Terrain::SWAMP_TOWER, 0, true, [$paper, $medic]);
-$swampTower->addBonus(new Bonus(10, Bonus::FOOD_FOUND));
+$swampTower
+    ->addBonus(new Bonus(1, Bonus::BIRTH, Meeple::MAGE))
+    ->addBonus(new Bonus(1, Bonus::DRAW_CARD, AbstractCard::TYPE_MAGIC))
+;
 
 $hill           = new Terrain(clienttranslate('Hills'), Terrain::HILL, 2, false, [$stone, $metal]);
 $hillPlateau    = new Terrain(clienttranslate('Plateau'), Terrain::HILL_PLATEAU, 1, false, [$stone]);
-$hillWoodRiver  = new Terrain(clienttranslate('Wooded hills'), Terrain::HILL_WOOD_RIVER, 2, false, [$wood, $metal, $animal]);
-$hillWoodRiver->addBonus((new Bonus(1, Bonus::FOOD))->setDescription('[food] +1'));
+$hillWoodRiver  = new Terrain(clienttranslate('Wooded hills'), Terrain::HILL_WOOD_RIVER, 3, false, [$wood, $metal, $animal]);
 $hillRuin       = new Terrain(clienttranslate('Hills ruins'), Terrain::HILL_RUIN, 2, false, [$stone, $metal]);
 $hillRuin
     ->addBonus(new Bonus(10, Bonus::SCIENCE_FOUND))
+    ->addBonus(new Bonus(1, Bonus::DRAW_CARD, AbstractCard::TYPE_INVENTION));
 ;
 $hillLake       = new Terrain(clienttranslate('Hills lake'), Terrain::HILL_LAKE, 3, false, [$stone, $metal, $animal]);
-$hillLake->addBonus((new Bonus(1, Bonus::FOOD))->setDescription('[food] +1'));
 $hillWoodLair   = new Terrain(clienttranslate('Hill lair'), Terrain::HILL_WOOD_LAIR, 1, false, [$wood, $gem]);
-$hillWoodLair->addBonus(new Bonus(10, Bonus::FOOD_FOUND));
-
+$hillWoodLair
+    ->addBonus(new Bonus(1, Bonus::BIRTH, Meeple::WARRIOR))
+    ->addBonus(new Bonus(10, Bonus::FOOD_FOUND))
+;
 $forest         = new Terrain(clienttranslate('Forest'), Terrain::FOREST, 0, false, [$wood, $animal]);
 $forestTower    = new Terrain(clienttranslate('Forest - wizard tower'), Terrain::FOREST_TOWER, 0, true, [$wood, $animal]);
-$forestTower->addBonus(new Bonus(10, Bonus::FOOD_FOUND));
+$forestTower
+    ->addBonus(new Bonus(1, Bonus::BIRTH, Meeple::MAGE))
+    ->addBonus(new Bonus(1, Bonus::DRAW_CARD, AbstractCard::TYPE_MAGIC))
+;
 $forestLair     = new Terrain(clienttranslate('Forest lair'), Terrain::FOREST_LAIR, 0, false, [$wood, $animal]);
+$forestLair
+    ->addBonus(new Bonus(1, Bonus::BIRTH, Meeple::WARRIOR))
+    ->addBonus(new Bonus(10, Bonus::FOOD_FOUND))
+;
 $forestDense    = new Terrain(clienttranslate('Dense forest'), Terrain::FOREST_DENSE, 0, false, [$wood, $wood, $medic]);
 $forestRuin     = new Terrain(clienttranslate('Forest ruins'), Terrain::FOREST_RUIN, 0, false, [$wood, $animal]);
 $forestRuin
-    ->addBonus((new Bonus(10, Bonus::SCIENCE_FOUND))->setDescription('+10 [science]'))
+    ->addBonus(new Bonus(10, Bonus::SCIENCE_FOUND))
+    ->addBonus(new Bonus(1, Bonus::DRAW_CARD, AbstractCard::TYPE_INVENTION));
 ;
 
 /*--------------------------------------
@@ -464,24 +484,27 @@ $this->cards[$lineage->getType()] = $lineage;
 // -------------------
 $cityCenter = (new Invention(Invention::TYPE_START, Invention::CENTER))
     ->setName(clienttranslate("City center"))
-    ->setDescription(clienttranslate("End of turn: Convert one unit into warrior or worker."))
     ->addUnit($all)
     ->setOr(true)
     ->addGive(new Bonus(1, Bonus::CONVERT, $warrior->getCode()))
-    ->addGive(new Bonus(1, Bonus::CONVERT, $worker->getCode()));
+    ->addGive(new Bonus(1, Bonus::CONVERT, $worker->getCode()))
+    ->setArtist('Kevin Darnis');
 $huts = (new Invention(Invention::TYPE_START, Invention::HUT))
     ->setName(clienttranslate("Huts"))
-    ->setDescription(clienttranslate("Growth +1. End of turn: Launch Growth die."))
+    ->setDescription(clienttranslate("[end_turn] Launch Growth die"))
     ->setUnits([$all, $all])
     ->addGive(new Bonus(1, Bonus::GROWTH))
-    ->addGive(new Bonus(1, Bonus::BIRTH, $worker->getCode()));
+    ->addGive(new Bonus(1, Bonus::BIRTH, $worker->getCode()))
+    ->setArtist('Kevin Darnis');;
 $stock = (new Invention(Invention::TYPE_START, Invention::STOCK))
     ->setName(clienttranslate("Hangar"))
-    ->setDescription(clienttranslate("Resource stock, waiting for any use."));
+    ->setDescription(clienttranslate("Resource stock, waiting for any use."))
+    ->setArtist('Kevin Darnis');;
 $mound = (new Invention(Invention::TYPE_START, Invention::MOUND))
     ->setName(clienttranslate("Mound"))
     ->setDescription(clienttranslate("City defense +1."))
-    ->addGive(new Bonus(1, Bonus::DEFENSE_CITY));
+    ->addGive(new Bonus(1, Bonus::DEFENSE_CITY))
+    ->setArtist('Kevin Darnis');;
 $stoneCutting = (new Invention(Invention::TYPE_DEVELOPMENT, Invention::STONE_CUTTING))
     ->setName(clienttranslate("Stone cutting"))
     ->setDescription(clienttranslate("Stronger buildings are built with hewn stones"))
@@ -813,6 +836,10 @@ $rearing = (new Invention(Invention::TYPE_DEVELOPMENT, Invention::REARING))
     ->addUnit($worker)
     ->addGive(new Bonus(5, Bonus::FOOD_FOUND));
 $invention
+    ->addCard($cityCenter)
+    ->addCard($huts)
+    ->addCard($stock)
+    ->addCard($mound)
     ->addCard($stoneCutting)
     ->addCard($hunting)
     ->addCard($fishing)

@@ -66,3 +66,10 @@ services:
         public: true
         tags: ['ldh.state']
 
+    LdH\State\ChooseSpellState:
+        public: true
+        tags: [ 'ldh.state' ]
+
+    LdH\State\AllDiedState:
+        public: true
+        tags: [ 'ldh.state' ]

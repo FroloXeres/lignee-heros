@@ -34,6 +34,10 @@ class Utility {
         };
     };
 
+    static getUniqId(prefix = '') {
+        return (prefix.length ? prefix + '-' : '') + Math.floor(Math.random() * Math.floor(Math.random() * Date.now()))
+    }
+
     static getIcon(iconId, addClass = '') {
         const $clone = document.querySelector('#icons svg#'+iconId)?.cloneNode(true);
         if ($clone === undefined) {
@@ -47,7 +51,8 @@ class Utility {
         return $clone;
     };
 
-    static getWrappedIcon(iconId, wrapId, cssClass = '') {
+    static getWrappedIcon(iconId, wrapId = null, cssClass = '') {
+        if (wrapId === null) wrapId = Utility.getUniqId(iconId);
         return '<div id="' + wrapId + '" class="wrapped-icon interactive ' + iconId + ' ' + cssClass + '">' + Utility.getIconAsText(iconId, cssClass) + '</div>';
     };
 
@@ -101,7 +106,7 @@ class Animation {
     static TYPE_UNIT_ACT = 'actUnit';
     static TYPE_UNIT_DIED = 'diedUnit';
     static TYPE_UPDATE_CARTRIDGE = 'updateCartridge';
-    static TYPE_MOVE_TO_CARTRIDGE = 'moveToCartridge';
+    static TYPE_MOVE_TO_CARTRIDGE = 'moveResourceToCartridge';
     static TYPE_CARD_FLIP = 'flipCard';
     static TYPE_CARD_ACTIVATE = 'activateCard';
     static TYPE_CARD_DISABLE = 'disableCard';
@@ -133,6 +138,7 @@ class Animation {
 
         switch (this.type) {
             case Animation.TYPE_UNIT_ACT: this.unitAct(callback); break;
+            case Animation.TYPE_MOVE_TO_CARTRIDGE: this.moveToCartridge(callback); break;
             default:
                 console.log("Animate ["+this.type+"] of #" + this.subject);
                 this.onAnimationEnd();
@@ -152,6 +158,18 @@ class Animation {
     /** Unit change zone and flip from "moved/free" to "acted" */
     unitAct(callback) {
         console.log('Unit act' + this.subject.id);
+
+        callback();
+    }
+
+    moveToCartridge(callback) {
+        let $start = game.map.getTileResourceDom(this.subject, this.target);
+        if ($start === null) return ;
+
+        let $end = game.cartridge.getResourceDom(this.target);
+        if ($end === null) return ;
+
+        game.slideTemporaryObject(Utility.getWrappedIcon(this.target), 'floating-cards', $start, $end, this.duration, 0);
 
         callback();
     }
@@ -230,6 +248,27 @@ class Animator {
     }
 }
 
+class Cards {
+    /** @param {Animator} animator */
+    animator = null;
+
+    decks = null;
+
+    constructor(animator) {
+        this.animator = animator;
+    }
+
+    init(decks) {
+        this.decks = decks;
+    }
+
+    update(cards, animate = false) {
+        console.log(cards);
+
+
+    }
+}
+
 class Cartridge {
     static ANIMATION_DURATION = 1000;
 
@@ -292,7 +331,7 @@ class Cartridge {
     update(currentState, animate = false) {
         if (!this.built) return;
 
-        ['title', 'count', 'stock'].forEach(key => {
+        ['count', 'title', 'stock'].forEach(key => {
             if (currentState[key] !== undefined) {
                 for (let state in currentState[key]) {
                     this.state[key][state] = currentState[key][state];
@@ -327,7 +366,7 @@ class Cartridge {
     }
 
     getTurnTitle() {
-        return _(this.state.title.turn) + ' ' + this.state.count.turn;
+        return this.state.title.turn + ' ' + this.state.count.turn; // todo: Translate
     }
 
     updateDom(key, state, animate = false) {
@@ -345,7 +384,7 @@ class Cartridge {
                 case 'title':
                     this.$state.title[state].innerHTML = state === 'turn' ?
                         this.getTurnTitle() :
-                        _(this.state.title[state])
+                        this.state.title[state] // todo: Translate
                     ;
                     break;
                 case 'count':
@@ -357,10 +396,23 @@ class Cartridge {
             }
         }
     }
+
+    getResourceDom(resourceCode) {
+        if (this.$state.count[resourceCode] !== undefined) {
+            return this.$state.count[resourceCode];
+        }
+        return null;
+    }
 }
 
-class Map {
+class LdhMap {
+    static ZONES = ['warrior', 'worker', 'mage', 'savant', 'lineage'];
+
     game = null;
+
+    /** @type {People} */
+    people = null;
+
     mapZones = [];
 
     revealed = [];
@@ -376,12 +428,17 @@ class Map {
     constructor(game, animator) {
         this.game = game;
         this.animator = animator;
+
+        this.people = new People(this, this.animator);
     }
 
     init(revealed, terrains, resources) {
         this.revealed = revealed;
         this.terrains = terrains;
         this.resources = resources;
+    }
+    initUnits(meeple) {
+        this.people.init(meeple);
     }
 
     buildMap(animate= false) {
@@ -428,7 +485,40 @@ class Map {
         this.initMapZones();
         this.initZoom();
         this.scrollToTile(0, 0);
-        this.updateMapZones();
+    }
+
+    getTileResourceDom(tileId, resourceCode = null) {
+        return resourceCode !== null ?
+            document.querySelector('#tile-' + tileId + ' .resources .resource.' + resourceCode) :
+            document.querySelectorAll('#tile-' + tileId + ' .resources .resource')
+        ;
+    }
+
+    update(tiles) {
+        for (const [tileId, update] of Object.entries(tiles)) {
+            if (update.resources !== undefined) {
+                this.updateTileResources(tileId, update.terrain, update.resources);
+            }
+        }
+    }
+
+    updateTileResources(tileId, terrain, resources) {
+        let tile = this.revealed[tileId];
+        let $resources = this.getTileResourceDom(tileId);
+        for (const [resourceCode, used] of Object.entries(resources)) {
+            for (let key in $resources) {
+                let $resource = $resources[key];
+                if ($resource.classList.contains(resourceCode)) {
+                    let index = this.terrains[terrain].resources.indexOf(resourceCode) + 1;
+                    this.revealed[tileId]['resource' + index] = used;
+
+                    if (used) $resource.classList.add('used');
+                    else $resource.classList.remove('used');
+
+                    break;
+                }
+            }
+        }
     }
 
     scrollToTile(x, y)
@@ -438,6 +528,18 @@ class Map {
         if (map.length && tile.length) {
             map[0].scrollTo(tile[0].offsetLeft / 2, tile[0].offsetTop / 2);
         }
+    }
+
+    getTileZones(tileId) {
+        let zones = [];
+        LdhMap.ZONES.forEach(
+            zoneType => zones.push(
+                this.getMapZone(
+                    LdhMap.getZoneIdByTileIdAndType(tileId, zoneType)
+                )
+            )
+        );
+        return zones;
     }
 
     getMapZone(zoneId) {
@@ -452,9 +554,9 @@ class Map {
             let item = tile.closest('.map-hex-item');
             let id = item.id.replace('tile-', '');
 
-            ['warrior', 'worker', 'mage', 'savant', 'lineage'].forEach(function(unitType) {
+            LdhMap.ZONES.forEach(function(unitType) {
                 let zone = new ebg.zone();
-                let code = Map.getZoneIdByTileIdAndType(id, unitType);
+                let code = LdhMap.getZoneIdByTileIdAndType(id, unitType);
                 zone.create(_self.game, code);
                 zone.setPattern('custom');
 
@@ -526,7 +628,7 @@ class Map {
 
         this.$zoomIn = document.getElementById('zoom_in_icon');
         this.$zoomIn.addEventListener('click', () => this.onZoomIn());
-        }
+    }
     onZoomIn() {
         if (this.getZoom() < this.MAX_ZOOM) {
             this.incDecZoom();
@@ -553,6 +655,167 @@ class Map {
     incDecZoom(inc = true) {this.$zoom.dataset.zoom = this.getZoom() + (inc ? 1 : -1);}
 }
 
+class People {
+    /** @type {LdhMap} */
+    map = null;
+
+    /** @type {Animator} */
+    animator = null;
+
+    meeple = {};
+    playerUnit = {};
+    byTile = {};
+    byType = {};
+    byStatus = {};
+    harvesters = {};
+    byId = {};
+    units = [];
+
+    /**
+     * @param {LdhMap} map
+     * @param {Animator} animator
+     */
+    constructor(map, animator) {
+        this.animator = animator;
+        this.map = map;
+    }
+
+    init(types)  {
+        this.meeple = types;
+    }
+
+    update(people) {
+        this.updateUnits(people.units);
+    }
+
+    updateIndexesAndGetDiedUnits(units) {
+        let diedUnits = new Map();
+        this.units.forEach((unit) => diedUnits.set(unit.id, unit));
+
+        this.byType = {};
+        this.byTile = {};
+        this.byId = {};
+        this.byStatus = {};
+        for (let idx in units) {
+            let unit = units[idx];
+
+            if (this.byType[unit.type] === undefined) this.byType[unit.type] = [];
+            this.byType[unit.type].push(idx);
+
+            if (this.byTile[unit.location] === undefined) this.byTile[unit.location] = [];
+            this.byTile[unit.location].push(idx);
+
+            if (this.byStatus[unit.status] === undefined) this.byStatus[unit.status] = [];
+            this.byStatus[unit.status].push(idx);
+
+            this.byId[unit.id] = idx;
+
+            diedUnits.delete(unit.id);
+        }
+
+        return diedUnits;
+    }
+
+    updateUnits(units) {
+        let diedUnits = this.updateIndexesAndGetDiedUnits(units);
+        for (const [unitId, unit] of diedUnits) {
+            this.unitDie(unit);
+        }
+
+        let zones = new Set();
+        this.units = units;
+        for (let tileId in this.byTile) {
+            let unitsOnTile = this.byTile[tileId];
+            unitsOnTile.forEach((idx) => {
+                let unit = units[idx];
+                if(!this.playerUnit || unit.type !== this.playerUnit.type) {
+                    zones.add(
+                        this.updateOrCreateUnit(unit)
+                    );
+                }
+            });
+        }
+        if (this.playerUnit.id !== undefined) {
+            this.updateOrCreateUnit(this.playerUnit);
+        }
+
+        zones.forEach((zoneId) => {
+            let zone = this.map.getMapZone(zoneId);
+            zone.updateDisplay();
+        });
+    }
+
+    updateUnit(unit) {
+        let zoneId = this.updateOrCreateUnit(unit);
+
+        let zone = this.map.getMapZone(zoneId);
+        zone.updateDisplay();
+    }
+
+    initPlayerUnit(playerLineage) {
+        let unitPos = this.byType[playerLineage.meeple];
+        if (unitPos && this.units[unitPos] !== undefined) {
+            this.playerUnit = this.units[unitPos];
+        }
+    }
+
+    getDomIdByUnit(unit) {
+        return 'unit-' + unit.id;
+    }
+    updateOrCreateUnit(unit) {
+        let zoneId = LdhMap.getZoneIdByTileIdAndType(unit.location, unit.type);
+        let zone = this.map.getMapZone(zoneId);
+        const domUnitId = this.getDomIdByUnit(unit);
+        let domUnits = document.getElementById(domUnitId);
+        if (domUnits) {
+            // Change unit status (if needed)
+            if (this.updateUnitStatus(domUnits, unit.status)) {
+                zone.removeFromZone(domUnitId, false);
+                zone.placeInZone(domUnitId, this.getPriorityByUnitStatus(unit.status));
+            }
+        } else {
+            // Add new unit to map
+            this.createUnit(unit.type, domUnitId, unit.status);
+            zone.placeInZone(domUnitId, this.getPriorityByUnitStatus(unit.status));
+        }
+
+        return zoneId;
+    }
+
+    unitDie(unit) {
+        // Remove unit from map
+        const domUnitId = this.getDomIdByUnit(unit);
+        document.getElementById(domUnitId).remove();
+    }
+
+    getPriorityByUnitStatus(status){
+        switch (status) {
+            case 'acted': return 0;
+            case 'moved': return 1;
+            default: return 2;
+        }
+    }
+    updateUnitStatus(domUnit, status){
+        if (domUnit.classList.contains(status)) return false;
+
+        ['free', 'moved', 'acted'].forEach((forStatus) => {
+            if (forStatus !== status) {
+                domUnit.classList.remove(forStatus);
+                domUnit.firstChild.classList.remove(forStatus);
+            }
+        });
+        domUnit.classList.add(status);
+        domUnit.firstChild.classList.add(status);
+
+        return true;
+    }
+    createUnit(iconId, domUnitId, unitStatus){
+        const newUnit = Utility.getWrappedIcon(iconId, domUnitId, unitStatus);
+        dojo.place(newUnit, 'new-unit');
+    }
+}
+
+let game = null;
 define([
     "dojo", "dojo/on", "dojo/_base/declare",
     "ebg/core/gamegui",
@@ -567,6 +830,7 @@ function (dojo, on, declare) {
                 isInitializing: false,
                 state: {
                     lineageChosen: true,
+                    spellToMasterChosen: true,
                 },
             };
             this.actions = {};
@@ -576,8 +840,11 @@ function (dojo, on, declare) {
             this.$fullScreen = document.getElementById('fullscreen-message');
 
             this.animator = new Animator();
-            this.map = new Map(this, this.animator);
+            this.map = new LdhMap(this, this.animator);
             this.cartridge = new Cartridge(this.animator);
+            this.cardManager = new Cards(this.animator);
+
+            game = this;
         },
         /*
             setup:
@@ -597,6 +864,8 @@ function (dojo, on, declare) {
 
             this.isActive = gamedatas.isActive;
             this.map.init(gamedatas.map, gamedatas.terrains, gamedatas.resources);
+            this.map.initUnits(gamedatas.meeple);
+            this.cardManager.init(gamedatas.decks);
 
             new Promise((resolve) => {
                 this.status.isInitializing = true;
@@ -606,13 +875,14 @@ function (dojo, on, declare) {
                 this.cartridge.build(this);
                 this.map.buildMap();
                 this.initEvents();
-            })
-            .then(() => {
-                this.cartridge.update(gamedatas.currentState.cartridge);
                 this.translateGameData();
             })
-            .then(() => this.initCards(gamedatas))
-            .then(() => this.initPeople(gamedatas.people))
+            .then(() => this.cartridge.update(gamedatas.currentState.cartridge))
+            .then(() => this.map.people.update(gamedatas.people))
+            .then(() => {
+                this.initCards(gamedatas);
+                this.cardManager.update(gamedatas.cards);
+            })
             .then(() => this.initTooltips(gamedatas.tooltips))
             .then(() => this.setupNotifications())
             .then(() => this.status.isInitializing = false)
@@ -649,89 +919,6 @@ function (dojo, on, declare) {
                     existingMethod.call(object);
                 }
             };
-        },
-
-        // All about People/Unit
-        initPeople: function(people)
-        {
-            //console.log('Init people');
-            this.initMapPeople(people.byPlace.map, people.byType, people.units);
-            this.initInventionPeople(people.byPlace.invention, people.units);
-            this.initSpellPeople(people.byPlace.spell, people.units);
-        },
-        initInventionPeople: function(byInvention, units)
-        {
-            //console.log('Init invention people');
-        },
-        initSpellPeople: function(bySpell, units)
-        {
-            //console.log('Init spell people');
-        },
-        getDomIdByUnit: function(unit)
-        {
-            return 'unit-' + unit.id;
-        },
-        initMapPeople: function(byMap, byType, units)
-        {
-            //console.log('Init map people');
-            // Save player unit if defined
-            if (this.playerLineage) {
-                let id = byType[this.playerLineage.meeple];
-                this.playerUnit = units[id];
-            }
-
-            for (let id in byMap) {
-                let key = byMap[id];
-                let unit = units[key];
-                if(this.playerUnit && unit.type === this.playerUnit.type) continue;
-
-                this.updateOrCreateUnit(unit);
-            }
-
-            // Be sure to render player unit at the end
-            if (this.playerUnit) {
-                this.updateOrCreateUnit(this.playerUnit);
-            }
-        },
-        updateOrCreateUnit: function(unit)
-        {
-            let zoneId = Map.getZoneIdByTileIdAndType(unit.location, unit.type);
-            let zone = this.map.getMapZone(zoneId);
-            const domUnitId = this.getDomIdByUnit(unit);
-            let domUnits = dojo.query(domUnitId);
-            if (domUnits.length) {
-                // todo: Move to new place ?
-                //zone.move
-
-                this.updateUnitStatus(domUnits[0], unit.status);
-            } else {
-                // Add new unit to map
-                this.createUnit(unit.type, domUnitId, unit.status);
-
-                // todo: Animate unit creation (From board to map)
-                zone.placeInZone(domUnitId, this.getPriorityByUnitStatus(unit.status));
-            }
-        },
-        getPriorityByUnitStatus: function(status)
-        {
-            switch (status) {
-                case 'acted': return 0;
-                case 'moved': return 1;
-                default: return 2;
-            }
-        },
-        updateUnitStatus: function(domUnit, status)
-        {
-            domUnit.classList.remove('free');
-            domUnit.classList.remove('moved');
-            domUnit.classList.remove('acted');
-
-            domUnit.classList.add(status);
-        },
-        createUnit: function(iconId, domUnitId, unitStatus)
-        {
-            const newUnit = Utility.getWrappedIcon(iconId, domUnitId, unitStatus);
-            dojo.place(newUnit, 'new-unit');
         },
 
         // All about cards
@@ -888,15 +1075,19 @@ function (dojo, on, declare) {
         {
             this.distributeCards('lineage', 'deck');
         },
-        distributeCards: function (type, location)
+        initSpellCards: function()
+        {
+            this.distributeCards('spell', 'onTable', true);
+        },
+        distributeCards: function (type, location, deckExists = false)
         {
             if (this.cards === undefined) this.cards = this.gamedatas.cards;
             if (this.cards[type] === undefined || this.cards[type][location] === undefined) return ;
 
             let wait = 500;
-            this.createDeck(type, this.cards[type][location].length, 'overall-cards', false);
+            !deckExists && this.createDeck(type, this.cards[type][location].length, 'overall-cards', false);
             this.cards[type][location].forEach((card) => {
-                window.setTimeout(() => this.moveCardFromDeckToLocation(card, type, location), wait);
+                window.setTimeout(() => this.moveCardFromDeckToLocation(card, type, location, deckExists), wait);
                 wait += 1000;
             });
         },
@@ -962,6 +1153,9 @@ function (dojo, on, declare) {
                 let visibleDeck = ['invention', 'spell'].includes(type);
                 if (location === 'deck' && visibleDeck) {
                     this.createDeck(type, cards.length);
+                } else if (type === 'spell' && location === 'onTable') {
+                    // Do nothing: revealed by onEnteringState
+
                 } else {
                     this.createCardsInLocation(cards, type, location);
                 }
@@ -1040,11 +1234,12 @@ function (dojo, on, declare) {
 
             return cardId;
         },
-        moveCardFromDeckToLocation: function(card, type, location)
+        moveCardFromDeckToLocation: function(card, type, location, deckExists = false)
         {
-            let $deck = document.getElementById('deck-' + type);
+            let deckId = 'deck-' + type;
+            let $deck = document.getElementById(deckId);
             let counter = this.changeDeckCounter($deck, -1);
-            let cardId = this.createCardInLocation(card, type, location, 'overall-cards', true);
+            let cardId = this.createCardInLocation(card, type, location, deckExists ? deckId : 'overall-cards', !deckExists);
             this.moveCardToZone(card, cardId, type, location);
 
             if (!counter) {
@@ -1111,9 +1306,9 @@ function (dojo, on, declare) {
 
         initEvents: function()
         {
-            //console.log('Init events');
             this.evts = {};
             this.evts['onChooseLineage'] = on(dojo.query('#floating-cards'), 'click', this.onChooseLineage.bind(this));
+            this.evts['onChooseSpell'] = on(dojo.query('#spell-onTable'), 'click', this.onChooseSpell.bind(this));
         },
 
         removeEvent: function(key)
@@ -1138,18 +1333,44 @@ function (dojo, on, declare) {
             const selectedCard = this.getCard('lineage', 'deck', id);
             this.selectedCards = [id];
 
-            dojo.query('#pagemaintitletext').text(_('You choose to play with lineage: ') + selectedCard.name);
+            document.getElementById('pagemaintitletext').innerHTML = _('You choose to play with lineage: ') + selectedCard.name;
 
-            dojo.query('#chooseLineage')[0].classList.remove('hidden');
-            dojo.query('#cancelChooseLineage')[0].classList.remove('hidden');
+            document.getElementById('chooseLineage').classList.remove('hidden');
+            document.getElementById('cancelChooseLineage').classList.remove('hidden');
         },
 
-        displayFullScreenMessage: function(message, duration = 3000)
+        onChooseSpell: function(event)
+        {
+            if (this.status.state.spellToMasterChosen) return;
+
+            const card = event.target.closest('.card.spell');
+            if (card === null) return;
+
+            dojo.query('#spell-onTable .card').forEach((thisCard) => {thisCard.classList.remove('selected');});
+            card.classList.add('selected');
+
+            const id = card.getAttribute('data-id');
+            const selectedCard = this.getCard('spell', 'onTable', id);
+            this.selectedCards = [id];
+
+            document.getElementById('pagemaintitletext').innerHTML = _('You choose to master spell: ') + selectedCard.name;
+
+            document.getElementById('chooseSpell').classList.remove('hidden');
+            document.getElementById('cancelChooseSpell').classList.remove('hidden');
+        },
+
+        displayFullScreenMessage: function(message, duration = 3000, translate = true)
         {
             window.clearTimeout(this.fullScreenHideTimer);
             window.clearTimeout(this.fullScreenCleanTimer);
 
-            this.$fullScreen.innerHTML = '<h1>' + message + '</h1>';
+            if (message.message !== undefined) {
+                duration = message.duration;
+                translate = message.translate;
+                message = message.message;
+            }
+
+            this.$fullScreen.innerHTML = '<h1>' + (translate ? _(message) : message) + '</h1>';
             this.$fullScreen.classList.add('display');
 
             this.fullScreenHideTimer = window.setTimeout(() => this.$fullScreen.classList.remove('display'), duration);
@@ -1167,16 +1388,28 @@ function (dojo, on, declare) {
             console.log('EnteringState:');
             console.log(args);
 
+            let $chooseBtn, $cancelBtn;
+
             this.actions = {};
             switch( stateName ) {
             case 'ChooseLineage' :
                 this.initLineageCards();
 
-                const chooseBtn = dojo.query('#chooseLineage');
-                const cancelBtn = dojo.query('#cancelChooseLineage');
-                if (chooseBtn.length && cancelBtn.length) {
-                    chooseBtn.forEach((elt) => elt.classList.add('hidden'));
-                    cancelBtn.forEach((elt) => elt.classList.add('hidden'));
+                $chooseBtn = document.getElementById('chooseLineage');
+                $cancelBtn = document.getElementById('cancelChooseLineage');
+                if ($chooseBtn !== null && $cancelBtn !== null) {
+                    $chooseBtn.classList.add('hidden');
+                    $cancelBtn.classList.add('hidden');
+                }
+                break;
+            case 'ChooseSpell' :
+                this.initSpellCards();
+
+                $chooseBtn = document.getElementById('chooseSpell');
+                $cancelBtn = document.getElementById('cancelChooseSpell');
+                if ($chooseBtn !== null && $cancelBtn !== null) {
+                    $chooseBtn.classList.add('hidden');
+                    $cancelBtn.classList.add('hidden');
                 }
                 break;
             case 'Principal' :
@@ -1197,6 +1430,10 @@ function (dojo, on, declare) {
                 dojo.query('#floating-cards .card.lineage').remove();
                 this.removeEvent('onChooseLineage');
                 break;
+            case 'ChooseSpell':
+                dojo.query('#spell-onTable .card.spell').remove();
+                this.removeEvent('onChooseSpell');
+                break;
             case 'EndPrincipal':
                 
                 break;
@@ -1210,6 +1447,9 @@ function (dojo, on, declare) {
         {
             switch(stateName) {
                 case 'ChooseLineage': this.status.state.lineageChosen = !this.isCurrentPlayerActive(); break;
+
+                // Find a better check (Only player who choose this action can select a spell card?)
+                case 'ChooseSpell': this.status.state.spellToMasterChosen = false; break;
             }
 
             if(this.isCurrentPlayerActive()) {
@@ -1221,6 +1461,10 @@ function (dojo, on, declare) {
                     case 'ChooseLineage':
                         this.addActionButton( 'chooseLineage', _('Yes'), 'onSelectLineage' );
                         this.addActionButton( 'cancelChooseLineage', _('No'), 'onUnselectLineage' );
+                        break;
+                    case 'ChooseSpell':
+                        this.addActionButton( 'chooseSpell', _('Yes'), 'onSelectSpell' );
+                        this.addActionButton( 'cancelChooseSpell', _('No'), 'onUnselectSpell' );
                         break;
                     case 'ScienceHarvestBonus':
                         this.addActionButton( 'sbPass', _('Pass'), 'onScienceBonusPass' );
@@ -1304,7 +1548,6 @@ function (dojo, on, declare) {
 
             let dom = evt.currentTarget;
             if (dom.classList.contains('used')) {
-
                 console.log('Resource already used');
                 return ;
             }
@@ -1364,9 +1607,31 @@ function (dojo, on, declare) {
                 thisCard.classList.remove('selected');
             });
 
-            dojo.query('#pagemaintitletext').text(_('Please, select your lineage'));
-            dojo.query('#chooseLineage')[0].classList.add('hidden');
-            dojo.query('#cancelChooseLineage')[0].classList.add('hidden');
+            document.getElementById('pagemaintitletext').innerHTML = _('Please, select your lineage');
+            document.getElementById('chooseLineage').classList.add('hidden');
+            document.getElementById('cancelChooseLineage').classList.add('hidden');
+        },
+
+        onSelectSpell: function(evt)  {
+            dojo.stopEvent(evt);
+
+            if (this.selectedCards[0] !== 'undefined' && this.checkAction('spellChosen') && !this.status.state.spellToMasterChosen) {
+                this.status.state.spellToMasterChosen = true;
+                this.ajaxCallWrapper('spellChosen', {spell: this.selectedCards[0]});
+            }
+        },
+
+        onUnselectSpell: function(evt) {
+            dojo.stopEvent(evt);
+
+            this.selectedCards = [];
+            dojo.query('#spell-onTable .card').forEach((thisCard) => {
+                thisCard.classList.remove('selected');
+            });
+
+            document.getElementById('pagemaintitletext').innerHTML = _('Please, select spell you will master');
+            document.getElementById('chooseSpell').classList.add('hidden');
+            document.getElementById('cancelChooseSpell').classList.add('hidden');
         },
 
         onPass: function(evt) {
@@ -1401,32 +1666,37 @@ function (dojo, on, declare) {
             dojo.subscribe( 'debug', this, "onDebug" );
 
             // Animation after lineage choose
-            dojo.subscribe('playerChooseLineage', this, 'onLineageChosen');
+            dojo.subscribe('playerChooseLineage', this, 'onNotification');
             this.notifqueue.setSynchronous('playerChooseLineage', 1500);
 
             dojo.subscribe('playerDrawObjective', this, 'onObjectiveDrawn');
             this.notifqueue.setSynchronous('playerDrawObjective', 1500);
 
-            dojo.subscribe('ntfyEndTurn', this, 'onEndPhase');
+            dojo.subscribe('ntfyEndTurn', this, 'onNotification');
             this.notifqueue.setSynchronous('ntfyEndTurn', 1000);
 
-            dojo.subscribe('ntfyScienceHarvest', this, 'onScienceHarvest');
-            dojo.subscribe('ntfyFoodHarvest', this, 'onFoodHarvest');
+            dojo.subscribe('ntfyScienceHarvest', this, 'onNotification');
+            dojo.subscribe('ntfyFoodHarvest', this, 'onNotification');
             this.notifqueue.setSynchronous('ntfyFoodHarvest', 1000);
 
             dojo.subscribe('ntfyDisabledCards', this, 'onDisabledCards');
             this.notifqueue.setSynchronous('ntfyDisabledCards', 1000);
 
-            dojo.subscribe('ntfyDiedPeople', this, 'onDiedPeople');
+            dojo.subscribe('ntfyDiedPeople', this, 'onNotification');
             this.notifqueue.setSynchronous('ntfyDiedPeople', 1000);
 
-            dojo.subscribe('ntfyFoodStock', this, 'onFeedEnded');
+            dojo.subscribe('ntfyFoodStock', this, 'onNotification');
             this.notifqueue.setSynchronous('ntfyFoodStock', 1000);
 
-            dojo.subscribe('ntfyStartTurn', this, 'onStartTurn');
+            dojo.subscribe('ntfyStartTurn', this, 'onNotification');
             this.notifqueue.setSynchronous('ntfyStartTurn', 1000);
 
-            dojo.subscribe('ntfyResourceHarvested', this, 'onResourceHarvested');
+            dojo.subscribe('ntfyResourceHarvested', this, 'onNotification');
+            dojo.subscribe('ntfyRenewResources', this, 'onNotification');
+            dojo.subscribe('ntfyPeopleFree', this, 'onNotification');
+            dojo.subscribe('ntfyAllDied', this, 'onNotification');
+            dojo.subscribe('ntfySpellCardsDrawn', this, 'onNotification');
+            dojo.subscribe('ntfySpellMastered', this, 'onNotification');
 
             // Example 1: standard notification handling
             // dojo.subscribe( 'cardPlayed', this, "notif_cardPlayed" );
@@ -1458,22 +1728,17 @@ function (dojo, on, declare) {
             console.log(message);
         },
 
-        onLineageChosen: function (notif)
+        playerChooseLineage: function (notif)
         {
             const lineage = this.indexed[notif?.args?.lineageId] || null;
             if (lineage) {
                 lineage.location_arg = parseInt(notif.args.playerId);
 
                 // Move card to player board
-                this.slideToObjectAndDestroy(lineage.id, 'overall_player_board_' + lineage.location_arg, 1000, 0);
+                this.slideToObjectAndDestroy('flip-' + lineage.id, 'overall_player_board_' + lineage.location_arg, 1000, 0);
 
                 // Create lineage cartridge using chosen lineage
                 window.setTimeout(() => this.initPlayerLineage(lineage), 1000);
-
-                // Lineage unit is added to city
-                if (notif?.args?.unit) {
-                    this.updateOrCreateUnit(notif.args.unit);
-                }
             }
         },
 
@@ -1488,76 +1753,60 @@ function (dojo, on, declare) {
             }
         },
 
-        onStartTurn: function (notif) {
-            // Update turn in cartridge
-            this.cartridge.update(notif.args.cartridge);
+        onNotification: function (notif) {
+            // Auto update
+            console.log('onNotification', notif);
+            if (notif?.args?.actions !== undefined) {this.actions = notif.args.actions;}
 
-            // Display new turn on screen
-            this.displayFullScreenMessage(this.cartridge.$state.title.turn.innerHTML);
-        },
+            if (notif?.args?.units !== undefined) {this.map.people.updateUnits(notif.args.units);}
+            if (notif?.args?.unit !== undefined) {this.map.people.updateUnit(notif.args.unit);}
 
-        onResourceHarvested: function(notif) {
-            console.log('onResourceHarvested', notif);
-
-
-            // dom.classList.add('used');
-
-            // Animate resource token, from tile to cartridge
-            let initialInfos = notif.args?.animation;
-
+            notif?.args?.map && this.map.update(notif.args.map);
             notif?.args?.cartridge && this.cartridge.update(notif.args.cartridge, true);
+            notif?.args?.cards && this.cardManager.update(notif.args.cards);
+            notif?.args?.fullscreen && this.displayFullScreenMessage(notif.args.fullscreen);
 
-            // Animate harvester, flip to acted side and move to zone
+            if (notif?.args?.animation) {
+                this.animator.addAnimation(
+                    new Animation(
+                        notif?.args?.animation.type,
+                        notif?.args?.animation?.subject,
+                        notif?.args?.animation?.target,
+                        notif?.args?.animation?.duration || 0
+                    )
+                );
+            }
 
+            if (this[notif.type] !== undefined) {
+                this[notif.type](notif);
+            }
         },
 
+        ntfyDiedPeople: function(notif) {
+            // Remove units
+            const unitIds = notif.args.died;
+            const _self = this;
+            unitIds.forEach((unitId) => {
+                console.log(unitId);
+            });
+        },
+
+        ntfyScienceHarvest: function(notif) {
+            // Animate science from map to Cartridge
+            // 'savantHarvesters', 'scienceMultiplier', 'populationBonus', 'lineageBonus'
+
+        },
         onDisabledCards: function (notif) {
             console.log('Disabled cards:');
             console.log(notif.args.disabled);
         },
 
-        onDiedPeople: function(notif) {
-            if (notif.args?.cartridge) {
-                this.cartridge.update(notif.args?.cartridge, true);
-            }
+        ntfyFoodHarvest: function (notif) {
+            // Animate food from lineage
 
-            // Remove units
-            const unitIds = notif.args.died;
-            const _self = this;
-            unitIds.forEach((unitId) => {
 
-            });
-        },
-
-        onFeedEnded: function (notif) {
-            if (notif?.args?.cartridge) {
-                this.cartridge.update(notif?.args?.cartridge, true);
-            }
-        },
-
-        onEndPhase: function (notif) {
-            // Display end phase start on screen
-            this.displayFullScreenMessage(this.gamedatas.currentState?.phase?.end);
-        },
-
-        onScienceHarvest: function(notif) {
-            // Animate science from map to Cartridge
-            // 'savantHarvesters', 'scienceMultiplier', 'populationBonus', 'lineageBonus'
-
-            // Update science stock
-            if (notif?.args?.cartridge) {
-                this.cartridge.update(notif?.args?.cartridge, true);
-            }
-        },
-
-        onFoodHarvest: function (notif) {
             // Animate food from map to Cartridge
 
-
-            // Update food stock
-            if (notif?.args?.cartridge) {
-                this.cartridge.update(notif?.args?.cartridge, true);
-            }
         }
     });
 });

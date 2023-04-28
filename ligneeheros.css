@@ -417,6 +417,7 @@ h2#turn-title::before {
     width: 10em;
     aspect-ratio: 7/11;
     border-radius: .5em;
+    box-sizing: border-box;
     box-shadow: 0.1em 0.1em 0.5em rgb(0 0 0 / 50%);
 }
 .card.verso {
@@ -805,16 +806,16 @@ h2#turn-title::before {
 /* Graphs for card list  */
 .card.explore_disease .graph {background-position: 22.2% 0%;}
 
-.card.stock .graph {background-position: 11.1% 0%;}
 .card.invention_111 .graph {background-position: 55.5% 0%;}
 .card.invention_110 .graph {background-position: 22.2% 0%;}
-.card.hut .graph {background-position: 44.4% 0%;}
-.card.center .graph {background-position: 66.6% 0%;}
+.card.invention_144 .graph {background-position: 44.4% 0%;}
+.card.invention_143 .graph {background-position: 66.6% 0%;}
 .card.invention_101 .graph {background-position: 0% 0%;}
 .card.invention_108 .graph {background-position: 33.3% 0%;}
-.card.talus .graph {background-position: 77.7% 0%;}
+.card.invention_145 .graph {background-position: 11.1% 0%;}
 .card.invention_138 .graph {background-position: 88.8% 0%;}
 .card.invention_105 .graph {background-position: 100% 0%;}
+.card.invention_146 .graph {background-position: 77.7% 0%;}
 
 .card .info {
     flex-grow: 1;
@@ -1043,6 +1044,17 @@ svg.svg-icon {
 #page-title .action-button.hidden {display: none;}
 
 /********* MAP **********/
+.shortcuts {
+    position: absolute;
+    top: 2.25em;
+    right: .25em;
+    z-index: 100;
+
+    color: #333;
+    font-weight: bold;
+    padding: .5em;
+    background: #ffffff50;
+}
 #zoom {
     position: absolute;
     top: 0;
@@ -1054,6 +1066,7 @@ svg.svg-icon {
     cursor: pointer;
 }
 #map-zone {
+    position: relative;
     min-width: 320px;
     width: 100%;
     overflow-x: scroll;
@@ -1203,13 +1216,12 @@ svg.svg-icon {
     content: '';
     position: absolute;
     z-index: -1;
-    top: -10%;
+    top: 0;
     left: 0;
-    width: 105%;
-    height: 120%;
+    width: 100%;
+    height: 100%;
     background: url('img/tiles-sprits.png') 0 0 no-repeat;
-    background-size: 1000% 200%;
-    transform: rotate(90deg);
+    background-size: 1100% 200%;
 }
 
 .tile.explorable {
@@ -1269,6 +1281,10 @@ svg.svg-icon {
 }
 .tile .resource.used svg {
     display: none;
+}
+#floating-cards > .wrapped-icon {
+    width: 2em;
+    height: 2em;
 }
 .tile .resource:not(.food):not(.science) {
     border: .15em solid #065009;
@@ -1333,38 +1349,61 @@ svg.svg-icon {
 .tile.tile_reveal .food.none {display: none}
 .tile.tile_reveal .science.none {display: none}
 
-.tile.tile_reveal.tile_town_humani::before {background-position: 0 0;}
-.tile.tile_reveal.tile_town_elven::before {background-position: 0 0;}
-.tile.tile_reveal.tile_town_nani::before {background-position: 0 0;}
-.tile.tile_reveal.tile_town_ork::before {background-position: 0 0;}
+.tile.tile_reveal.tile_town_humani::before {background-position: 40% 100%;}
+.tile.tile_reveal.tile_town_elven::before {background-position: 60% 100%;}
+.tile.tile_reveal.tile_town_nani::before {background-position: 50% 100%;}
+.tile.tile_reveal.tile_town_ork::before {background-position: 70% 100%;}
 
-.tile.tile_reveal.tile_mountain::before {background-position: 30% 96%;}
-.tile.tile_reveal.tile_mountain_lair::before {background-position: 30% 96%;}
-.tile.tile_reveal.tile_mountain_lake::before {background-position: 30% 96%;}
-.tile.tile_reveal.tile_mountain_wood::before {background-position: 30% 96%;}
-.tile.tile_reveal.tile_mountain_tower::before {background-position: 30% 96%;}
-.tile.tile_reveal.tile_mountain_river::before {background-position: 30% 96%;}
-.tile.tile_reveal.tile_plain::before {background-position: 70% 0;}
-.tile.tile_reveal.tile_plain_lake::before {background-position: 90% 0;}
-.tile.tile_reveal.tile_plain_wood::before {background-position: 80% 0;}
-.tile.tile_reveal.tile_plain_desert::before {background-position: 30% 0;}
-.tile.tile_reveal.tile_plain_river_ruin::before {background-position: 0 96%;}
-.tile.tile_reveal.tile_hill::before {background-position: 20% 96%;}
-.tile.tile_reveal.tile_hill_plateau::before {background-position: 20% 96%;}
-.tile.tile_reveal.tile_hill_wood_river::before {background-position: 20% 96%;}
-.tile.tile_reveal.tile_hill_ruin::before {background-position: 20% 96%;}
-.tile.tile_reveal.tile_hill_lake::before {background-position: 20% 96%;}
-.tile.tile_reveal.tile_hill_wood_lair::before {background-position: 20% 96%;}
-.tile.tile_reveal.tile_swamp::before {background-position: 10% 0;}
-.tile.tile_reveal.tile_swamp_lair::before {background-position: 10% 0;}
-.tile.tile_reveal.tile_swamp_tower::before {background-position: 10% 0;}
+.tile.tile_reveal.tile_forest::before,
+.tile.tile_reveal.tile_forest_tower::before,
+.tile.tile_reveal.tile_forest_lair::before,
+.tile.tile_reveal.tile_forest_dense::before,
+.tile.tile_reveal.tile_forest_ruin::before,
+.tile.tile_reveal.tile_desert::before,
+.tile.tile_reveal.tile_desert_stone::before,
+.tile.tile_reveal.tile_swamp::before,
+.tile.tile_reveal.tile_swamp_lair::before,
+.tile.tile_reveal.tile_swamp_tower::before,
+.tile.tile_reveal.tile_plain::before,
+.tile.tile_reveal.tile_plain_lake::before,
+.tile.tile_reveal.tile_plain_wood::before,
+.tile.tile_reveal.tile_plain_desert::before,
+.tile.tile_reveal.tile_plain_river_ruin::before,
+.tile.tile_reveal.tile_hill::before,
+.tile.tile_reveal.tile_hill_wood_river::before,
+.tile.tile_reveal.tile_hill_ruin::before {
+    background-image: url('img/tiles_forest.png');
+    background-size: 1100% 200%;
+}
+
+.tile.tile_reveal.tile_mountain::before {background-position: 30% 100%;}
+.tile.tile_reveal.tile_mountain_lair::before {background-position: 30% 100%;}
+.tile.tile_reveal.tile_mountain_lake::before {background-position: 30% 100%;}
+.tile.tile_reveal.tile_mountain_wood::before {background-position: 30% 100%;}
+.tile.tile_reveal.tile_mountain_tower::before {background-position: 30% 100%;}
+.tile.tile_reveal.tile_mountain_river::before {background-position: 30% 100%;}
+.tile.tile_reveal.tile_mountain_drakon::before {background-position: 30% 100%;}
+.tile.tile_reveal.tile_plain::before {background-position: 0 100%;}
+.tile.tile_reveal.tile_plain_lake::before {background-position: 10% 100%;}
+.tile.tile_reveal.tile_plain_wood::before {background-position: 20% 100%;}
+.tile.tile_reveal.tile_plain_desert::before {background-position: 30% 100%;}
+.tile.tile_reveal.tile_plain_river_ruin::before {background-position: 40% 100%;}
+.tile.tile_reveal.tile_hill::before {background-position: 50% 100%;}
+.tile.tile_reveal.tile_hill_plateau::before {background-position: 20% 100%;}
+.tile.tile_reveal.tile_hill_wood_river::before {background-position: 60% 100%;}
+.tile.tile_reveal.tile_hill_ruin::before {background-position: 70% 100%;}
+.tile.tile_reveal.tile_hill_lake::before {background-position: 20% 100%;}
+.tile.tile_reveal.tile_hill_wood_lair::before {background-position: 20% 100%;}
+.tile.tile_reveal.tile_swamp::before {background-position: 70% 0;}
+.tile.tile_reveal.tile_swamp_lair::before {background-position: 80% 0;}
+.tile.tile_reveal.tile_swamp_tower::before {background-position: 90% 0;}
 .tile.tile_reveal.tile_forest::before {background-position: 0 0;}
-.tile.tile_reveal.tile_forest_tower::before {background-position: 0 0;}
-.tile.tile_reveal.tile_forest_lair::before {background-position: 0 0;}
-.tile.tile_reveal.tile_forest_dense::before {background-position: 10% 96%;}
-.tile.tile_reveal.tile_forest_ruin::before {background-position: 0 0;}
-.tile.tile_reveal.tile_desert::before {background-position: 20% 0;}
-.tile.tile_reveal.tile_desert_stone::before {background-position: 20% 0;}
+.tile.tile_reveal.tile_forest_tower::before {background-position: 20% 0;}
+.tile.tile_reveal.tile_forest_lair::before {background-position: 10% 0;}
+.tile.tile_reveal.tile_forest_dense::before {background-position: 40% 0;}
+.tile.tile_reveal.tile_forest_ruin::before {background-position: 30% 0;}
+.tile.tile_reveal.tile_desert::before {background-position: 50% 0;}
+.tile.tile_reveal.tile_desert_stone::before {background-position: 60% 0;}
 
 .tile .map-dist-bg {
     position: absolute;
@@ -1407,10 +1446,6 @@ svg.svg-icon {
 
     #map-zone .tile .name {
         font-size: .6em;
-    }
-
-    .map-hex-item {
-        margin: 0.01em 0.01em;
     }
 }
 

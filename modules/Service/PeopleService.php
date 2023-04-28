@@ -74,7 +74,7 @@ class PeopleService implements \JsonSerializable
         return $this->units[$pos] ?? null;
     }
 
-    /** @return array<int, array<int, Unit>> */
+    /** @return array<string, array<int, Unit>> */
     public function getByTypeUnits(): array
     {
         $units = [];
@@ -85,6 +85,11 @@ class PeopleService implements \JsonSerializable
             }
         }
         return $units;
+    }
+
+    public function getUnits(): array
+    {
+        return $this->units;
     }
 
     public function getPopulationAsString(): string
@@ -131,19 +136,22 @@ class PeopleService implements \JsonSerializable
         $this->units[$this->population] = $unit;
         $this->byIds[$unit->getId()] = $this->population;
         $this->byPlace[$unit->getLocation()][] = $this->population;
-        $this->byType[$unit->getType()->getCode()][] = $this->population;
+        $this->byType[CurrentStateService::getStateByMeepleType($unit->getType())][] = $this->population;
 
         $this->population++;
 
         return $this;
     }
 
-    public function freeUnits(): void
+    /** @return array<Unit> */
+    public function freeUnits(): array
     {
         $this->getRepository()->setAllUnitsToStatus(Unit::STATUS_FREE);
         foreach ($this->units as $unit) {
             $unit->setStatus(Unit::STATUS_FREE);
         }
+
+        return $this->units;
     }
 
     /**
@@ -157,7 +165,7 @@ class PeopleService implements \JsonSerializable
 
         // Replace resources array by resource key
         foreach ($list as $tileHarvestResource) {
-            $resources = array_values($terrains[$tileHarvestResource->terrain]->getResources());
+            $resources = $terrains[$tileHarvestResource->terrain]->getResources();
             $byResourceKey = [];
             foreach ($tileHarvestResource->resources as $key => $used) {
                 if ($used === null) break;
@@ -182,10 +190,10 @@ class PeopleService implements \JsonSerializable
     {
         foreach ($this->units as $pos => $test) {
             if ($test->getId() === $unit->getId()) {
-                $locationPos = array_search($pos, $this->byPlace[$unit->getLocation()]);
+                $locationPos = array_search($pos, $this->byPlace[$unit->getLocation()] ?? []);
                 if($locationPos !== false) unset($this->byPlace[$unit->getLocation()]);
 
-                $typePos = array_search($pos, $this->byType[$unit->getType()->getCode()]);
+                $typePos = array_search($pos, $this->byType[$unit->getType()->getCode()] ?? []);
                 if($typePos !== false) unset($this->byType[$unit->getType()->getCode()]);
 
                 unset($this->byIds[$unit->getId()]);

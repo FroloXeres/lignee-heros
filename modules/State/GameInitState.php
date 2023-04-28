@@ -5,6 +5,7 @@ namespace LdH\State;
 use LdH\Entity\Cards\AbstractCard;
 use LdH\Entity\Cards\BoardCardInterface;
 use LdH\Entity\Cards\Deck;
+use LdH\Entity\Cards\Invention;
 use LdH\Entity\Map\City;
 use LdH\Entity\Map\Terrain;
 use LdH\Entity\Meeple;
@@ -19,6 +20,7 @@ class GameInitState extends AbstractState
 
     public const NOTIFY_CITY_START         = 'cityStart';
     public const NOTIFY_CITY_INVENTIONS    = 'cityInventions';
+    public const NOTIFY_START_SPELL_PICKED    = 'ntfyStartSpellPicked';
 
     public static function getId(): int
     {
@@ -49,13 +51,23 @@ class GameInitState extends AbstractState
             $city = GameInitState::getRandomCity($this->terrains);
             $this->getMapService()->updateCity($city);
 
-            // -> Draw city inventions (notify)
             /** @var Deck $inventions */
             $inventions = $this->getDeck(AbstractCard::TYPE_INVENTION);
+
+            // Draw city inventions
+            $startInventions = [];
+            foreach ($inventions->getCards() as $card) {
+                if ($card->getType() === Invention::TYPE_START) {
+                    $startInventions[] = $card;
+                }
+            }
+            $this->getCardService()->moveTheseCardsTo($startInventions);
+
+            // -> Draw city inventions (notify)
             $this->getCardService()->moveTheseCardsTo($city->getInventions());
 
             // Reveal 3 inventions cards from the deck (notify)
-            $inventions->getBgaDeck()->pickCardsForLocation(3, BoardCardInterface::LOCATION_DEFAULT, BoardCardInterface::LOCATION_ON_TABLE, null, true);
+            $inventions->getBgaDeck()->pickCardsForLocation(3, BoardCardInterface::LOCATION_DEFAULT, BoardCardInterface::LOCATION_ON_TABLE, 0, true);
 
             $peopleService = $this->getPeople();
 

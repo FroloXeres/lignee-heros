@@ -4,9 +4,13 @@
 <div id="overall-cards"></div>
 <div id="fullscreen-message"></div>
 <div id="map-zone">
+    <a id="map"></a>
     <div id="zoom" data-zoom="2">
         <i id="zoom_out_icon" class="fa fa-search-minus"></i>
         <i id="zoom_in_icon" class="fa fa-search-plus"></i>
+    </div>
+    <div class="shortcuts">
+        <div><a href="#cards">Go to cards</a></div>
     </div>
     <ul class="map-hex-grid">
         <!-- BEGIN MAP_TILES -->
@@ -28,6 +32,10 @@
     </ul>
 </div>
 <div id="cards-zone">
+    <div class="shortcuts">
+        <div><a href="#map">Go to map</a></div>
+    </div>
+    <a id="cards"></a>
     <div id="new-card"></div>
     <div id="invention">
         <div class="deck" id="invention-deck"></div>

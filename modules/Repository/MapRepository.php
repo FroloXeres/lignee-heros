@@ -52,12 +52,18 @@ class MapRepository extends AbstractRepository
 
     public function harvestTileResource(Tile $tile, Resource $resource): bool
     {
-        $pos = array_search($resource->getCode(), array_keys($tile->getTerrain()->getResources()));
-        $setter = 'setResource'.($pos + 1).'used';
-        $tile->$setter(true);
-
-        if ($pos !== false) {
-            $field = 'tile_resource' . ($pos + 1);
+        $terrainResources = $tile->getTerrain()->getResources();
+        for ($i = 1; $i < 4; $i++) {
+            $getter = 'isResource'.$i.'used';
+            $used = $tile->$getter();
+            if ($terrainResources[$i - 1]->getCode() === $resource->getCode() && !$used) {
+                $setter = 'setResource'.$i.'used';
+                $tile->$setter(true);
+                break;
+            }
+        }
+        if ($i !== 4) {
+            $field = 'tile_resource' . $i;
             return $this->query(
                 sprintf(
                     'UPDATE `%s` SET `%s` = 1 WHERE tile_id = %s',
@@ -86,8 +92,8 @@ class MapRepository extends AbstractRepository
     {
         $fields = ['`tile_terrain` = "'.$terrain->getCode().'"'];
 
-        $resources = array_values($terrain->getResources());
-        for ($i = 1; $i < 3; $i++) {
+        $resources = $terrain->getResources();
+        for ($i = 1; $i <= 3; $i++) {
             $fields[] = '`tile_resource'.$i.'` = '.(array_key_exists($i - 1, $resources) ? '0' : 'NULL');
         }
 

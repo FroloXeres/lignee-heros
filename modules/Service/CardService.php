@@ -190,9 +190,11 @@ class CardService
                 if ($ldhDeck->getType() === AbstractCard::TYPE_LINEAGE) {
                     $ldhCardsData[$codeType][BoardCardInterface::BGA_LOCATION] = $boardCard->getLocation();
                     $ldhCardsData[$ldhCode][BoardCardInterface::BGA_LOCATION_ARG] = $boardCard->getLocationArg();
+                    $bgaCardsData[] = $ldhCardsData[$ldhCode];
+                } else {
+                    // Hide deck content, send empty cards (only for count)
+                    $bgaCardsData[] = $location === BoardCardInterface::LOCATION_DEFAULT ? [true] : $ldhCardsData[$ldhCode];
                 }
-
-                $bgaCardsData[] = $ldhCardsData[$ldhCode];
             }
         }
 

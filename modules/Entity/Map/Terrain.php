@@ -64,12 +64,12 @@ class Terrain implements \JsonSerializable
         $this->name    = $name;
         $this->food    = $food;
         $this->science = $science;
-
-        foreach ($resources as $resource) {
-            if ($resource instanceof Resource) {
-                $this->resources[$resource->getCode()] = $resource;
-            }
-        }
+        $this->resources = $resources;
+        //foreach ($resources as $resource) {
+        //    if ($resource instanceof Resource) {
+        //        $this->resources[$resource->getCode()] = $resource;
+        //    }
+        //}
     }
 
     /**
@@ -212,7 +212,7 @@ class Terrain implements \JsonSerializable
             'name'      => $this->getName(),
             'food'      => $this->getFood(),
             'science'   => $this->hasScience(),
-            'resources' => array_keys($this->getResources()),
+            'resources' => array_map(fn(Resource $resource) => $resource->getCode(), $this->getResources()),
             'bonuses'   => $this->getBonuses(),
             'bonusAsTxt'     => join('', $this->getBonuses())
         ];

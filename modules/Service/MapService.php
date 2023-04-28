@@ -33,9 +33,9 @@ class MapService
         $this->mapRepository->updateCity($city);
     }
 
-    public function harvestResource(Tile $tile, Resource $resource): void
+    public function harvestResource(Tile $tile, Resource $resource): bool
     {
-        $this->mapRepository->harvestTileResource($tile, $resource);
+        return $this->mapRepository->harvestTileResource($tile, $resource);
     }
 
     public function renewResources(): void
@@ -300,11 +300,9 @@ class MapService
                 $terrain = $terrains[$code];
                 $tile->setTerrain($terrain);
 
-                $i = 1;
-                foreach ($terrain->getResources() as $resource) {
+                for ($i = 1; $i <= count($terrain->getResources()); $i++) {
                     $setter = 'setResource'.$i.'used';
                     $tile->$setter(false);
-                    $i++;
                 }
             }
         }
