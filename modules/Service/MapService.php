@@ -6,6 +6,8 @@ use LdH\Entity\Map\City;
 use LdH\Entity\Map\Resource;
 use LdH\Entity\Map\Terrain;
 use LdH\Entity\Map\Tile;
+use LdH\Object\Coordinate;
+use LdH\Object\SimpleTile;
 use LdH\Repository\MapRepository;
 
 class MapService
@@ -15,10 +17,16 @@ class MapService
     /** @var Terrain[] */
     protected array         $terrains;
     protected MapRepository $mapRepository;
+    protected ?array $simpleTiles = null;
 
     public function __construct()
     {
         $this->mapRepository = new MapRepository(Tile::class);
+    }
+
+    public static function buildSimpleTile(Tile $tile): SimpleTile
+    {
+        return new SimpleTile($tile->getId(), $tile->getX(), $tile->getY(), $tile->isFlip());
     }
 
     public function setTerrains(array $terrains): self
@@ -67,6 +75,19 @@ class MapService
             $this->mapRepository->getMapTiles($onlyRevealed),
             $terrains
         );
+    }
+
+    /** @return SimpleTile[] */
+    public function getSimpleMap(): array
+    {
+        if ($this->simpleTiles === null) {
+            $this->simpleTiles = [];
+            foreach ($this->getMapTiles() as $tile) {
+                $simpleTile = self::buildSimpleTile($tile);
+                $this->simpleTiles[$simpleTile->key()] = $simpleTile;
+            }
+        }
+        return $this->simpleTiles;
     }
 
     public function getCentralTile(): ?Tile
@@ -217,7 +238,7 @@ class MapService
             }
             if ($y < $yStart - $limit) {$y = -1;}
 
-            $distance = max(abs($y), abs($x), abs(-$x - $y));
+            $distance = self::getDistanceFromCenter($x, $y);
             $disabled = $distance > $limit;
             $flip     = !$x && !$y;     // Center is town (visible at the beginning)
             $tile     = new Tile($id, $x, $y, $distance, $disabled, $flip);
@@ -229,6 +250,16 @@ class MapService
         }
 
         return $tiles;
+    }
+
+    public static function isTooFar(Coordinate $position): bool
+    {
+        return self::getDistanceFromCenter($position->x, $position->y) > self::DEFAULT_RADIUS;
+    }
+
+    public static function getDistanceFromCenter(int $x, int $y): int
+    {
+        return max(abs($y), abs($x), abs(-$x - $y));
     }
 
     /**

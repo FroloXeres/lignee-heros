@@ -71,7 +71,7 @@ class EndOfEndTurnState extends AbstractState
             ]);
 
             // Can master a spell
-            $this->setGameStateValue(CurrentStateService::GLB_SPELL_MASTERED, false);
+            $this->setGameStateValue(CurrentStateService::GLB_SPELL_MASTERED, '0');
 
             // Next turn
             $this->incGameStateValue(CurrentStateService::GLB_TURN_LFT, -1);

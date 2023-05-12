@@ -176,7 +176,7 @@ class CardService
         $bgaCardsData = [];
         $ldhCardsData = $ldhDeck->cardsDataByCode($playerId);
 
-        foreach ($ldhDeck->getCards() as $card) {
+        foreach ($ldhDeck->getCards($location !== BoardCardInterface::LOCATION_DEFAULT) as $card) {
             $boardCards = $card->getBoardCardsByLocation($location, $stateId, $playerId);
             if (empty($boardCards)) {
                 continue;

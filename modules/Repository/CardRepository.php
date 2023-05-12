@@ -8,6 +8,7 @@ use LdH\Entity\Cards\Objective;
 use LdH\Entity\Cards\Spell;
 use LdH\Entity\Meeple;
 use LdH\Entity\Unit;
+use LdH\Object\MapUnit;
 use LdH\Object\TileHarvestResources;
 use LdH\Object\UnitOnMap;
 
@@ -26,6 +27,36 @@ class CardRepository extends AbstractCardRepository
             $this->table,
             join(', ', $this->getFieldNames(['type', 'location']))
         ));
+    }
+
+    /** @return array<MapUnit> */
+    public function getFreeUnitPositions(?int $unitId = null): array
+    {
+        if ($this->class !== Unit::class) return [];
+
+        $qry = sprintf(
+            "SELECT `card_id`, `tile_id`, `tile_x`, `tile_y`
+                    FROM `meeple` m 
+                        JOIN `map` mp ON m.card_location = 'map' AND m.card_location_arg = mp.tile_id
+                    WHERE `meeple_status` = '%s'",
+            Unit::STATUS_FREE
+        );
+        if ($unitId !== null) {
+            $qry .= ' AND `card_id` = ' . $unitId;
+        }
+        $units = $this->getObjectListFromDB($qry);
+
+        $freeUnits = [];
+        foreach ($units as $unit) {
+            $freeUnits[] = new MapUnit(
+                (int) $unit['card_id'],
+                (int) $unit['tile_id'],
+                (int) $unit['tile_x'],
+                (int) $unit['tile_y']
+            );
+        }
+
+        return $freeUnits;
     }
 
     /** @return array<int, int> */

@@ -236,6 +236,7 @@ class ligneeheros extends Table
         $this->setGameStateValue(CurrentStateService::GLB_LIFE, CurrentStateService::START_LIFE);
         $this->setGameStateValue(CurrentStateService::GLB_WAR_PWR, CurrentStateService::START_WAR_PWR);
         $this->setGameStateValue(CurrentStateService::GLB_CTY_DFS, CurrentStateService::START_CTY_DFS);
+        $this->setGameStateValue(CurrentStateService::GLB_MOVE, CurrentStateService::START_MOVE);
     }
 
     private function initStats()
@@ -315,6 +316,10 @@ class ligneeheros extends Table
 
         // Meeples
         $result['meeples'] = $this->meeples;
+        $result['moves'] = $this->getPeople()->getUnitPossibleMoves(
+            $this->getMapService()->getSimpleMap(),
+            (int) $this->getGameStateValue(CurrentStateService::GLB_MOVE)
+        );
         $result['people'] = $this->getPeople();
 
         // TODO: Gather all information about current game situation (visible by player $current_player_id).

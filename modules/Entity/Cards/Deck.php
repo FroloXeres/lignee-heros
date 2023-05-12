@@ -76,8 +76,13 @@ class Deck implements \Iterator
     /**
      * @return AbstractCard[]
      */
-    public function getCards(): array
+    public function getCards(bool $orderedByName = false): array
     {
+        if ($orderedByName) {
+            usort($this->cards, function(AbstractCard $a, AbstractCard $b) {
+                return $a->getName() > $b->getName() ? 1 : ($a->getName() < $b->getName() ? -1 : 0);
+            });
+        }
         return $this->cards;
     }
 
@@ -243,7 +248,10 @@ class Deck implements \Iterator
                     BoardCardInterface::LOCATION_HAND
                 ];
             case AbstractCard::TYPE_LINEAGE:
-                $locations = [BoardCardInterface::LOCATION_DEFAULT];
+                $locations = [];
+                if ($stateId === ChooseLineageState::ID) {
+                    $locations[] = BoardCardInterface::LOCATION_DEFAULT;
+                }
                 if ($stateId >= ChooseLineageState::ID)  {
                     $locations[] = BoardCardInterface::LOCATION_HAND;
                 }

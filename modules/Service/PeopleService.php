@@ -5,6 +5,9 @@ namespace LdH\Service;
 use LdH\Entity\Cards\AbstractCard;
 use LdH\Entity\Cards\BoardCardInterface;
 use LdH\Entity\Map\Terrain;
+use LdH\Object\Coordinate;
+use LdH\Object\MapUnit;
+use LdH\Object\SimpleTile;
 use LdH\Object\TileHarvestResources;
 use LdH\Repository\CardRepository;
 use LdH\Entity\Unit;
@@ -122,6 +125,83 @@ class PeopleService implements \JsonSerializable
         $this->bgaDeck = $bgaDeck;
 
         return $this;
+    }
+
+    /**
+     * @param array<SimpleTile> $simpleMap
+     *
+     * @return array<int, array<int>>
+     */
+    public function getUnitPossibleMoves(array $simpleMap, int $maxMove, ?int $unitId = null): array
+    {
+        $freeUnitPositions = $this->getRepository()->getFreeUnitPositions($unitId);
+
+        $moves = [];
+        $paths = [];
+        foreach ($freeUnitPositions as $freeUnit) {
+            if (!array_key_exists($freeUnit->tileId, $paths)) {
+                $paths[$freeUnit->tileId] = [];
+                $this->pathfinder($paths[$freeUnit->tileId], $simpleMap, $freeUnit->position, $maxMove);
+
+                if (array_key_exists($freeUnit->position->key(), $paths[$freeUnit->tileId]))
+                    unset($paths[$freeUnit->tileId][$freeUnit->position->key()]);
+            }
+
+            $moves[$freeUnit->unitId] = $paths[$freeUnit->tileId];
+        }
+
+        return array_map(function(array $positions) use($simpleMap) {
+            return array_map(
+                function(string $key) use($simpleMap) {
+                    return $simpleMap[$key]->tileId;
+                },
+                array_keys($positions)
+            );
+        }, $moves);
+    }
+
+
+
+    /**
+     * @param array<SimpleTile> $simpleMap
+     *
+     * @return array<Coordinate>
+     */
+    protected function pathfinder(array &$paths, array $simpleMap, Coordinate $position, int $moveLeft): void
+    {
+        foreach ($this->getAround($position) as $target) {
+            $alreadyThere = array_key_exists($target->key(), $paths);
+            !$alreadyThere && $paths[$target->key()] = $target;
+            if (!$alreadyThere && $moveLeft && $simpleMap[$target->key()]->revealed) {
+                $this->pathfinder($paths, $simpleMap, $target, $moveLeft - 1);
+            }
+        }
+    }
+
+    /** @return array<Coordinate> */
+    protected function getAround(Coordinate $position): array
+    {
+        $around = [];
+
+        $toX = new Coordinate($position->x + 1, $position->y);
+        if (!MapService::isTooFar($toX)) $around[] = $toX;
+
+        $farX = new Coordinate($position->x - 1, $position->y);
+        if (!MapService::isTooFar($farX)) $around[] = $farX;
+
+        $toY = new Coordinate($position->x, $position->y + 1);
+        if (!MapService::isTooFar($toY)) $around[] = $toY;
+
+        $farY = new Coordinate($position->x, $position->y - 1);
+        if (!MapService::isTooFar($farY)) $around[] = $farY;
+
+        $toXfarY = new Coordinate($position->x + 1, $position->y - 1);
+        if (!MapService::isTooFar($toXfarY)) $around[] = $toXfarY;
+
+        $farXtoY = new Coordinate($position->x - 1, $position->y + 1);
+        if (!MapService::isTooFar($farXtoY)) $around[] = $farXtoY;
+
+        return $around;
     }
 
     public function setMeeples(array $meeples): self

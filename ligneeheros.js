@@ -103,6 +103,7 @@ class Utility {
 
 class Animation {
     static TYPE_UNIT_MOVE = 'moveUnit';
+    static TYPE_UNIT_WHEEL = 'unitWheel';
     static TYPE_UNIT_ACT = 'actUnit';
     static TYPE_UNIT_DIED = 'diedUnit';
     static TYPE_UPDATE_CARTRIDGE = 'updateCartridge';
@@ -111,6 +112,7 @@ class Animation {
     static TYPE_CARD_ACTIVATE = 'activateCard';
     static TYPE_CARD_DISABLE = 'disableCard';
     static TYPE_CARD_DRAW = 'drawCard';
+    static TYPE_CARD_DISTRIBUTE = 'distributeCard';
 
     type = null;
 
@@ -137,8 +139,8 @@ class Animation {
         this.callback = callback;
 
         switch (this.type) {
-            case Animation.TYPE_UNIT_ACT: this.unitAct(callback); break;
-            case Animation.TYPE_MOVE_TO_CARTRIDGE: this.moveToCartridge(callback); break;
+            case Animation.TYPE_UNIT_ACT: this.unitAct(); break;
+            case Animation.TYPE_MOVE_TO_CARTRIDGE: this.moveToCartridge(); break;
             default:
                 console.log("Animate ["+this.type+"] of #" + this.subject);
                 this.onAnimationEnd();
@@ -156,13 +158,13 @@ class Animation {
     }
 
     /** Unit change zone and flip from "moved/free" to "acted" */
-    unitAct(callback) {
+    unitAct() {
         console.log('Unit act' + this.subject.id);
 
-        callback();
+        this.onAnimationEnd();
     }
 
-    moveToCartridge(callback) {
+    moveToCartridge() {
         let $start = game.map.getTileResourceDom(this.subject, this.target);
         if ($start === null) return ;
 
@@ -171,10 +173,14 @@ class Animation {
 
         game.slideTemporaryObject(Utility.getWrappedIcon(this.target), 'floating-cards', $start, $end, this.duration, 0);
 
-        callback();
+        this.onAnimationEnd();
     }
 }
 class CartridgeAnimation extends Animation {
+    constructor(subject, target, duration) {
+        super(Animation.TYPE_UPDATE_CARTRIDGE, subject, target, duration);
+    }
+
     // this.subject is Cartridge class
     // this.target is key/state object
 
@@ -212,6 +218,32 @@ class CartridgeAnimation extends Animation {
         super.onAnimationEnd();
     }
 }
+class DistributeCardAnimation extends Animation {
+    constructor(subject, target, duration) {
+        super(Animation.TYPE_CARD_DISTRIBUTE, subject, target, duration);
+    }
+
+    // this.subject is CardManager
+    // this.target is card cards/type/location object
+
+    animate(callback) {
+        this.callback = callback;
+
+        let wait = 500;
+        let $deck = document.getElementById(this.target.type + '-' + this.target.location);
+        let deckExists = $deck !== null && $deck.innerHTML.length;
+
+        !deckExists && this.subject.createDeck(this.target.type, this.target.cards.length, 'overall-cards', false);
+        this.target.cards.forEach((card) => {
+            this.timers.push(
+                window.setTimeout(() => this.subject.moveCardFromDeckToLocation(card, this.target.type, this.target.location, deckExists), wait)
+            );
+            wait += 1000;
+        });
+
+        this.timers.push(window.setTimeout(() => this.onAnimationEnd(), wait));
+    }
+}
 
 class Animator {
     toAnimate = [];
@@ -234,9 +266,8 @@ class Animator {
 
     launchAnimations() {
         if (this.toAnimate.length) {
-            this.animation = this.toAnimate.shift();
-
             this.animationInProgress = true;
+            this.animation = this.toAnimate.shift();
             this.animation.animate(() => {
                 // End of animation
                 this.animation = null;
@@ -249,23 +280,354 @@ class Animator {
 }
 
 class Cards {
+    static VISIBLE_DECKS = ['invention', 'spell'];
+
     /** @param {Animator} animator */
     animator = null;
 
-    decks = null;
+    /** @param {bgagame.ligneeheros} game */
+    game = null;
 
-    constructor(animator) {
+    decks = null;
+    cards = {};
+    indexed = {
+        invention: {
+            onTable: {},
+            hand: {}
+        },
+        spell: {
+            onTable: {},
+            hand: {}
+        },
+        lineage: {
+            onTable: {},
+            hand: {}
+        },
+        objective: {
+            hand: {}
+        }
+    };
+
+    cardZones = {
+        invention: {deck: null, onTable: null, hand: null},
+        spell: {deck: null, onTable: null, hand: null},
+        floating: null,
+        overall: null,
+    };
+
+    /**
+     * @param {bgagame.ligneeheros} game
+     * @param {Animator} animator
+     */
+    constructor(game, animator) {
+        this.game = game;
         this.animator = animator;
     }
 
     init(decks) {
         this.decks = decks;
+        this.initZones();
+
+    }
+
+    initZones() {
+        for (let type in this.cardZones) {
+            for (let location in this.cardZones[type]) {
+                this.cardZones[type][location] = this.createZone(type+'-'+location);
+            }
+        }
+
+        // Floating-cards
+        this.cardZones.floating = this.createZone('floating-cards');
+        this.cardZones.overall = this.createZone('overall-cards');
+    }
+    createZone(code) {
+        const _self = this;
+        let zone = new ebg.zone();
+        zone.create(this.game, code);
+        zone.setPattern('custom');
+        switch (code) {
+            case 'floating-cards':
+                zone.itemIdToCoords = this.lineageCardZoneCoords;
+                break;
+            case 'spell-deck':
+            case 'invention-deck':
+            case 'overall-cards':
+                zone.itemIdToCoords = function() {return {x: 0, y: 0, w: 155, h: 245};};
+                break;
+            default:
+                zone.itemIdToCoords = this.cardZoneCoords;
+        }
+        this.addConditionalCheck(zone, 'updateDisplay', () => !_self.game.isInitializing);
+
+        return zone;
+    }
+
+    // Zone coords
+    lineageCardZoneCoords(i, zoneWidth, zoneHeight, count) {
+        this.item_margin = 15;
+        let cardWidth = 228;
+        let pileCnt = Math.floor((zoneWidth + this.item_margin) / (cardWidth + this.item_margin));
+        let modulo = i % pileCnt;
+        let line = Math.floor(i / pileCnt);
+        return {
+            x: modulo * (cardWidth + this.item_margin),
+            y: line * (356 + this.item_margin),
+            w: cardWidth,
+            h: 356
+        };
+    }
+    cardZoneCoords(i, zoneWidth, zoneHeight, count) {
+        let cardWidth = 155;
+        let pileCnt = Math.floor((zoneWidth + this.item_margin) / (cardWidth + this.item_margin));
+        let modulo = i % pileCnt;
+        let line = Math.floor(i / pileCnt);
+        return {
+            x: modulo * (cardWidth + this.item_margin) + (this.item_margin * (line - 1)),
+            y: line * 30,
+            w: cardWidth,
+            h: 245
+        };
+    }
+
+    /**
+     * @param {Object}   object         Object
+     * @param {String}   method         Method of object on witch condition is applied
+     * @param {function} conditional    Conditional method
+     */
+    addConditionalCheck(object, method, conditional){
+        const existingMethod = object[method];
+        object[method] = function () {
+            if (conditional()) {
+                existingMethod.call(object);
+            }
+        };
+    }
+
+    // Lineages
+    initPlayerLineages(lineages, objectives = null){
+        const _self = this;
+        lineages.forEach(function(lineage) {
+            _self.initPlayerLineage(lineage);
+        });
+
+        if (objectives.length && objectives[0].id) {
+            this.initPlayerObjective(objectives[0]);
+        }
+    }
+    initPlayerLineage(lineage){
+        if (lineage.location_arg === this.player_id) {
+            this.playerLineage = lineage;
+        }
+
+        const _self = this;
+        lineage = Utility.replaceIconsInObject(lineage);
+        const lineageBoard = _self.game.format_block('jstpl_lineage_board', {
+            playerId: lineage.location_arg,
+            name: lineage.name,
+            lineageIcon: Utility.getIconAsText('lineage'),
+            meeple: Utility.getIconAsText(lineage.meeple),
+            meeplePower: lineage.meeplePower,
+            objectiveCompleted: lineage.completed ? 'icon-complete' : '',
+            objectiveIcon: Utility.getIconAsText('objective'),
+            objective: lineage.objective,
+            leader: lineage.leader ? 'leader' : '',
+            leadingIcon: Utility.getIconAsText('leading'),
+            leadTypeIcon: Utility.getIconAsText(lineage.leadType),
+            leadType: lineage.leadType,
+            leadPower: lineage.leadPower
+        });
+
+        dojo.place(lineageBoard, 'overall_player_board_' + lineage.location_arg, 'end');
+    }
+    initPlayerObjective(objective) {
+        const qryPic = '#overall_player_board_' + this.game.player_id + ' .hidden-one picture';
+        const qryLabel = '#overall_player_board_' + this.game.player_id + ' .hidden-one label';
+
+        objective = Utility.replaceIconsInObject(objective);
+        const $pic = dojo.query(qryPic);
+        if ($pic.length) {
+            $pic[0].title = objective.name;
+            $pic[0].className = objective.completed ? 'icon-complete' : '';
+            $pic[0].innerHTML = Utility.getIconAsText(objective.icon);
+        }
+
+        const $label = dojo.query(qryLabel);
+        if ($label.length) {
+            $label[0].innerHTML = objective.text;
+        }
+    }
+
+    indexCards(cards) {
+        for (let type in cards) {
+            for (let location in cards[type]) {
+                this.indexed[type][location] = {};
+                for (let key in cards[type][location]) {
+                    const card = cards[type][location][key];
+                    card.location = location;
+                    this.cards[card.id] = card;
+                    this.indexed[type][location][card.id] = document.getElementById(card.id);
+                }
+            }
+        }
+    }
+
+    createDeck(type, count, place = 'new-card', moveInZone = true) {
+        let deck        = this.decks[type];
+        let deckContent = this.game.format_block('jstpl_card_verso', {
+            large: deck.large ? 'large' : '',
+            canDraw: deck.canDraw ? 'inactive' : '',
+            type: type,
+            name: deck.name,
+            count: count
+        });
+        dojo.place(deckContent, place);
+
+        if (moveInZone) {
+            this.cardZones[type]['deck'].placeInZone('deck-' + type, 0);
+        }
+    }
+    createCardsInLocation(cards, type, location) {
+        const _self = this;
+        let flip = type === 'lineage' || type === 'objective';
+        cards.forEach(function(card) {
+            let cardId = _self.createCardInLocation(card, type, location, 'new-card', flip);
+            _self.moveCardToZone(card, cardId, type, location);
+        });
+    }
+    moveCardToZone(card, cardId, type, location) {
+        const target = !['invention', 'spell'].includes(type) ? this.cardZones.floating : this.cardZones[type][location];
+        target.placeInZone(cardId, this.getPriorityByCard(card));
+    }
+    createCardInLocation(card, type, location, where, flip = false) {
+        let cardId = card.id;0
+        let cardTpl = Utility.replaceIconsInObject(card);
+        cardTpl.textAsIcons = (cardTpl.text.indexOf('svg') !== -1) ? 'text_as_icon' : '';
+
+        let cardContent = this.game.format_block('jstpl_card_recto', cardTpl);
+        cardContent = cardContent.replaceAll('[none]', '');
+
+        const iconify = ['lineage', 'objective', 'spell', 'invention'];
+        if (iconify.includes(card.deck)) {
+            cardContent = cardContent.replaceAll('['+card.icon+']', Utility.getIconAsText(card.icon));
+            ['science', 'fight', 'city', 'growth', 'nature', 'spell', 'healing', 'foresight', 'science'].forEach(
+                (iconId) => cardContent = cardContent.replace('['+iconId+']', Utility.getIconAsText(iconId))
+            );
+        }
+        if (card.deck === 'lineage') {
+            ['objective', 'leading', 'fight', 'end_turn', card.meeple].forEach(
+                (iconId) => cardContent = cardContent.replace('['+iconId+']', Utility.getIconAsText(iconId))
+            );
+        }
+
+        if (flip) {
+            cardTpl.deckType = type;
+            let versoContent = this.game.format_block('jstpl_card_recto_back', cardTpl);
+            let $div = document.createElement('div');
+            let $divInner = document.createElement('div');
+            cardId = 'flip-' + card.id;
+            $div.id = cardId;
+            $div.classList.add('flip');
+            $divInner.classList.add('flip-inner');
+            $divInner.innerHTML = versoContent + cardContent;
+            $div.appendChild($divInner);
+            document.getElementById(where).appendChild($div);
+            this.cardZones.overall.placeInZone(cardId, 0);
+
+            window.setTimeout(() => document.getElementById(cardId).classList.add('flipped'), 100);
+        } else {
+            dojo.place(cardContent, where);
+        }
+
+        return cardId;
+    }
+    moveCardFromDeckToLocation(card, type, location, deckExists = false) {
+        let deckId = 'deck-' + type;
+        let $deck = document.getElementById(deckId);
+        let counter = this.changeDeckCounter($deck, -1);
+        let cardId = this.createCardInLocation(card, type, location, deckExists ? deckId : 'overall-cards', !deckExists);
+        this.moveCardToZone(card, cardId, type, location);
+
+        if (!counter) {
+            $deck.remove();
+        }
+    }
+    changeDeckCounter($deck, change, absolute = false) {
+        let $counter = $deck.getElementsByClassName('counter')[0];
+        let newCounter;
+
+        if (absolute) {
+            $counter.innerHTML = change;
+        } else {
+            let counter = parseInt($counter.innerHTML);
+            newCounter = counter + change;
+            $counter.innerHTML = newCounter;
+        }
+
+        return absolute ? change : newCounter;
+    }
+    getPriorityByCard(card) {
+        let priority;
+        switch (card.type) {
+            default: priority = 10;
+        }
+        priority += card.name.charCodeAt(0);
+
+        return priority;
+    }
+
+    createOrUpdateDeck(type, cardLength) {
+        let deckId = 'deck-' + type;
+        let $deck = document.getElementById(deckId);
+        if ($deck !== null) {
+            this.changeDeckCounter($deck, cardLength, true);
+        } else {
+            this.createDeck(type, cardLength);
+        }
+    }
+
+    checkForCard(type, location, card) {
+        if (this.indexed[type][location][card.id] === undefined) {
+            // New card
+            this.createCardInLocation(card, type, location, 'new-card');
+            this.moveCardToZone(card, card.id, type, location);
+        } else {
+            // Remove card?
+            console.log('Have to remove card', card);
+        }
+    }
+
+    removeCards(toDestroy) {
+        for (let cardId in toDestroy) {
+            document.getElementById(cardId).remove();
+        }
     }
 
     update(cards, animate = false) {
-        console.log(cards);
+        cards?.lineage?.hand?.length && this.initPlayerLineages(cards.lineage.hand, cards?.objective?.hand);
+        cards?.lineage?.deck?.length && this.animator.addAnimation(
+            new DistributeCardAnimation(this, {cards: cards.lineage.deck, type: 'lineage', location: 'deck'})
+        );
 
+        for (const [type, locations] of Object.entries(cards)) {
+            if (['lineage', 'objective'].includes(type)) continue;
 
+            for (const [location, cardList] of Object.entries(locations)) {
+                if (location === 'deck') {
+                    this.createOrUpdateDeck(type, cardList.length);
+                } else {
+                    let cardsToRemove = Object.assign({}, this.indexed[type][location]); // Clone
+                    cardList.forEach(card => {
+                        cardsToRemove[card.id] !== undefined && delete cardsToRemove[card.id];
+
+                        this.checkForCard(type, location, card);
+                    });
+                    this.removeCards(cardsToRemove);
+                }
+            }
+        }
+
+        this.indexCards(cards);
     }
 }
 
@@ -374,7 +736,6 @@ class Cartridge {
 
         if (animate && this.$state.count[state] !== null) {
             this.animator.addAnimation(new CartridgeAnimation(
-                Animation.TYPE_UPDATE_CARTRIDGE,
                 this,
                 {key: key, state: state},
                 Cartridge.ANIMATION_DURATION
@@ -405,6 +766,146 @@ class Cartridge {
     }
 }
 
+class UnitWheel extends EventTarget {
+    static EVENT_CREATE_WHEEL = 'createWheelEvent';
+    static EVENT_CLOSE_WHEEL = 'closeWheelEvent';
+    $unitWheel = null;
+    $wheel = null;
+    $all = null;
+
+    origin = {x: 0, y: 0};
+    $parent = null;
+    $units = [];
+    unitStyles = null;
+    unitWidth = {};
+    onSelect = null;
+
+    constructor() {
+        super();
+
+        this.unitStyles = new Map();
+        this.$unitWheel = document.getElementById('unitWheels');
+        this.$wheel = this.$unitWheel.querySelector('.wheel');
+        this.$all = this.$unitWheel.querySelector('#selectAll');
+
+        this.$unitWheel.addEventListener(UnitWheel.EVENT_CLOSE_WHEEL, (event) => this.closeWheel(event));
+        this.$unitWheel.addEventListener('click', (event) => this.onClickWheel(event));
+        this.$all.addEventListener('click', (event) => this.onSelectAll(event), true);
+        this.addEventListener(UnitWheel.EVENT_CREATE_WHEEL, (event) => this.createWheel(event));
+    }
+
+    onSelectAll(event) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        let selectedCount = this.$wheel.getElementsByClassName('selected').length;
+        let hasToSelectAll = selectedCount < this.$units.length;
+        for (let $unit of this.$units) {
+            if (
+                (hasToSelectAll && !$unit.classList.contains('selected'))
+                || (!hasToSelectAll && $unit.classList.contains('selected'))
+            ) {
+                this.onSelect($unit);
+            }
+            if ($unit.classList.contains('selected')) selectedCount++;
+        }
+        this.updateSelectedCount();
+
+        return false;
+    }
+
+    updateSelectedCount() {
+        let count = this.$wheel.getElementsByClassName('selected').length;
+        for (let $unit of this.$units) {
+            if (!count) {
+                delete $unit.dataset.selected;
+            } else {
+                $unit.dataset.selected = count;
+            }
+        }
+    }
+
+    onClickWheel(event) {
+        let $unit = event.target.closest('.wrapped-icon');
+        if ($unit !== null) {
+            this.onSelect($unit);
+            this.updateSelectedCount();
+        } else {
+            this.closeWheel();
+        }
+    }
+
+    updateWheel(count, elementWidth) {
+        let widthNeeded = count * 1.5 * elementWidth;
+        let diameter = Math.round(widthNeeded / Math.PI);
+        let radius = diameter / 2;
+        this.$wheel.style.width = diameter + 'px';
+        this.$wheel.style.height = diameter + 'px';
+        let surfacePos = this.$unitWheel.getBoundingClientRect();
+        this.$wheel.style.left = (this.origin.x - (surfacePos.left + window.scrollX) - radius) + 'px';
+        this.$wheel.style.top = (this.origin.y - (surfacePos.top + window.scrollY) - radius) + 'px';
+
+        let origin = {x: radius, y: radius};
+        let currentPosition = {x: radius, y: radius * 2};
+        let ange = (360 / count) * (Math.PI / 180);
+        for (let $unit of this.$units) {
+            currentPosition = this.getNextPosition(origin, currentPosition, ange);
+            $unit.style.left = (currentPosition.x - (this.unitWidth.width / 2)) + 'px';
+            $unit.style.top = (currentPosition.y - (this.unitWidth.width / 2)) + 'px';
+        }
+    }
+
+    getNextPosition(origin, current, angle) {
+        let cosAngle = Math.cos(angle);
+        let sinAngle = Math.sin(angle);
+        let xWidth = current.x - origin.x;
+        let yWidth = current.y - origin.y;
+        let x = (xWidth * cosAngle) - (yWidth * sinAngle) + origin.x;
+        let y = (xWidth * sinAngle) + (yWidth * cosAngle) + origin.y;
+        return {x: parseInt(x), y: parseInt(y)};
+    }
+
+    createWheel(event) {
+        let $unit = event.detail.$unit;
+        this.origin = {x: event.detail.click.pageX, y: event.detail.click.pageY};
+        this.onSelect = event.detail.select;
+
+        let isUnitStack = $unit.hasAttribute('data-count');
+        if (isUnitStack) {
+            let brotherSelector = '.wrapped-icon.'+event.detail.unit.status;
+            this.$parent = $unit.parentElement;
+            this.$units = this.$parent.querySelectorAll(brotherSelector);
+
+            this.openWheel();
+            this.updateSelectedCount();
+        } // Else
+    }
+
+    openWheel(event) {
+        let $firstUnit = this.$units.item(0);
+        this.unitWidth = $firstUnit.firstChild.getBoundingClientRect();
+
+        this.$unitWheel.classList.add('open');
+
+        for (const [key, $unit] of Object.entries(this.$units)) {
+            this.unitStyles.set(key, {width: $unit.style.width, height: $unit.style.height, top: $unit.style.top, left: $unit.style.left});
+            $unit.style.width = this.unitWidth.width + 'px';
+            $unit.style.height = this.unitWidth.height + 'px';
+
+            this.$wheel.append($unit);
+        }
+        this.updateWheel(this.$units.length + 1, this.unitWidth.width);
+    }
+    closeWheel() {
+        for (const [key, $unit] of Object.entries(this.$units)) {
+            for (const [style, value] of Object.entries(this.unitStyles.get(key))) {
+                $unit.style[style] = value;
+            }
+            this.$parent.append($unit);
+        }
+        this.$unitWheel.classList.remove('open');
+    }
+}
 class LdhMap {
     static ZONES = ['warrior', 'worker', 'mage', 'savant', 'lineage'];
 
@@ -414,6 +915,7 @@ class LdhMap {
     people = null;
 
     mapZones = [];
+    unitWheel = null;
 
     revealed = [];
     terrains = [];
@@ -436,6 +938,7 @@ class LdhMap {
         this.revealed = revealed;
         this.terrains = terrains;
         this.resources = resources;
+        this.unitWheel = new UnitWheel();
     }
     initUnits(meeple) {
         this.people.init(meeple);
@@ -483,9 +986,36 @@ class LdhMap {
         }
 
         this.initMapZones();
+        this.initEvents();
         this.initZoom();
         this.scrollToTile(0, 0);
     }
+
+    initEvents() {
+        const $unitZones = document.querySelectorAll('.tile:not(.tile_disabled) .map-explore');
+        for (let $zone of $unitZones) {
+            $zone.addEventListener('click', (event) => {
+                let $unit = event.target.closest('.wrapped-icon');
+                if ($unit !== null) {
+                    this.people.onSelectUnit($unit);
+                    this.unitWheel.dispatchEvent(
+                        new CustomEvent(
+                            UnitWheel.EVENT_CREATE_WHEEL,
+                            {
+                                detail: {
+                                    click: event,
+                                    $unit: $unit,
+                                    unit: this.people.getUnitById(People.guessUnitId($unit)),
+                                    select: ($unit) => this.people.onSelectUnit($unit)
+                                }
+                            }
+                        )
+                    );
+                }
+            });
+        }
+    }
+
 
     getTileResourceDom(tileId, resourceCode = null) {
         return resourceCode !== null ?
@@ -664,12 +1194,15 @@ class People {
 
     meeple = {};
     playerUnit = {};
+    selectedUnits = {};
     byTile = {};
     byType = {};
     byStatus = {};
     harvesters = {};
     byId = {};
     units = [];
+    $units = [];
+    events = [];
 
     /**
      * @param {LdhMap} map
@@ -678,6 +1211,25 @@ class People {
     constructor(map, animator) {
         this.animator = animator;
         this.map = map;
+    }
+
+    static guessUnitId($unit) {
+        if ($unit instanceof Element && $unit.classList.contains('wrapped-icon')) {
+            return parseInt($unit.id.replace('unit-', ''));
+        }
+        return null;
+    }
+
+    selectUnit($unit, unit) {
+        if (this.selectedUnits[unit.id] !== undefined) {
+            // Unselect this unit
+            $unit.classList.remove('selected');
+            delete this.selectedUnits[unit.id];
+        } else {
+            // Select this unit
+            $unit.classList.add('selected');
+            this.selectedUnits[unit.id] = unit;
+        }
     }
 
     init(types)  {
@@ -714,6 +1266,15 @@ class People {
         }
 
         return diedUnits;
+    }
+
+    getUnitById(unitId) {
+        if (this.byId[unitId] !== undefined) {
+            return this.units[
+                this.byId[unitId]
+            ];
+        }
+        return null;
     }
 
     updateUnits(units) {
@@ -775,7 +1336,7 @@ class People {
             }
         } else {
             // Add new unit to map
-            this.createUnit(unit.type, domUnitId, unit.status);
+            this.createUnit(unit.type, domUnitId, unit.status, unit.id);
             zone.placeInZone(domUnitId, this.getPriorityByUnitStatus(unit.status));
         }
 
@@ -809,9 +1370,21 @@ class People {
 
         return true;
     }
-    createUnit(iconId, domUnitId, unitStatus){
+    createUnit(iconId, domUnitId, unitStatus, unitId){
         const newUnit = Utility.getWrappedIcon(iconId, domUnitId, unitStatus);
         dojo.place(newUnit, 'new-unit');
+
+        // Unit click event (select) seams to be impossible, listen on zone/wheel
+    }
+
+    onSelectUnit($unit) {
+        let unitId = People.guessUnitId($unit);
+        let unit = this.getUnitById(unitId);
+        if (unit === null || unit.status === 'acted') {
+            return false;
+        }
+
+        this.selectUnit($unit, unit)
     }
 }
 
@@ -842,7 +1415,7 @@ function (dojo, on, declare) {
             this.animator = new Animator();
             this.map = new LdhMap(this, this.animator);
             this.cartridge = new Cartridge(this.animator);
-            this.cardManager = new Cards(this.animator);
+            this.cardManager = new Cards(this, this.animator);
 
             game = this;
         },
@@ -880,13 +1453,13 @@ function (dojo, on, declare) {
             .then(() => this.cartridge.update(gamedatas.currentState.cartridge))
             .then(() => this.map.people.update(gamedatas.people))
             .then(() => {
-                this.initCards(gamedatas);
+                //this.initCards(gamedatas);
                 this.cardManager.update(gamedatas.cards);
             })
             .then(() => this.initTooltips(gamedatas.tooltips))
             .then(() => this.setupNotifications())
             .then(() => this.status.isInitializing = false)
-            .then(() => this.postInitCardUpdate())
+            //.then(() => this.postInitCardUpdate())
             .then(() => this.initInteractEvents());
         },
 
@@ -1013,7 +1586,8 @@ function (dojo, on, declare) {
         },
         initInteractEvents: function()
         {
-            this.evts['onHarvestResource'] = on(dojo.query('.resource.interactive'), 'click', this.onHarvestResource.bind(this));
+            this.evts['onHarvestResource'] = on(dojo.query('.resources .resource.interactive'), 'click', this.onHarvestResource.bind(this));
+
         },
 
         initPlayerLineages: function(lineages, objectives = null)
@@ -1153,11 +1727,13 @@ function (dojo, on, declare) {
                 let visibleDeck = ['invention', 'spell'].includes(type);
                 if (location === 'deck' && visibleDeck) {
                     this.createDeck(type, cards.length);
-                } else if (type === 'spell' && location === 'onTable') {
-                    // Do nothing: revealed by onEnteringState
-
                 } else {
                     this.createCardsInLocation(cards, type, location);
+                }
+
+                // Check for masterSpell "state"
+                if (type === 'spell' && location === 'onTable') {
+                    this.initMasterSpell();
                 }
             }
         },
@@ -1330,7 +1906,7 @@ function (dojo, on, declare) {
             card.classList.add('selected');
 
             const id = card.getAttribute('data-id');
-            const selectedCard = this.getCard('lineage', 'deck', id);
+            const selectedCard = this.cardManager.cards[id];
             this.selectedCards = [id];
 
             document.getElementById('pagemaintitletext').innerHTML = _('You choose to play with lineage: ') + selectedCard.name;
@@ -1339,6 +1915,19 @@ function (dojo, on, declare) {
             document.getElementById('cancelChooseLineage').classList.remove('hidden');
         },
 
+        initMasterSpell: function ()
+        {
+            document.getElementById('pagemaintitletext').innerHTML = _('Please, select spell you will master');
+            document.getElementById('generalactions').innerHTML = '';
+            document.getElementById('spell-onTable').scrollIntoView({behavior: 'smooth', block: 'center', inline: 'start'});
+
+            this.addActionButton( 'chooseSpell', _('Yes'), 'onSelectSpell' );
+            this.addActionButton( 'cancelChooseSpell', _('No'), 'onUnselectSpell' );
+            document.getElementById('chooseSpell').classList.add('hidden');
+            document.getElementById('cancelChooseSpell').classList.add('hidden');
+
+            this.status.state.spellToMasterChosen = false;
+        },
         onChooseSpell: function(event)
         {
             if (this.status.state.spellToMasterChosen) return;
@@ -1393,20 +1982,10 @@ function (dojo, on, declare) {
             this.actions = {};
             switch( stateName ) {
             case 'ChooseLineage' :
-                this.initLineageCards();
+                //this.initLineageCards();
 
                 $chooseBtn = document.getElementById('chooseLineage');
                 $cancelBtn = document.getElementById('cancelChooseLineage');
-                if ($chooseBtn !== null && $cancelBtn !== null) {
-                    $chooseBtn.classList.add('hidden');
-                    $cancelBtn.classList.add('hidden');
-                }
-                break;
-            case 'ChooseSpell' :
-                this.initSpellCards();
-
-                $chooseBtn = document.getElementById('chooseSpell');
-                $cancelBtn = document.getElementById('cancelChooseSpell');
                 if ($chooseBtn !== null && $cancelBtn !== null) {
                     $chooseBtn.classList.add('hidden');
                     $cancelBtn.classList.add('hidden');
@@ -1426,13 +2005,10 @@ function (dojo, on, declare) {
         onLeavingState: function( stateName )
         {
             switch( stateName ) {
-            case 'ChooseLineage':
+                case 'ChooseLineage':
+                // Remove lineage cards without passing by cardManager...?
                 dojo.query('#floating-cards .card.lineage').remove();
                 this.removeEvent('onChooseLineage');
-                break;
-            case 'ChooseSpell':
-                dojo.query('#spell-onTable .card.spell').remove();
-                this.removeEvent('onChooseSpell');
                 break;
             case 'EndPrincipal':
                 
@@ -1447,9 +2023,6 @@ function (dojo, on, declare) {
         {
             switch(stateName) {
                 case 'ChooseLineage': this.status.state.lineageChosen = !this.isCurrentPlayerActive(); break;
-
-                // Find a better check (Only player who choose this action can select a spell card?)
-                case 'ChooseSpell': this.status.state.spellToMasterChosen = false; break;
             }
 
             if(this.isCurrentPlayerActive()) {
@@ -1462,15 +2035,14 @@ function (dojo, on, declare) {
                         this.addActionButton( 'chooseLineage', _('Yes'), 'onSelectLineage' );
                         this.addActionButton( 'cancelChooseLineage', _('No'), 'onUnselectLineage' );
                         break;
-                    case 'ChooseSpell':
-                        this.addActionButton( 'chooseSpell', _('Yes'), 'onSelectSpell' );
-                        this.addActionButton( 'cancelChooseSpell', _('No'), 'onUnselectSpell' );
-                        break;
                     case 'ScienceHarvestBonus':
                         this.addActionButton( 'sbPass', _('Pass'), 'onScienceBonusPass' );
                         break;
                     default:
                         for (let action in this.actions) {
+                            if (this.actions[action].button === false) return;
+                            let blocking = this.actions[action].blocking !== undefined && this.actions[action].blocking;
+
                             let buttonName = this.actions[action].button === undefined ? this.actions[action] : this.actions[action].button;
                             let lastStatusUpdate = this.actions[action].status || {};
                             this.addActionButton(action, buttonName, (evt) => {
@@ -1481,6 +2053,7 @@ function (dojo, on, declare) {
                                 if (this[jsMethod]) {
                                     this[jsMethod](action, lastStatusUpdate);
                                 } else {
+                                    blocking && this.startBlockingState();
                                     this.ajaxCallWrapper(action);
                                 }
                             });
@@ -1615,9 +2188,9 @@ function (dojo, on, declare) {
         onSelectSpell: function(evt)  {
             dojo.stopEvent(evt);
 
-            if (this.selectedCards[0] !== 'undefined' && this.checkAction('spellChosen') && !this.status.state.spellToMasterChosen) {
+            if (this.selectedCards[0] !== 'undefined' && this.checkAction('masterSpell') && !this.status.state.spellToMasterChosen) {
                 this.status.state.spellToMasterChosen = true;
-                this.ajaxCallWrapper('spellChosen', {spell: this.selectedCards[0]});
+                this.ajaxCallWrapper('masterSpell', {spell: this.selectedCards[0]});
             }
         },
 
@@ -1695,7 +2268,7 @@ function (dojo, on, declare) {
             dojo.subscribe('ntfyRenewResources', this, 'onNotification');
             dojo.subscribe('ntfyPeopleFree', this, 'onNotification');
             dojo.subscribe('ntfyAllDied', this, 'onNotification');
-            dojo.subscribe('ntfySpellCardsDrawn', this, 'onNotification');
+            dojo.subscribe('ntfySpellCardsRevealed', this, 'onNotification');
             dojo.subscribe('ntfySpellMastered', this, 'onNotification');
 
             // Example 1: standard notification handling
@@ -1753,6 +2326,23 @@ function (dojo, on, declare) {
             }
         },
 
+        startBlockingState: function() {
+            this.savedActions = this.actions;
+        },
+
+        endBlockingState: function () {
+            document.getElementById('pagemaintitletext').innerHTML = _('Please choose an action:');
+            document.getElementById('generalactions').innerHTML = '';
+            this.onUpdateActionButtons(
+                this.gamedatas.gamestate.name,
+                {
+                    args: {
+                        actions: this.savedActions
+                    }
+                }
+            );
+        },
+
         onNotification: function (notif) {
             // Auto update
             console.log('onNotification', notif);
@@ -1780,6 +2370,19 @@ function (dojo, on, declare) {
             if (this[notif.type] !== undefined) {
                 this[notif.type](notif);
             }
+        },
+
+        ntfyResourceHarvested: function() {
+            this.endBlockingState();
+        },
+
+        ntfySpellMastered: function () {
+            this.status.state.spellToMasterChosen = true;
+            this.endBlockingState();
+        },
+
+        ntfySpellCardsRevealed: function () {
+            this.initMasterSpell();
         },
 
         ntfyDiedPeople: function(notif) {

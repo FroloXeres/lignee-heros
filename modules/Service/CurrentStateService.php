@@ -8,7 +8,9 @@ use LdH\Entity\Meeple;
 class CurrentStateService
 {
     public const GLB_TURN    = 'turn';
+    public const GLB_SPELL_REVEALED    = 'spellRevealed';
     public const GLB_SPELL_MASTERED    = 'spellMastered';
+    public const GLB_MOVE    = 'move';
     public const GLB_TURN_LFT    = 'turnLeft';
     public const GLB_PEOPLE_CNT  = 'people';
     public const GLB_WORKER_CNT  = 'worker';
@@ -41,6 +43,7 @@ class CurrentStateService
     public const START_LIFE = 1;
     public const START_WAR_PWR = 1;
     public const START_CTY_DFS = 1;
+    public const START_MOVE = 1;
 
     public const CARTRIDGE_COUNT = [
         self::GLB_PEOPLE_CNT  => 11,
@@ -69,8 +72,15 @@ class CurrentStateService
     public const CURRENT_STATES = [
         self::GLB_TURN_LFT       => 10,
         self::GLB_LEADER         => 34,
-        self::GLB_SPELL_MASTERED => 35
+        self::GLB_SPELL_REVEALED => 36,
+        self::GLB_SPELL_MASTERED => 35,
+        self::GLB_MOVE => 37,
     ];
+    public const BLOCKING_STATE = [
+        self::GLB_SPELL_REVEALED,
+
+    ];
+
 
     public static function getStateByResource(Resource $resource): string
     {

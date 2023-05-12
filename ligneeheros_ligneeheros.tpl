@@ -30,6 +30,11 @@
         </li>
         <!-- END MAP_TILES -->
     </ul>
+    <div id="unitWheels">
+        <div class="wheel">
+            <a id="selectAll" href="#">All</a>
+        </div>
+    </div>
 </div>
 <div id="cards-zone">
     <div class="shortcuts">
