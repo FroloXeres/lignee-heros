@@ -296,7 +296,7 @@ class PrincipalState extends AbstractState
         $actions = [];
         if ($action === null || $action === PrincipalState::ACTION_RESOURCE_HARVEST) {
             $list = $game->getPeople()->getHarvestableResources($game->terrains);
-            if (count($list)) {
+            if ($game->getPeople()->hasHarvestableResources($list)) {
                 $actions[PrincipalState::ACTION_RESOURCE_HARVEST] = [
                     'button' => clienttranslate('Harvest'),
                     'blocking' => true,

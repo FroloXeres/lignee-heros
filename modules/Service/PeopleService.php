@@ -259,6 +259,21 @@ class PeopleService implements \JsonSerializable
         return $list;
     }
 
+    /**
+     * @param array<TileHarvestResources> $tilesHarvestResources
+     *
+     * @return bool
+     */
+    public function hasHarvestableResources(array $tilesHarvestResources): bool
+    {
+        foreach ($tilesHarvestResources as $tileHarvestResource) {
+            if (in_array(false, $tileHarvestResource->resources, true)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /** @return array<Unit> */
     public function isLineageUnitFree(string $type): bool
     {

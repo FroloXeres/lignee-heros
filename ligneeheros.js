@@ -615,15 +615,20 @@ class Cards {
             for (const [location, cardList] of Object.entries(locations)) {
                 if (location === 'deck') {
                     this.createOrUpdateDeck(type, cardList.length);
-                } else {
-                    let cardsToRemove = Object.assign({}, this.indexed[type][location]); // Clone
-                    cardList.forEach(card => {
-                        cardsToRemove[card.id] !== undefined && delete cardsToRemove[card.id];
-
-                        this.checkForCard(type, location, card);
-                    });
-                    this.removeCards(cardsToRemove);
+                    continue;
                 }
+
+                if (cardList.length && type === 'spell' && location === 'onTable') {
+                    this.game.initMasterSpell();
+                }
+
+                let cardsToRemove = Object.assign({}, this.indexed[type][location]); // Clone
+                cardList.forEach(card => {
+                    cardsToRemove[card.id] !== undefined && delete cardsToRemove[card.id];
+
+                    this.checkForCard(type, location, card);
+                });
+                this.removeCards(cardsToRemove);
             }
         }
 
@@ -997,8 +1002,7 @@ class LdhMap {
             $zone.addEventListener('click', (event) => {
                 let $unit = event.target.closest('.wrapped-icon');
                 if ($unit !== null) {
-                    this.people.onSelectUnit($unit);
-                    this.unitWheel.dispatchEvent(
+                    this.people.onSelectUnit($unit) && this.unitWheel.dispatchEvent(
                         new CustomEvent(
                             UnitWheel.EVENT_CREATE_WHEEL,
                             {
@@ -1049,6 +1053,17 @@ class LdhMap {
                 }
             }
         }
+    }
+
+    highlightTiles(tileIds) {
+        let $tiles = document.querySelectorAll('.tile');
+        for (let $tile of $tiles) {
+            $tile.classList.remove('selected');
+        }
+
+        tileIds.forEach((id) => {
+            LdhMap.getTileContentByTileId(id)?.classList?.add('selected');
+        });
     }
 
     scrollToTile(x, y)
@@ -1126,6 +1141,9 @@ class LdhMap {
 
         return 'map-explore-' + id + '-' + zoneType;
     }
+    static getTileContentByTileId(id) {
+        return document.getElementById('tile-' + id)?.querySelector('.tile');
+    }
     zoneDisplayItemsMiddleWare() {
         /** @var this */
         const countByWeight = [0, 0, 0];
@@ -1202,7 +1220,7 @@ class People {
     byId = {};
     units = [];
     $units = [];
-    events = [];
+    moves = {};
 
     /**
      * @param {LdhMap} map
@@ -1230,6 +1248,8 @@ class People {
             $unit.classList.add('selected');
             this.selectedUnits[unit.id] = unit;
         }
+
+        this.guessActions();
     }
 
     init(types)  {
@@ -1238,6 +1258,44 @@ class People {
 
     update(people) {
         this.updateUnits(people.units);
+    }
+
+    updateMoves(moves) {
+        this.moves = moves;
+    }
+
+    guessActions() {
+        if (!Object.values(this.selectedUnits).length) {
+            // No units, get standard actions
+            this.resetMoves();
+        } else {
+            //
+            this.initMovesIfPossible();
+        }
+    }
+
+    resetMoves() {
+        let $selectedTiles = document.querySelectorAll('.map-hex-content.selected');
+        if ($selectedTiles.length) {
+            for (let $tile of $selectedTiles) {
+                $tile.classList.remove('selected');
+            }
+        }
+    }
+
+    initMovesIfPossible() {
+        let moves = [];
+        let freeUnits = Object.values(this.selectedUnits).filter(unit => unit.status === 'free');
+        if (freeUnits.length) {
+            freeUnits.forEach((unit) => {
+                if (this.moves[unit.id] !== undefined) {
+                    this.moves[unit.id].forEach((tileId) => {
+                        !moves.includes(tileId) && moves.push(tileId);
+                    });
+                }
+            });
+        }
+        this.map.highlightTiles(moves);
     }
 
     updateIndexesAndGetDiedUnits(units) {
@@ -1384,7 +1442,8 @@ class People {
             return false;
         }
 
-        this.selectUnit($unit, unit)
+        this.selectUnit($unit, unit);
+        return true;
     }
 }
 
@@ -1452,14 +1511,11 @@ function (dojo, on, declare) {
             })
             .then(() => this.cartridge.update(gamedatas.currentState.cartridge))
             .then(() => this.map.people.update(gamedatas.people))
-            .then(() => {
-                //this.initCards(gamedatas);
-                this.cardManager.update(gamedatas.cards);
-            })
+            .then(() => this.map.people.updateMoves(gamedatas.moves))
+            .then(() => this.cardManager.update(gamedatas.cards))
             .then(() => this.initTooltips(gamedatas.tooltips))
             .then(() => this.setupNotifications())
             .then(() => this.status.isInitializing = false)
-            //.then(() => this.postInitCardUpdate())
             .then(() => this.initInteractEvents());
         },
 
@@ -1939,7 +1995,7 @@ function (dojo, on, declare) {
             card.classList.add('selected');
 
             const id = card.getAttribute('data-id');
-            const selectedCard = this.getCard('spell', 'onTable', id);
+            const selectedCard = this.cardManager.cards[id];
             this.selectedCards = [id];
 
             document.getElementById('pagemaintitletext').innerHTML = _('You choose to master spell: ') + selectedCard.name;
@@ -1974,12 +2030,9 @@ function (dojo, on, declare) {
         //
         onEnteringState: function( stateName, args )
         {
-            console.log('EnteringState:');
-            console.log(args);
-
+            console.log('EnteringState:', stateName, args);
             let $chooseBtn, $cancelBtn;
 
-            this.actions = {};
             switch( stateName ) {
             case 'ChooseLineage' :
                 //this.initLineageCards();
@@ -1993,7 +2046,6 @@ function (dojo, on, declare) {
                 break;
             case 'Principal' :
                 this.isActive = args['isActive'];
-                this.actions = args.args.actions;
 
                 break;
             }
@@ -2004,6 +2056,7 @@ function (dojo, on, declare) {
         //
         onLeavingState: function( stateName )
         {
+            console.log('onLeavingState:', stateName);
             switch( stateName ) {
                 case 'ChooseLineage':
                 // Remove lineage cards without passing by cardManager...?
@@ -2021,15 +2074,16 @@ function (dojo, on, declare) {
         //        
         onUpdateActionButtons: function( stateName, args )
         {
+            console.log('onUpdateActionButtons', stateName, args, this.actions);
             switch(stateName) {
                 case 'ChooseLineage': this.status.state.lineageChosen = !this.isCurrentPlayerActive(); break;
             }
 
-            if(this.isCurrentPlayerActive()) {
-                if (args.actions !== undefined) {
-                    this.actions = args.actions;
-                }
+            if (args?.actions !== undefined) {
+                this.updateActions(args.actions);
+            }
 
+            if(this.isCurrentPlayerActive()) {
                 switch(stateName) {
                     case 'ChooseLineage':
                         this.addActionButton( 'chooseLineage', _('Yes'), 'onSelectLineage' );
@@ -2053,7 +2107,7 @@ function (dojo, on, declare) {
                                 if (this[jsMethod]) {
                                     this[jsMethod](action, lastStatusUpdate);
                                 } else {
-                                    blocking && this.startBlockingState();
+                                    //blocking && this.startBlockingState();
                                     this.ajaxCallWrapper(action);
                                 }
                             });
@@ -2326,27 +2380,21 @@ function (dojo, on, declare) {
             }
         },
 
-        startBlockingState: function() {
-            this.savedActions = this.actions;
-        },
-
         endBlockingState: function () {
             document.getElementById('pagemaintitletext').innerHTML = _('Please choose an action:');
             document.getElementById('generalactions').innerHTML = '';
-            this.onUpdateActionButtons(
-                this.gamedatas.gamestate.name,
-                {
-                    args: {
-                        actions: this.savedActions
-                    }
-                }
-            );
+            this.onUpdateActionButtons(this.gamedatas.gamestate.name, {args: {}});
+        },
+
+        updateActions: function (actions) {
+            this.actions = actions;
+            this.gamedatas.gamestate.args.actions = actions;
         },
 
         onNotification: function (notif) {
             // Auto update
             console.log('onNotification', notif);
-            if (notif?.args?.actions !== undefined) {this.actions = notif.args.actions;}
+            if (notif?.args?.actions !== undefined) {this.updateActions(notif.args.actions);}
 
             if (notif?.args?.units !== undefined) {this.map.people.updateUnits(notif.args.units);}
             if (notif?.args?.unit !== undefined) {this.map.people.updateUnit(notif.args.unit);}
