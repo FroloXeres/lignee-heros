@@ -1018,8 +1018,20 @@ class LdhMap {
                 }
             });
         }
-    }
 
+        const $tiles = document.querySelectorAll('.map-hex-content');
+        for (let $tile of $tiles) {
+            $tile.addEventListener('click', (event) => {
+                const $clickedTile = event.target.classList.contains('map-hex-content') ? event.target : event.target.closest('.map-hex-content');
+                if ($clickedTile === null || !$clickedTile.classList.contains('selected')) return;
+
+                const tileId = LdhMap.getTileId($clickedTile.closest('.map-hex-item'));
+
+                // UnSelect other tiles, confirm move
+                this.game.ajaxCallWrapper('move', {tileId: tileId, unitIds: JSON.stringify(Object.keys(this.people.selectedUnits))}, (response) => console.log(response));
+            });
+        }
+    }
 
     getTileResourceDom(tileId, resourceCode = null) {
         return resourceCode !== null ?
@@ -1096,8 +1108,8 @@ class LdhMap {
         const _self = this;
         const tiles = dojo.query('.tile:not(.tile_disabled)');
         tiles.forEach(function(tile) {
-            let item = tile.closest('.map-hex-item');
-            let id = item.id.replace('tile-', '');
+            let $item = tile.closest('.map-hex-item');
+            let id = LdhMap.getTileId($item);
 
             LdhMap.ZONES.forEach(function(unitType) {
                 let zone = new ebg.zone();
@@ -1143,6 +1155,10 @@ class LdhMap {
     }
     static getTileContentByTileId(id) {
         return document.getElementById('tile-' + id)?.querySelector('.tile');
+    }
+    static getTileId($tile) {
+        let id = $tile?.id?.replace('tile-', '');
+        return id !== undefined ? parseInt(id) : null;
     }
     zoneDisplayItemsMiddleWare() {
         /** @var this */
@@ -2389,6 +2405,10 @@ function (dojo, on, declare) {
         updateActions: function (actions) {
             this.actions = actions;
             this.gamedatas.gamestate.args.actions = actions;
+
+            if (this.actions?.move?.moves !== undefined) {
+                this.moves = this.actions?.move?.moves;
+            }
         },
 
         onNotification: function (notif) {
@@ -2404,17 +2424,20 @@ function (dojo, on, declare) {
             notif?.args?.cards && this.cardManager.update(notif.args.cards);
             notif?.args?.fullscreen && this.displayFullScreenMessage(notif.args.fullscreen);
 
-            if (notif?.args?.animation) {
-                this.animator.addAnimation(
-                    new Animation(
-                        notif?.args?.animation.type,
-                        notif?.args?.animation?.subject,
-                        notif?.args?.animation?.target,
-                        notif?.args?.animation?.duration || 0
-                    )
-                );
+            if (notif?.args?.animations !== undefined) {
+                notif?.args?.animations.forEach((animation) => {
+                    this.animator.addAnimation(
+                        new Animation(
+                            animation.type,
+                            animation?.subject,
+                            animation?.target,
+                            animation?.duration || 0
+                        )
+                    );
+                });
             }
 
+            // Call notification specific method if exists
             if (this[notif.type] !== undefined) {
                 this[notif.type](notif);
             }

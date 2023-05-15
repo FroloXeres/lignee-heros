@@ -95,10 +95,14 @@ class PeopleService implements \JsonSerializable
         return $this->units;
     }
 
-    public function getPopulationAsString(): string
+    public function getPopulationAsString(array $unitIds = null): string
     {
         $people = [];
         foreach ($this->byType as $type => $ids) {
+            if ($unitIds !== null) {
+                $ids = array_filter($ids, fn($pos) => in_array($this->units[$pos]->getId(), $unitIds));
+            }
+
             $count = count($ids);
             if ($count) {
                 $people[] = sprintf(
@@ -160,7 +164,16 @@ class PeopleService implements \JsonSerializable
         }, $moves);
     }
 
+    /** @param array<int> $unitIds */
+    public function moveUnitsTo(array $unitIds, int $tileId): bool {
+        foreach ($unitIds as $unitId) {
+            $unit = $this->units[$this->byIds[$unitId]];
+            $unit->setLocationArg($tileId);
+            $unit->setStatus(Unit::STATUS_MOVED);
+        }
 
+        return $this->getRepository()->moveUnitsTo($unitIds, $tileId);
+    }
 
     /**
      * @param array<SimpleTile> $simpleMap

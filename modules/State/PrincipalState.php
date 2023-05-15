@@ -21,6 +21,7 @@ class PrincipalState extends AbstractState
     public const ACTION_RESOURCE_HARVEST = 'resourceHarvest';
     public const ACTION_REVEAL_SPELL = 'revealSpell';
     public const ACTION_MASTER_SPELL = 'masterSpell';
+    public const ACTION_MOVE = 'move';
 
     public const TR_PASS = 'trPass';
 
@@ -29,6 +30,7 @@ class PrincipalState extends AbstractState
     public const NOTIFY_SPELL_CARD_DRAWN = 'ntfySpellCardsRevealed';
     public const NOTIFY_SPELL_MASTERED = 'ntfySpellMastered';
     public const NOTIFY_PLAYER_PASS = 'ntfyPlayerPass';
+    public const NOTIFY_UNITS_MOVE = 'ntfyUnitsMove';
 
 
     public static function getId(): int
@@ -48,10 +50,10 @@ class PrincipalState extends AbstractState
             self::ACTION_RESOURCE_HARVEST,
             self::ACTION_REVEAL_SPELL,
             self::ACTION_MASTER_SPELL,
+            self::ACTION_MOVE,
         ];
         $this->args              = 'arg' . $this->name;
         $this->transitions       = [
-
             self::TR_PASS => EndTurnState::ID,
         ];
     }
@@ -97,6 +99,31 @@ class PrincipalState extends AbstractState
                     $this->game->{PrincipalState::ACTION_PASS}();
                 } else {
                     throw new \BgaUserException($this->_('You can\'t pass your turn for now'));
+                }
+            },
+            self::ACTION_MOVE => function() {
+                /** @var \action_ligneeheros $this */
+                $tileId = (int) $this->getArg('tileId', AT_posint, true);
+                $unitIds = $this->getArg('unitIds', AT_json, true);
+
+                if (!is_array($unitIds)) {
+                    throw new \BgaUserException($this->_('Unknown units, move impossible'));
+                }
+
+                $actions = PrincipalState::getAvailableActions($this->game, PrincipalState::ACTION_MOVE);
+                if (array_key_exists(PrincipalState::ACTION_MOVE, $actions)) {
+                    $moves = $actions[PrincipalState::ACTION_MOVE]['moves'];
+                    foreach ($unitIds as $key => $value) {
+                        $unitId = (int) $value;
+                        if (!array_key_exists($unitId, $moves) || !in_array($tileId, $moves[$unitId])) {
+                            throw new \BgaUserException($this->_('Some unit can\'t move to this tile'));
+                        }
+                        $unitIds[$key] = $unitId;
+                    }
+
+                    $this->game->{PrincipalState::ACTION_MOVE}($unitIds, $tileId);
+                } else {
+                    throw new \BgaUserException($this->_('You can\'t move any unit anymore'));
                 }
             },
             self::ACTION_REVEAL_SPELL => function() {
@@ -166,6 +193,34 @@ class PrincipalState extends AbstractState
                 );
 
                 $this->gamestate->setPlayerNonMultiactive($this->getCurrentPlayerId(), PrincipalState::TR_PASS);
+            },
+
+            self::ACTION_MOVE => function(array $unitIds, int $tileId) {
+                /** @var \ligneeheros $this */
+                $this->checkAction(PrincipalState::ACTION_MOVE);
+
+                $this->getPeople()->moveUnitsTo($unitIds, $tileId);
+                $units = $this->getPeople()->getUnits();
+
+                $tile = $this->getMapService()->getTileById($tileId);
+                $explored = $tile->isFlip();
+                $notif = sprintf(
+                    '${player_name} moves %s to %s tile of coordinate: [%s, %s]',
+                    $this->people->getPopulationAsString($unitIds),
+                    $explored ? 'the' : 'an unexplored',
+                    $tile->getX(),
+                    $tile->getY(),
+                );
+
+                $this->notifyAllPlayers(
+                    PrincipalState::NOTIFY_UNITS_MOVE,
+                    clienttranslate($notif),
+                    [
+                        'i18n' => ['player_name'],
+                        'player_name' => $this->getCurrentPlayerName(),
+                        'units' => $units,
+                    ]
+                );
             },
 
             self::ACTION_REVEAL_SPELL => function() {
@@ -257,7 +312,7 @@ class PrincipalState extends AbstractState
                             'player_name' => $this->getCurrentPlayerName(),
                             'units' => $this->getPeople()->getUnits(),
                             'map' => $this->getPeople()->getHarvestableResources($this->terrains),
-                            'animation' => AnimationService::buildAnimation(AnimationService::TYPE_MOVE_TO_CARTRIDGE, $tileId, $resourceCode, 500),
+                            'animations' => [AnimationService::buildAnimation(AnimationService::TYPE_MOVE_TO_CARTRIDGE, $tileId, $resourceCode, 500)],
                             'cartridge' => CurrentStateService::getCartridgeUpdate($resourceState, $count),
                             'actions' => PrincipalState::getAvailableActions($this)
                         ]
@@ -294,6 +349,7 @@ class PrincipalState extends AbstractState
         }
 
         $actions = [];
+
         if ($action === null || $action === PrincipalState::ACTION_RESOURCE_HARVEST) {
             $list = $game->getPeople()->getHarvestableResources($game->terrains);
             if ($game->getPeople()->hasHarvestableResources($list)) {
@@ -312,6 +368,20 @@ class PrincipalState extends AbstractState
                 $actions[PrincipalState::ACTION_REVEAL_SPELL] = [
                     'button' => clienttranslate('Search for spell'),
                     'blocking' => true,
+                ];
+            }
+        }
+
+        if ($action === null || $action === PrincipalState::ACTION_MOVE) {
+            $moves = $game->getPeople()->getUnitPossibleMoves(
+                $game->getMapService()->getSimpleMap(),
+                (int) $game->getGameStateValue(CurrentStateService::GLB_MOVE)
+            );
+            if (!empty($moves)) {
+                $actions[PrincipalState::ACTION_MOVE] = [
+                    'button' => clienttranslate('Move'),
+                    'blocking' => true,
+                    'moves' => $moves,
                 ];
             }
         }

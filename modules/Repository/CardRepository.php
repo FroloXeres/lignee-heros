@@ -29,6 +29,20 @@ class CardRepository extends AbstractCardRepository
         ));
     }
 
+    /** @param array<int> $unitIds */
+    public function moveUnitsTo(array $unitIds, int $tileId): bool {
+        if ($this->class !== Unit::class) return false;
+
+        $qry = sprintf(
+            "UPDATE `%s` SET `meeple_status` = '%s', `card_location_arg` = %s WHERE `card_id` IN (%s)",
+            $this->table,
+            Unit::STATUS_MOVED,
+            $tileId,
+            join(', ', $unitIds)
+        );
+        return $this->query($qry);
+    }
+
     /** @return array<MapUnit> */
     public function getFreeUnitPositions(?int $unitId = null): array
     {
@@ -140,7 +154,7 @@ class CardRepository extends AbstractCardRepository
                 $tiles[$tileId] = new TileHarvestResources();
                 $tiles[$tileId]->tileId = $tileId;
                 $tiles[$tileId]->terrain = $line['tile_terrain'];
-                for ($i = 0; $i < 2; $i++) {
+                for ($i = 0; $i < 3; $i++) {
                     $tileResourceKey = 'tile_resource' . ($i + 1);
                     $tiles[$tileId]->resources[$i] = $line[$tileResourceKey] === null ? null : ($line[$tileResourceKey] === '1');
                 }
