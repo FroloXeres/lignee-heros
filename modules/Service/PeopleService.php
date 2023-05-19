@@ -131,18 +131,38 @@ class PeopleService implements \JsonSerializable
         return $this;
     }
 
+    public function getPlayerLineageUnit(int $playerId): ?Unit
+    {
+        $unitId = $this->getRepository()->getPlayerLineageUnitId($playerId);
+        if ($unitId !== null) {
+            return $this->units[
+                $this->byIds[$unitId]
+            ];
+        }
+
+        return null;
+    }
+
     /**
      * @param array<SimpleTile> $simpleMap
      *
      * @return array<int, array<int>>
      */
-    public function getUnitPossibleMoves(array $simpleMap, int $maxMove, ?int $unitId = null): array
+    public function getUnitPossibleMoves(array $simpleMap, int $maxMove, int $playerId, ?int $unitId = null): array
     {
+        $lineageUnit = $this->getPlayerLineageUnit($playerId);
         $freeUnitPositions = $this->getRepository()->getFreeUnitPositions($unitId);
 
         $moves = [];
         $paths = [];
         foreach ($freeUnitPositions as $freeUnit) {
+            if ($lineageUnit !== null) {
+                $unit = $this->getUnitById($freeUnit->unitId);
+                if ($unit->isLineage() && $unit->getType() !== $lineageUnit->getType()) {
+                    continue;
+                }
+            }
+
             if (!array_key_exists($freeUnit->tileId, $paths)) {
                 $paths[$freeUnit->tileId] = [];
                 $this->pathfinder($paths[$freeUnit->tileId], $simpleMap, $freeUnit->position, $maxMove);
@@ -291,6 +311,7 @@ class PeopleService implements \JsonSerializable
     public function isLineageUnitFree(string $type): bool
     {
         // todo: Missing something here?
+
         return array_key_exists($type, $this->byType);
     }
 

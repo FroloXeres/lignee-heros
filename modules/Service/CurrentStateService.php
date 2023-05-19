@@ -8,6 +8,7 @@ use LdH\Entity\Meeple;
 class CurrentStateService
 {
     public const GLB_TURN    = 'turn';
+    public const GLB_HAVE_TO_EXPLORE    = 'haveToExplore';
     public const GLB_SPELL_REVEALED    = 'spellRevealed';
     public const GLB_SPELL_MASTERED    = 'spellMastered';
     public const GLB_MOVE    = 'move';
@@ -75,6 +76,7 @@ class CurrentStateService
         self::GLB_SPELL_REVEALED => 36,
         self::GLB_SPELL_MASTERED => 35,
         self::GLB_MOVE => 37,
+        self::GLB_HAVE_TO_EXPLORE => 38
     ];
     public const BLOCKING_STATE = [
         self::GLB_SPELL_REVEALED,

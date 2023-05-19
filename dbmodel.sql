@@ -39,6 +39,7 @@ CREATE TABLE IF NOT EXISTS `lineage` (
     `card_location_arg` int(11) NOT NULL,
     `card_completed` tinyint(1) DEFAULT 0,
     `card_leader` tinyint(1) DEFAULT 0,
+    `card_unit` smallint(2) unsigned DEFAULT NULL,
     PRIMARY KEY (`card_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 

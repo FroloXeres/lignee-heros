@@ -5,6 +5,7 @@ namespace LdH\State;
 use LdH\Entity\Cards\AbstractCard;
 use LdH\Entity\Cards\BoardCardInterface;
 use LdH\Entity\Cards\Lineage;
+use LdH\Entity\Cards\LineageBoardCard;
 use LdH\Entity\Map\City;
 use LdH\Entity\Meeple;
 use LdH\Entity\Unit;
@@ -88,6 +89,10 @@ class ChooseLineageState extends AbstractState
                 );
                 $unit = $lineageUnits[0];
 
+                // Link lineage to meeple unit
+                $lineageCard->getBoardCard()->setUnit($unit->getId());
+                $this->getCardService()->updateCard($lineageCard);
+
                 // Add lineage objective to player's hand
                 $objective = $lineageCard->getObjective();
                 $this->getCardService()->moveTheseCardsTo([$objective], BoardCardInterface::LOCATION_HAND, $playerId);
@@ -99,6 +104,7 @@ class ChooseLineageState extends AbstractState
                     'lineageId' => $lineageCard->getCode(),
                     'playerId' => $playerId,
                     'unit' => $unit,
+                    'moves' => $this->getPeopleMoves(),
                     'cartridge' => CurrentStateService::getCartridgeUpdate($stateConst, $newCount)
                 ];
                 $this->notifyAllPlayers(

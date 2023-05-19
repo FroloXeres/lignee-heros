@@ -14,6 +14,11 @@ class LineageBoardCard extends DefaultBoardCard
      */
     protected bool $leader = false;
 
+    /**
+     * @column="card_unit"
+     */
+    protected ?int $unit = null;
+
     public function isObjectiveCompleted(): bool
     {
         return $this->objectiveCompleted;
@@ -34,6 +39,18 @@ class LineageBoardCard extends DefaultBoardCard
     public function setLeader(bool $leader): self
     {
         $this->leader = $leader;
+
+        return $this;
+    }
+
+    public function getUnit(): ?int
+    {
+        return $this->unit;
+    }
+
+    public function setUnit(?int $unit): self
+    {
+        $this->unit = $unit;
 
         return $this;
     }

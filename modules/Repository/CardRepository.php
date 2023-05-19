@@ -29,6 +29,12 @@ class CardRepository extends AbstractCardRepository
         ));
     }
 
+    public function getPlayerLineageUnitId(int $playerId): ?int
+    {
+        $qry = sprintf('SELECT `card_unit` FROM `lineage` WHERE `card_location_arg` = %s', $playerId);
+        return $this->getUniqueValueFromDB($qry) ?? null;
+    }
+
     /** @param array<int> $unitIds */
     public function moveUnitsTo(array $unitIds, int $tileId): bool {
         if ($this->class !== Unit::class) return false;

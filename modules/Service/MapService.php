@@ -36,6 +36,19 @@ class MapService
         return $this;
     }
 
+    public function exploreTile(Tile $tile): array
+    {
+        $tile->setFlip(true);
+        $this->mapRepository->update($tile, ['flip']);
+
+        return $this->mapRepository->getTilesToExplore();
+    }
+
+    public function getExplorableTiles(): array
+    {
+        return $this->mapRepository->getTilesToExplore();
+    }
+
     public function updateCity(City $city)
     {
         $this->mapRepository->updateCity($city);

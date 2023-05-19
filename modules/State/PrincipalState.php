@@ -5,6 +5,7 @@ namespace LdH\State;
 use LdH\Entity\Cards\AbstractCard;
 use LdH\Entity\Cards\BoardCardInterface;
 use LdH\Entity\Cards\Deck;
+use LdH\Entity\Map\Tile;
 use LdH\Entity\Meeple;
 use LdH\Entity\Unit;
 use LdH\Object\FullScreenMessage;
@@ -22,6 +23,7 @@ class PrincipalState extends AbstractState
     public const ACTION_REVEAL_SPELL = 'revealSpell';
     public const ACTION_MASTER_SPELL = 'masterSpell';
     public const ACTION_MOVE = 'move';
+    public const ACTION_EXPLORE = 'explore';
 
     public const TR_PASS = 'trPass';
 
@@ -31,6 +33,7 @@ class PrincipalState extends AbstractState
     public const NOTIFY_SPELL_MASTERED = 'ntfySpellMastered';
     public const NOTIFY_PLAYER_PASS = 'ntfyPlayerPass';
     public const NOTIFY_UNITS_MOVE = 'ntfyUnitsMove';
+    public const NOTIFY_TILE_EXPLORED = 'ntfyTileExplored';
 
 
     public static function getId(): int
@@ -51,6 +54,7 @@ class PrincipalState extends AbstractState
             self::ACTION_REVEAL_SPELL,
             self::ACTION_MASTER_SPELL,
             self::ACTION_MOVE,
+            self::ACTION_EXPLORE,
         ];
         $this->args              = 'arg' . $this->name;
         $this->transitions       = [
@@ -62,8 +66,9 @@ class PrincipalState extends AbstractState
     {
         return function () {
             /** @var \ligneeheros $this */
+            $playerId = (int) $this->getCurrentPlayerId();
             $args = [
-                'actions' => PrincipalState::getAvailableActions($this),
+                'actions' => PrincipalState::getAvailableActions($this, null, $playerId),
             ];
             return $this->addPlayersInfosForArgs($args);
         };
@@ -99,6 +104,18 @@ class PrincipalState extends AbstractState
                     $this->game->{PrincipalState::ACTION_PASS}();
                 } else {
                     throw new \BgaUserException($this->_('You can\'t pass your turn for now'));
+                }
+            },
+            self::ACTION_EXPLORE => function() {
+                /** @var \action_ligneeheros $this */
+                $tileId = (int) $this->getArg('tileId', AT_posint, true);
+                $tile = $this->game->getMapService()->getTileById($tileId);
+
+                $actions = PrincipalState::getAvailableActions($this->game, PrincipalState::ACTION_EXPLORE);
+                if (array_key_exists(PrincipalState::ACTION_EXPLORE, $actions) && $tile !== null) {
+                    $this->game->{PrincipalState::ACTION_EXPLORE}($tile);
+                } else {
+                    throw new \BgaUserException($this->_('You can\'t explore for now'));
                 }
             },
             self::ACTION_MOVE => function() {
@@ -195,6 +212,20 @@ class PrincipalState extends AbstractState
                 $this->gamestate->setPlayerNonMultiactive($this->getCurrentPlayerId(), PrincipalState::TR_PASS);
             },
 
+            self::ACTION_EXPLORE => function(Tile $tileToExplore) {
+                /** @var \ligneeheros $this */
+                $toExplore = $this->getMapService()->exploreTile($tileToExplore);
+                $notificationParams = [
+                    'map' => $this->getMapTiles(),
+                    'explore' => $toExplore,
+                ];
+                $this->notifyAllPlayers(
+                    PrincipalState::NOTIFY_TILE_EXPLORED,
+                    clienttranslate('You discover a new tile!'),
+                    $notificationParams
+                );
+            },
+
             self::ACTION_MOVE => function(array $unitIds, int $tileId) {
                 /** @var \ligneeheros $this */
                 $this->checkAction(PrincipalState::ACTION_MOVE);
@@ -212,6 +243,10 @@ class PrincipalState extends AbstractState
                     $tile->getY(),
                 );
 
+                if (!$explored) {
+                    $this->setGameStateValue(CurrentStateService::GLB_HAVE_TO_EXPLORE, '1');
+                }
+
                 $this->notifyAllPlayers(
                     PrincipalState::NOTIFY_UNITS_MOVE,
                     clienttranslate($notif),
@@ -219,6 +254,7 @@ class PrincipalState extends AbstractState
                         'i18n' => ['player_name'],
                         'player_name' => $this->getCurrentPlayerName(),
                         'units' => $units,
+                        'moves' => $this->getPeopleMoves()
                     ]
                 );
             },
@@ -338,7 +374,7 @@ class PrincipalState extends AbstractState
         }
     }
 
-    public static function getAvailableActions(\ligneeheros $game, ?string $action = null): array
+    public static function getAvailableActions(\ligneeheros $game, ?string $action = null, ?int $playerId = null): array
     {
         // Only some actions available when these states
         foreach (CurrentStateService::BLOCKING_STATE as $blockingState) {
@@ -348,6 +384,7 @@ class PrincipalState extends AbstractState
             }
         }
 
+        // $playerId = $playerId !== null ? $playerId : (int) $game->getCurrentPlayerId();
         $actions = [];
 
         if ($action === null || $action === PrincipalState::ACTION_RESOURCE_HARVEST) {
@@ -373,10 +410,7 @@ class PrincipalState extends AbstractState
         }
 
         if ($action === null || $action === PrincipalState::ACTION_MOVE) {
-            $moves = $game->getPeople()->getUnitPossibleMoves(
-                $game->getMapService()->getSimpleMap(),
-                (int) $game->getGameStateValue(CurrentStateService::GLB_MOVE)
-            );
+            $moves = $game->getPeopleMoves();
             if (!empty($moves)) {
                 $actions[PrincipalState::ACTION_MOVE] = [
                     'button' => clienttranslate('Move'),
@@ -386,7 +420,15 @@ class PrincipalState extends AbstractState
             }
         }
 
-        if ($action === null || $action === PrincipalState::ACTION_PASS) {
+        $haveToExplore = $game->getGameStateValue(CurrentStateService::GLB_HAVE_TO_EXPLORE) === '1';
+        if (($action === null || $action === PrincipalState::ACTION_EXPLORE) && $haveToExplore) {
+            $actions[PrincipalState::ACTION_EXPLORE] = [
+                'button' => clienttranslate('Explore'),
+                'tiles' => $game->getMapService()->getExplorableTiles(),
+            ];
+        }
+
+        if (!$haveToExplore && ($action === null || $action === PrincipalState::ACTION_PASS)) {
             $actions[PrincipalState::ACTION_PASS] = clienttranslate('Pass');
         }
 

@@ -991,7 +991,7 @@ class LdhMap {
         }
 
         this.initMapZones();
-        this.initEvents();
+        this.game.gamedatas.gamestate.id > 3 && this.initEvents();
         this.initZoom();
         this.scrollToTile(0, 0);
     }
@@ -1068,14 +1068,17 @@ class LdhMap {
     }
 
     highlightTiles(tileIds) {
+        this.unHighlightAllTiles();
+        tileIds.forEach((id) => {
+            LdhMap.getTileContentByTileId(id)?.classList?.add('selected');
+        });
+    }
+
+    unHighlightAllTiles() {
         let $tiles = document.querySelectorAll('.tile');
         for (let $tile of $tiles) {
             $tile.classList.remove('selected');
         }
-
-        tileIds.forEach((id) => {
-            LdhMap.getTileContentByTileId(id)?.classList?.add('selected');
-        });
     }
 
     scrollToTile(x, y)
@@ -1236,7 +1239,8 @@ class People {
     byId = {};
     units = [];
     $units = [];
-    moves = {};
+    moves = null;
+    explore = null;
 
     /**
      * @param {LdhMap} map
@@ -1280,12 +1284,15 @@ class People {
         this.moves = moves;
     }
 
+    updateExplore(tiles) {
+        this.explore = tiles;
+    }
+
     guessActions() {
         if (!Object.values(this.selectedUnits).length) {
             // No units, get standard actions
             this.resetMoves();
         } else {
-            //
             this.initMovesIfPossible();
         }
     }
@@ -1302,7 +1309,9 @@ class People {
     initMovesIfPossible() {
         let moves = [];
         let freeUnits = Object.values(this.selectedUnits).filter(unit => unit.status === 'free');
-        if (freeUnits.length) {
+
+        // Can move only if all selected units can move
+        if (this.moves && freeUnits.length) { // === this.selectedUnits.length) {
             freeUnits.forEach((unit) => {
                 if (this.moves[unit.id] !== undefined) {
                     this.moves[unit.id].forEach((tileId) => {
@@ -1528,6 +1537,7 @@ function (dojo, on, declare) {
             .then(() => this.cartridge.update(gamedatas.currentState.cartridge))
             .then(() => this.map.people.update(gamedatas.people))
             .then(() => this.map.people.updateMoves(gamedatas.moves))
+            .then(() => this.map.people.updateExplore(gamedatas.explore))
             .then(() => this.cardManager.update(gamedatas.cards))
             .then(() => this.initTooltips(gamedatas.tooltips))
             .then(() => this.setupNotifications())
@@ -1981,7 +1991,7 @@ function (dojo, on, declare) {
             const selectedCard = this.cardManager.cards[id];
             this.selectedCards = [id];
 
-            document.getElementById('pagemaintitletext').innerHTML = _('You choose to play with lineage: ') + selectedCard.name;
+            this.changeActionTitle('You choose to play with lineage: ', selectedCard.name);
 
             document.getElementById('chooseLineage').classList.remove('hidden');
             document.getElementById('cancelChooseLineage').classList.remove('hidden');
@@ -1989,7 +1999,7 @@ function (dojo, on, declare) {
 
         initMasterSpell: function ()
         {
-            document.getElementById('pagemaintitletext').innerHTML = _('Please, select spell you will master');
+            this.changeActionTitle('Please, select spell you will master');
             document.getElementById('generalactions').innerHTML = '';
             document.getElementById('spell-onTable').scrollIntoView({behavior: 'smooth', block: 'center', inline: 'start'});
 
@@ -2014,8 +2024,7 @@ function (dojo, on, declare) {
             const selectedCard = this.cardManager.cards[id];
             this.selectedCards = [id];
 
-            document.getElementById('pagemaintitletext').innerHTML = _('You choose to master spell: ') + selectedCard.name;
-
+            this.changeActionTitle('You choose to master spell: ', selectedCard.name);
             document.getElementById('chooseSpell').classList.remove('hidden');
             document.getElementById('cancelChooseSpell').classList.remove('hidden');
         },
@@ -2176,6 +2185,46 @@ function (dojo, on, declare) {
             _ make a call to the game server
         
         */
+        confirmAction: function(text, yesMethod, noMethod = null) {
+            if (noMethod === null) noMethod = () => this.resetActionButtons();
+
+            this.changeActionTitle(text);
+            debugger;
+            document.getElementById('generalactions').innerHTML = '';
+            this.addActionButton('confirmYes', _('Yes'), () => yesMethod());
+            this.addActionButton('confirmNo', _('No'), () => noMethod());
+        },
+        changeActionTitle: function(text, notTranslated = '') {
+            document.getElementById('pagemaintitletext').innerHTML = _(text) + notTranslated;
+        },
+        resetActionButtons: function() {
+            this.changeActionTitle('Please choose an action: ');
+            document.getElementById('generalactions').innerHTML = '';
+            this.onUpdateActionButtons(this.gamedatas.gamestate.name, {args: {}});
+        },
+
+        onActExplore: function() {
+            let tileId = null;
+            if (this.map.people.explore.length === 1) {
+                tileId = this.map.people.explore[0];
+                this.map.highlightTiles([tileId]);
+                this.confirmAction(
+                    'You will explore this new tile',
+                    () => this.ajaxCallWrapper('explore', {tileId: tileId}),
+                    () => {
+                        this.map.unHighlightAllTiles();
+                        this.resetActionButtons();
+                    }
+                );
+            } else if (this.map.people.explore.length > 1) {
+                this.changeActionTitle('Please, select tile to explore...');
+
+
+            }
+
+            // this.ajaxCallWrapper(action);
+        },
+
         onActPTurnPass: function(action) {
             this.ajaxCallWrapper(action);
         },
@@ -2187,7 +2236,7 @@ function (dojo, on, declare) {
         },
 
         onHarvestResource: function(evt) {
-            evt.stopPropagation();
+            dojo.stopEvent(evt);
 
             let dom = evt.currentTarget;
             if (dom.classList.contains('used')) {
@@ -2250,7 +2299,7 @@ function (dojo, on, declare) {
                 thisCard.classList.remove('selected');
             });
 
-            document.getElementById('pagemaintitletext').innerHTML = _('Please, select your lineage');
+            this.changeActionTitle('Please, select your lineage');
             document.getElementById('chooseLineage').classList.add('hidden');
             document.getElementById('cancelChooseLineage').classList.add('hidden');
         },
@@ -2272,7 +2321,7 @@ function (dojo, on, declare) {
                 thisCard.classList.remove('selected');
             });
 
-            document.getElementById('pagemaintitletext').innerHTML = _('Please, select spell you will master');
+            this.changeActionTitle('Please, select spell you will master');
             document.getElementById('chooseSpell').classList.add('hidden');
             document.getElementById('cancelChooseSpell').classList.add('hidden');
         },
@@ -2381,7 +2430,10 @@ function (dojo, on, declare) {
                 this.slideToObjectAndDestroy('flip-' + lineage.id, 'overall_player_board_' + lineage.location_arg, 1000, 0);
 
                 // Create lineage cartridge using chosen lineage
-                window.setTimeout(() => this.initPlayerLineage(lineage), 1000);
+                window.setTimeout(() => {
+                    this.initPlayerLineage(lineage);
+                    this.map.initEvents();
+                }, 1000);
             }
         },
 
@@ -2397,9 +2449,7 @@ function (dojo, on, declare) {
         },
 
         endBlockingState: function () {
-            document.getElementById('pagemaintitletext').innerHTML = _('Please choose an action:');
-            document.getElementById('generalactions').innerHTML = '';
-            this.onUpdateActionButtons(this.gamedatas.gamestate.name, {args: {}});
+            this.resetActionButtons();
         },
 
         updateActions: function (actions) {
@@ -2407,7 +2457,11 @@ function (dojo, on, declare) {
             this.gamedatas.gamestate.args.actions = actions;
 
             if (this.actions?.move?.moves !== undefined) {
-                this.moves = this.actions?.move?.moves;
+                this.map.people.updateMoves(this.actions.move.moves);
+            }
+
+            if (this.actions?.explore?.tiles !== undefined) {
+                this.map.people.updateExplore(this.actions.explore.tiles);
             }
         },
 

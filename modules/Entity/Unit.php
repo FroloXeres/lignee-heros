@@ -100,6 +100,11 @@ class Unit implements \JsonSerializable
         return $this;
     }
 
+    public function isLineage(): bool
+    {
+        return $this->getType() !== null && $this->getType()->getLineage() !== null;
+    }
+
     public function getLocation(): string
     {
         return $this->location;

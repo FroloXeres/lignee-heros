@@ -2,10 +2,14 @@
 
 namespace LdH\Repository;
 
+use LdH\Entity\Cards\AbstractCard;
+use LdH\Entity\Cards\BoardCardInterface;
 use LdH\Entity\Map\City;
 use LdH\Entity\Map\Resource;
 use LdH\Entity\Map\Terrain;
 use LdH\Entity\Map\Tile;
+use LdH\Entity\Unit;
+
 
 class MapRepository extends AbstractRepository
 {
@@ -29,6 +33,24 @@ class MapRepository extends AbstractRepository
     {
         return $this->selectAll(
             'SELECT * FROM `'.$this->table.'`' . ($onlyRevealed? ' WHERE `tile_revealed` = 1' : '')
+        );
+    }
+
+    /** @return array<int> */
+    public function getTilesToExplore(): array
+    {
+        $tiles = $this->selectAll(
+            sprintf(
+                "SELECT mp.`tile_id` FROM `%s` mp JOIN `meeple` m ON m.card_location = '%s' AND mp.`tile_id` = m.`card_location_arg` WHERE mp.`tile_revealed` = 0 GROUP BY mp.`tile_id`",
+                $this->table,
+                Unit::LOCATION_MAP,
+            )
+        );
+        return array_values(
+            array_map(
+                fn($data) => (int) $data['tile_id'],
+                $tiles
+            )
         );
     }
 

@@ -25,13 +25,13 @@ use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use LdH\Service\StateCompilerPass;
-
 use LdH\Service\CurrentStateService;
 use LdH\Service\MapService;
 use LdH\Service\CardService;
 use LdH\Service\StateService;
 use LdH\Service\PeopleService;
 use LdH\Service\BonusService;
+use LdH\State\ChooseLineageState;
 use LdH\Entity\Cards\Deck;
 use LdH\Entity\Map\Resource;
 use LdH\Entity\Map\Terrain;
@@ -290,13 +290,14 @@ class ligneeheros extends Table
     {
         $result = array();
 
-        $currentPlayerId = (int) self::getCurrentPlayerId();    // !! We must only return information visible by this player !!
-
         // Get information about players
         // Note: you can retrieve some extra field you added for "player" table in "dbmodel.sql" if you need it.
         $sql = "SELECT player_id id, player_score score FROM player ";
-        $result['players'] = self::getCollectionFromDb( $sql );
-        $result['isActive'] = $this->gamestate->isPlayerActive($this->getCurrentPlayerId());
+        $result['players'] = self::getCollectionFromDb($sql);
+
+        $currentPlayerId = (int) $this->getCurrentPlayerId();    // !! We must only return information visible by this player !!
+        $result['playerId'] = $currentPlayerId;
+        $result['isActive'] = $this->gamestate->isPlayerActive($currentPlayerId);
 
         // Send materials
         $result['resources'] = $this->resources?? [];
@@ -316,15 +317,25 @@ class ligneeheros extends Table
 
         // Meeples
         $result['meeples'] = $this->meeples;
-        $result['moves'] = $this->getPeople()->getUnitPossibleMoves(
-            $this->getMapService()->getSimpleMap(),
-            (int) $this->getGameStateValue(CurrentStateService::GLB_MOVE)
-        );
+
+        if ($currentStateId > ChooseLineageState::ID) {
+            // Can move only after ChooseLineageState
+            $result['moves'] = $this->getPeopleMoves();
+            $result['explore'] = $this->getMapService()->getExplorableTiles();
+        }
         $result['people'] = $this->getPeople();
 
         // TODO: Gather all information about current game situation (visible by player $current_player_id).
 
         return $result;
+    }
+
+    function getPeopleMoves() {
+        return $this->getPeople()->getUnitPossibleMoves(
+            $this->getMapService()->getSimpleMap(),
+            (int) $this->getGameStateValue(CurrentStateService::GLB_MOVE),
+            (int) $this->getCurrentPlayerId()
+        );
     }
 
     function addPlayersInfosForArgs($args): array
