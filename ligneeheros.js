@@ -926,11 +926,16 @@ class LdhMap {
     terrains = [];
     resources = [];
 
+    /** @var {Animator} animator */
     animator = null;
+
+    state = {
+        waitToExplore: false,
+    };
 
     /**
      * @param {bgagame.ligneeheros} game
-     * @param {Animator} animator*
+     * @param {Animator} animator
      */
     constructor(game, animator) {
         this.game = game;
@@ -951,49 +956,56 @@ class LdhMap {
 
     buildMap(animate= false) {
         let _self = this;
-        let tileTerrain = {};
-        let tileContent = null;
         for (let tileId in _self.revealed) {
             let tile = _self.revealed[tileId];
-
-            let harvested = {
-                resource1: tile.resource1 === true ? ' used' : '',
-                resource2: tile.resource2 === true ? ' used' : '',
-                resource3: tile.resource3 === true ? ' used' : ''
-            };
-            tileTerrain = Utility.replaceIconsInObject(
-                _self.terrains[tile.terrain]
-            );
-            tileContent = this.game.format_block('jstpl_tile', {
-                id: tile.id,
-                count: tileTerrain.resources.length,
-                resource1: tileTerrain.resources[0] ? Utility.getIconAsText(tileTerrain.resources[0]) : '',
-                resource2: tileTerrain.resources[1] ? Utility.getIconAsText(tileTerrain.resources[1]) : '',
-                resource3: tileTerrain.resources[2] ? Utility.getIconAsText(tileTerrain.resources[2]) : '',
-                resource1Class: tileTerrain.resources[0] ? tileTerrain.resources[0] + harvested.resource1 : '',
-                resource2Class: tileTerrain.resources[1] ? tileTerrain.resources[1] + harvested.resource2 : '',
-                resource3Class: tileTerrain.resources[2] ? tileTerrain.resources[2] + harvested.resource3 : '',
-                name: tileTerrain.name,
-                bonus: tileTerrain.bonusAsTxt,
-                food: tileTerrain.food ? '' : 'none',
-                foodCount: tileTerrain.food,
-                foodIcon: Utility.getIconAsText('food'),
-                science: tileTerrain.science ? '' : 'none',
-                scienceIcon: Utility.getIconAsText('science')
-            });
-            document.getElementById('tile-content-' + tile.id).innerHTML = tileContent;
-
-            let revealed = document.getElementById('tile-' + tile.id)?.getElementsByClassName('map-hex-content');
-            revealed.length && [...revealed].forEach(($tile) => {
-                $tile.classList.add('tile_reveal');
-                $tile.classList.add('tile_' + tileTerrain.code);
-            });
+            this.buildTile(tile);
         }
 
         this.initMapZones();
         this.game.gamedatas.gamestate.id > 3 && this.initEvents();
         this.initZoom();
         this.scrollToTile(0, 0);
+    }
+
+    revealTile(tile, tileTerrain) {
+        let revealed = document.getElementById('tile-' + tile.id)?.getElementsByClassName('map-hex-content');
+        revealed.length && [...revealed].forEach(($tile) => {
+            $tile.classList.add('tile_reveal');
+            $tile.classList.add('tile_' + tileTerrain.code);
+        });
+    }
+
+    buildTile(tile) {
+        let tileTerrain = {};
+        let tileContent = null;
+        let harvested = {
+            resource1: tile.resource1 === true ? ' used' : '',
+            resource2: tile.resource2 === true ? ' used' : '',
+            resource3: tile.resource3 === true ? ' used' : ''
+        };
+        tileTerrain = Utility.replaceIconsInObject(
+            this.terrains[tile.terrain]
+        );
+        tileContent = this.game.format_block('jstpl_tile', {
+            id: tile.id,
+            count: tileTerrain.resources.length,
+            resource1: tileTerrain.resources[0] ? Utility.getIconAsText(tileTerrain.resources[0]) : '',
+            resource2: tileTerrain.resources[1] ? Utility.getIconAsText(tileTerrain.resources[1]) : '',
+            resource3: tileTerrain.resources[2] ? Utility.getIconAsText(tileTerrain.resources[2]) : '',
+            resource1Class: tileTerrain.resources[0] ? tileTerrain.resources[0] + harvested.resource1 : '',
+            resource2Class: tileTerrain.resources[1] ? tileTerrain.resources[1] + harvested.resource2 : '',
+            resource3Class: tileTerrain.resources[2] ? tileTerrain.resources[2] + harvested.resource3 : '',
+            name: tileTerrain.name,
+            bonus: tileTerrain.bonusAsTxt,
+            food: tileTerrain.food ? '' : 'none',
+            foodCount: tileTerrain.food,
+            foodIcon: Utility.getIconAsText('food'),
+            science: tileTerrain.science ? '' : 'none',
+            scienceIcon: Utility.getIconAsText('science')
+        });
+        document.getElementById('tile-content-' + tile.id).innerHTML = tileContent;
+
+        this.revealTile(tile, tileTerrain);
     }
 
     initEvents() {
@@ -1026,9 +1038,31 @@ class LdhMap {
                 if ($clickedTile === null || !$clickedTile.classList.contains('selected')) return;
 
                 const tileId = LdhMap.getTileId($clickedTile.closest('.map-hex-item'));
+                if (this.state.waitToExplore) {
+                    this.unHighlightAllTiles(tileId);
+                    this.game.addExploreConfirmButtons(tileId);
+                } else {
+                    // Unit move: Confirm move
+                    this.unHighlightAllTiles(tileId);
+                    this.scrollToTileById(tileId);
 
-                // UnSelect other tiles, confirm move
-                this.game.ajaxCallWrapper('move', {tileId: tileId, unitIds: JSON.stringify(Object.keys(this.people.selectedUnits))}, (response) => console.log(response));
+                    let count = Object.values(this.people.selectedUnits).length;
+                    this.game.confirmAction(
+                        'You will move '+count+' unit(s) to this tile',
+                        () => this.game.ajaxCallWrapper(
+                            'move',
+                            {tileId: tileId, unitIds: JSON.stringify(Object.keys(this.people.selectedUnits))},
+                        ),
+                        () => {
+                            this.people.initMovesIfPossible();
+                        },
+                        () => {
+                            this.unHighlightAllTiles();
+                            this.people.unselectAll();
+                            this.game.resetActionButtons();
+                        }
+                    );
+                }
             });
         }
     }
@@ -1040,10 +1074,23 @@ class LdhMap {
         ;
     }
 
+    isTileFlipped(tileId) {
+        let $tile = document.getElementById('tile-' + tileId);
+        if ($tile !== null) {
+            return $tile.querySelector('.tile_reveal') !== null;
+        } else {
+            console.log('Impossible to find tile: ' + tileId);
+            return true;
+        }
+    }
+
     update(tiles) {
         for (const [tileId, update] of Object.entries(tiles)) {
             if (update.resources !== undefined) {
                 this.updateTileResources(tileId, update.terrain, update.resources);
+            }
+            if (!this.isTileFlipped(update.id)) {
+                this.buildTile(update);
             }
         }
     }
@@ -1074,10 +1121,23 @@ class LdhMap {
         });
     }
 
-    unHighlightAllTiles() {
+    unHighlightAllTiles(tileId = null) {
         let $tiles = document.querySelectorAll('.tile');
         for (let $tile of $tiles) {
+            if (tileId !== null) {
+                let thisId = LdhMap.getTileId($tile.closest('.map-hex-item'));
+                if (tileId === thisId) continue;
+            }
+
             $tile.classList.remove('selected');
+        }
+    }
+
+    scrollToTileById(tileId) {
+        const $map = document.getElementById('map-zone');
+        const $tile = document.getElementById('tile-' + tileId);
+        if ($map !== null && $tile !== null) {
+            window.scrollTo($map.offsetLeft + $tile.offsetLeft / 2, $map.offsetTop + $tile.offsetTop / 2);
         }
     }
 
@@ -1256,6 +1316,19 @@ class People {
             return parseInt($unit.id.replace('unit-', ''));
         }
         return null;
+    }
+
+    unselectAll() {
+        let $units = document.getElementsByClassName('wrapped-icon');
+        for (let $unit of $units) {
+            if ($unit.dataset.selected !== undefined) {
+                delete $unit.dataset.selected;
+            }
+            if ($unit.classList.contains('selected')) {
+                $unit.classList.remove('selected');
+            }
+        }
+        this.selectedUnits = {};
     }
 
     selectUnit($unit, unit) {
@@ -2004,9 +2077,9 @@ function (dojo, on, declare) {
             document.getElementById('spell-onTable').scrollIntoView({behavior: 'smooth', block: 'center', inline: 'start'});
 
             this.addActionButton( 'chooseSpell', _('Yes'), 'onSelectSpell' );
-            this.addActionButton( 'cancelChooseSpell', _('No'), 'onUnselectSpell' );
+            this.addActionButton( 'noChooseSpell', _('No'), 'onUnselectSpell' );
             document.getElementById('chooseSpell').classList.add('hidden');
-            document.getElementById('cancelChooseSpell').classList.add('hidden');
+            document.getElementById('noChooseSpell').classList.add('hidden');
 
             this.status.state.spellToMasterChosen = false;
         },
@@ -2026,7 +2099,7 @@ function (dojo, on, declare) {
 
             this.changeActionTitle('You choose to master spell: ', selectedCard.name);
             document.getElementById('chooseSpell').classList.remove('hidden');
-            document.getElementById('cancelChooseSpell').classList.remove('hidden');
+            document.getElementById('noChooseSpell').classList.remove('hidden');
         },
 
         displayFullScreenMessage: function(message, duration = 3000, translate = true)
@@ -2105,7 +2178,7 @@ function (dojo, on, declare) {
             }
 
             if (args?.actions !== undefined) {
-                this.updateActions(args.actions);
+                this.updateActions(args.actions, false);
             }
 
             if(this.isCurrentPlayerActive()) {
@@ -2185,44 +2258,63 @@ function (dojo, on, declare) {
             _ make a call to the game server
         
         */
-        confirmAction: function(text, yesMethod, noMethod = null) {
+        confirmAction: function(text, yesMethod, noMethod = null, cancelAction = null) {
             if (noMethod === null) noMethod = () => this.resetActionButtons();
 
             this.changeActionTitle(text);
-            debugger;
-            document.getElementById('generalactions').innerHTML = '';
+            this.clearActionButtons();
             this.addActionButton('confirmYes', _('Yes'), () => yesMethod());
             this.addActionButton('confirmNo', _('No'), () => noMethod());
+            typeof cancelAction === 'function' && this.addActionButton('confirmCancel', _('Cancel'), () => cancelAction());
         },
         changeActionTitle: function(text, notTranslated = '') {
             document.getElementById('pagemaintitletext').innerHTML = _(text) + notTranslated;
         },
+        clearActionButtons: function () {
+            document.getElementById('generalactions').innerHTML = '';
+        },
         resetActionButtons: function() {
             this.changeActionTitle('Please choose an action: ');
-            document.getElementById('generalactions').innerHTML = '';
+            this.clearActionButtons();
             this.onUpdateActionButtons(this.gamedatas.gamestate.name, {args: {}});
         },
 
+        addExploreConfirmButtons: function (tileId) {
+            this.confirmAction(
+                'You will explore this new tile',
+                () => this.ajaxCallWrapper('explore', {tileId: tileId}),
+                () => {
+                    if (this.map.state.waitToExplore) {
+                        this.map.highlightTiles(this.map.people.explore);
+                        this.addWaitForExploreButtons();
+                    } else {
+                        this.map.unHighlightAllTiles();
+                        this.resetActionButtons();
+                    }
+                }
+            );
+        },
+        addWaitForExploreButtons: function () {
+            this.map.state.waitToExplore = true;
+            this.changeActionTitle('Please, select tile to explore...');
+            this.clearActionButtons();
+            this.addActionButton('confirmCancel', _('Cancel'), () => {
+                this.map.unHighlightAllTiles();
+                this.resetActionButtons();
+                this.map.state.waitToExplore = false;
+            });
+        },
         onActExplore: function() {
             let tileId = null;
             if (this.map.people.explore.length === 1) {
                 tileId = this.map.people.explore[0];
-                this.map.highlightTiles([tileId]);
-                this.confirmAction(
-                    'You will explore this new tile',
-                    () => this.ajaxCallWrapper('explore', {tileId: tileId}),
-                    () => {
-                        this.map.unHighlightAllTiles();
-                        this.resetActionButtons();
-                    }
-                );
+                this.map.highlightTiles(this.map.people.explore);
+                this.map.scrollToTileById(tileId);
+                this.addExploreConfirmButtons(tileId);
             } else if (this.map.people.explore.length > 1) {
-                this.changeActionTitle('Please, select tile to explore...');
-
-
+                this.map.highlightTiles(this.map.people.explore);
+                this.addWaitForExploreButtons();
             }
-
-            // this.ajaxCallWrapper(action);
         },
 
         onActPTurnPass: function(action) {
@@ -2323,7 +2415,7 @@ function (dojo, on, declare) {
 
             this.changeActionTitle('Please, select spell you will master');
             document.getElementById('chooseSpell').classList.add('hidden');
-            document.getElementById('cancelChooseSpell').classList.add('hidden');
+            document.getElementById('noChooseSpell').classList.add('hidden');
         },
 
         onPass: function(evt) {
@@ -2389,6 +2481,8 @@ function (dojo, on, declare) {
             dojo.subscribe('ntfyAllDied', this, 'onNotification');
             dojo.subscribe('ntfySpellCardsRevealed', this, 'onNotification');
             dojo.subscribe('ntfySpellMastered', this, 'onNotification');
+            dojo.subscribe('ntfyUnitsMove', this, 'onNotification');
+            dojo.subscribe('ntfyTileExplored', this, 'onNotification');
 
             // Example 1: standard notification handling
             // dojo.subscribe( 'cardPlayed', this, "notif_cardPlayed" );
@@ -2452,7 +2546,7 @@ function (dojo, on, declare) {
             this.resetActionButtons();
         },
 
-        updateActions: function (actions) {
+        updateActions: function (actions, reset = true) {
             this.actions = actions;
             this.gamedatas.gamestate.args.actions = actions;
 
@@ -2463,6 +2557,8 @@ function (dojo, on, declare) {
             if (this.actions?.explore?.tiles !== undefined) {
                 this.map.people.updateExplore(this.actions.explore.tiles);
             }
+
+            reset && this.resetActionButtons();
         },
 
         onNotification: function (notif) {
@@ -2495,6 +2591,18 @@ function (dojo, on, declare) {
             if (this[notif.type] !== undefined) {
                 this[notif.type](notif);
             }
+        },
+
+        ntfyTileExplored: function () {
+            this.map.state.waitToExplore = false;
+            this.map.people.unselectAll();
+            this.map.unHighlightAllTiles();
+        },
+
+        ntfyUnitsMove: function() {
+            // Unselect units, [update unit piles]
+            this.map.people.unselectAll();
+            this.map.unHighlightAllTiles();
         },
 
         ntfyResourceHarvested: function() {

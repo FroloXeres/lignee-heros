@@ -330,6 +330,10 @@ class ligneeheros extends Table
         return $result;
     }
 
+    function changeState(string $state, string $value) {
+        //$this->setGameStateValue($state, $value);
+    }
+
     function getPeopleMoves() {
         return $this->getPeople()->getUnitPossibleMoves(
             $this->getMapService()->getSimpleMap(),

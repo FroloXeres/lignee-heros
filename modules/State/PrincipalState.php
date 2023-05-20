@@ -215,13 +215,22 @@ class PrincipalState extends AbstractState
             self::ACTION_EXPLORE => function(Tile $tileToExplore) {
                 /** @var \ligneeheros $this */
                 $toExplore = $this->getMapService()->exploreTile($tileToExplore);
+
+                // No more tiles to explore, pass is now possible
+                if (!count($toExplore)) {
+                    $this->setGameStateValue(CurrentStateService::GLB_HAVE_TO_EXPLORE, '0');
+                }
+
                 $notificationParams = [
+                    'i18n' => ['terrain'],
+                    'terrain' => $tileToExplore->getTerrain()->getName(),
                     'map' => $this->getMapTiles(),
                     'explore' => $toExplore,
+                    'actions' => PrincipalState::getAvailableActions($this),
                 ];
                 $this->notifyAllPlayers(
                     PrincipalState::NOTIFY_TILE_EXPLORED,
-                    clienttranslate('You discover a new tile!'),
+                    clienttranslate('${terrain} has been discovered by your units'),
                     $notificationParams
                 );
             },
@@ -254,7 +263,8 @@ class PrincipalState extends AbstractState
                         'i18n' => ['player_name'],
                         'player_name' => $this->getCurrentPlayerName(),
                         'units' => $units,
-                        'moves' => $this->getPeopleMoves()
+                        'moves' => $this->getPeopleMoves(),
+                        'explore' => $this->getMapService()->getExplorableTiles(),
                     ]
                 );
             },

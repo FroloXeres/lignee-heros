@@ -146,9 +146,8 @@ class CardRepository extends AbstractCardRepository
         $qry = sprintf(
             "SELECT m.`card_id`, mp.`tile_id`, mp.`tile_terrain`, mp.`tile_resource1`, mp.`tile_resource2`, mp.`tile_resource3`
                     FROM `map` mp 
-                        LEFT JOIN `%s` m ON m.`card_location` = 'map' AND m.`card_location_arg` = mp.`tile_id` AND m.`card_type` IN (%s)
-                    WHERE mp.`tile_revealed` = 1
-                      AND `meeple_status` <> '%s'",
+                        LEFT JOIN `%s` m ON m.`card_location` = 'map' AND m.`card_location_arg` = mp.`tile_id` AND m.`card_type` IN (%s) AND `meeple_status` <> '%s'
+                    WHERE mp.`tile_revealed` = 1",
             $this->table,
             join(', ', array_map(function(string $code) {return "'$code'";}, Meeple::HARVESTERS)),
             Unit::STATUS_ACTED,
