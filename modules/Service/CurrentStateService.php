@@ -113,6 +113,11 @@ class CurrentStateService
         }
     }
 
+    public static function getCartridgeUpdates(array $states, array $values): array
+    {
+        return [];
+    }
+
     public static function getCartridgeUpdate(string $state, int $value): array
     {
         if ($state === self::GLB_TURN)  return [

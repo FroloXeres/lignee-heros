@@ -953,6 +953,28 @@ svg.svg-icon {
     width: 1.5em;
     height: 1.5em;
 }
+svg.svg-icon#resources {
+    background-color: #fff;
+    border: .15em solid #065009;
+    border-radius: 50%;
+}
+a.action-button {
+    font-size: 1em;
+    line-height: 1em !important;
+}
+a.action-button svg.svg-icon {
+    width: 1.1em;
+    height: 1.1em;
+    position: relative;
+    top: .1em;
+}
+a.action-button svg.svg-icon#invention path,
+a.action-button svg.svg-icon#spell path,
+a.action-button svg.svg-icon#end_turn path
+{
+    fill: #222;
+}
+
 #liquid {fill: #2f73b8;}
 #colorWarrior {fill: #ed0000;}
 #colorWhite {fill: #fff;}

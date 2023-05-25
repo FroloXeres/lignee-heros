@@ -5,6 +5,9 @@ namespace LdH\State;
 use LdH\Entity\Cards\AbstractCard;
 use LdH\Entity\Cards\BoardCardInterface;
 use LdH\Entity\Cards\Deck;
+use LdH\Entity\Cards\Invention;
+use LdH\Entity\Cards\Spell;
+use LdH\Entity\Map\Resource;
 use LdH\Entity\Map\Tile;
 use LdH\Entity\Meeple;
 use LdH\Entity\Unit;
@@ -22,8 +25,12 @@ class PrincipalState extends AbstractState
     public const ACTION_RESOURCE_HARVEST = 'resourceHarvest';
     public const ACTION_REVEAL_SPELL = 'revealSpell';
     public const ACTION_MASTER_SPELL = 'masterSpell';
+    public const ACTION_CAST_SPELL = 'castSpell';
     public const ACTION_MOVE = 'move';
     public const ACTION_EXPLORE = 'explore';
+    public const ACTION_RESEARCH = 'research';
+    public const ACTION_DISCOVER = 'discover';
+    public const ACTION_ACTIVATE = 'activate';
 
     public const TR_PASS = 'trPass';
 
@@ -34,6 +41,11 @@ class PrincipalState extends AbstractState
     public const NOTIFY_PLAYER_PASS = 'ntfyPlayerPass';
     public const NOTIFY_UNITS_MOVE = 'ntfyUnitsMove';
     public const NOTIFY_TILE_EXPLORED = 'ntfyTileExplored';
+    public const NOTIFY_RESEARCHED = 'ntfyResearched';
+    public const NOTIFY_DISCOVERED = 'ntfyDiscovered';
+    public const NOTIFY_ACTIVATED = 'ntfyActivated';
+    public const NOTIFY_SPELL_CASTED = 'ntfySpellCasted';
+
 
 
     public static function getId(): int
@@ -55,6 +67,10 @@ class PrincipalState extends AbstractState
             self::ACTION_MASTER_SPELL,
             self::ACTION_MOVE,
             self::ACTION_EXPLORE,
+            self::ACTION_CAST_SPELL,
+            self::ACTION_RESEARCH,
+            self::ACTION_DISCOVER,
+            self::ACTION_ACTIVATE,
         ];
         $this->args              = 'arg' . $this->name;
         $this->transitions       = [
@@ -106,18 +122,6 @@ class PrincipalState extends AbstractState
                     throw new \BgaUserException($this->_('You can\'t pass your turn for now'));
                 }
             },
-            self::ACTION_EXPLORE => function() {
-                /** @var \action_ligneeheros $this */
-                $tileId = (int) $this->getArg('tileId', AT_posint, true);
-                $tile = $this->game->getMapService()->getTileById($tileId);
-
-                $actions = PrincipalState::getAvailableActions($this->game, PrincipalState::ACTION_EXPLORE);
-                if (array_key_exists(PrincipalState::ACTION_EXPLORE, $actions) && $tile !== null) {
-                    $this->game->{PrincipalState::ACTION_EXPLORE}($tile);
-                } else {
-                    throw new \BgaUserException($this->_('You can\'t explore for now'));
-                }
-            },
             self::ACTION_MOVE => function() {
                 /** @var \action_ligneeheros $this */
                 $tileId = (int) $this->getArg('tileId', AT_posint, true);
@@ -143,6 +147,54 @@ class PrincipalState extends AbstractState
                     throw new \BgaUserException($this->_('You can\'t move any unit anymore'));
                 }
             },
+            self::ACTION_EXPLORE => function() {
+                /** @var \action_ligneeheros $this */
+                $tileId = (int) $this->getArg('tileId', AT_posint, true);
+                $tile = $this->game->getMapService()->getTileById($tileId);
+
+                $actions = PrincipalState::getAvailableActions($this->game, PrincipalState::ACTION_EXPLORE);
+                if (array_key_exists(PrincipalState::ACTION_EXPLORE, $actions) && $tile !== null) {
+                    $this->game->{PrincipalState::ACTION_EXPLORE}($tile);
+                } else {
+                    throw new \BgaUserException($this->_('You can\'t explore for now'));
+                }
+            },
+            self::ACTION_RESEARCH => function() {
+                /** @var \action_ligneeheros $this */
+                $savantIds = $this->getArg('savantIds', AT_json, true);
+                $inventionIds = $this->getArg('inventionIds', AT_json, true);
+
+                // Check if selected savant(s) have not acted and inventions are onTable
+                $savants = [];
+                $inventions = [];
+
+                $this->game->{PrincipalState::ACTION_RESEARCH}($savants, $inventions);
+            },
+            self::ACTION_DISCOVER => function() {
+                /** @var \action_ligneeheros $this */
+                $inventionId = $this->getArg('inventionId', AT_posint, true);
+
+                // Check for science
+                $invention = null;
+
+                $this->game->{PrincipalState::ACTION_DISCOVER}($invention);
+            },
+            self::ACTION_ACTIVATE => function() {
+                /** @var \action_ligneeheros $this */
+                $inventionId = $this->getArg('inventionId', AT_posint, true);
+                $unitIds = $this->getArg('unitIds', AT_json, true);
+                $ressourceCodes = $this->getArg('resourceCodes', AT_json, true);
+
+                $invention = null;
+                $units = [];
+                $ressources = [];
+
+                // Check if we have go those ressources and if units are on city and not acted
+
+
+                $this->game->{PrincipalState::ACTION_ACTIVATE}($invention, $units, $ressources);
+            },
+
             self::ACTION_REVEAL_SPELL => function() {
                 /** @var \action_ligneeheros $this */
                 $actions = PrincipalState::getAvailableActions($this->game, PrincipalState::ACTION_REVEAL_SPELL);
@@ -172,6 +224,16 @@ class PrincipalState extends AbstractState
                     throw new \BgaUserException($this->game->_('This card is not an authorized spell to choose'));
                 }
                 throw new \BgaUserException($this->game->_('You can\'t master a spell this turn anymore'));
+            },
+            self::ACTION_CAST_SPELL => function() {
+                /** @var \action_ligneeheros $this */
+                $spellId = (int) $this->getArg('spellId', AT_posint, true);
+
+                $spell = null;
+                
+
+                // Check if this spell can be cast now
+                $this->game->{PrincipalState::ACTION_CAST_SPELL}($spell);
             },
             self::ACTION_RESOURCE_HARVEST => function() {
                 /** @var \action_ligneeheros $this */
@@ -269,6 +331,100 @@ class PrincipalState extends AbstractState
                 );
             },
 
+            self::ACTION_RESEARCH => function(array $savants, array  $inventions) {
+                /** @var \ligneeheros $this */
+                $this->checkAction(PrincipalState::ACTION_RESEARCH);
+
+                /** @var Deck $inventionDeck */
+                $inventionDeck = $this->cards[AbstractCard::TYPE_INVENTION];
+                $this->getCardService()->updateCardsFromDb($inventionDeck);
+
+
+                // Draw count($savants) inventions
+                // Move selected inventions into Deck and shuffle
+                // Savants has acted
+
+                $txt = '${player_name} research some [invention].';
+                $this->notifyAllPlayers(PrincipalState::NOTIFY_RESEARCHED, clienttranslate($txt), [
+                    'i18n' => ['player_name'],
+                    'player_name' => $this->getCurrentPlayerName(),
+                    'actions' => PrincipalState::getAvailableActions($this),
+                    'units' => [],
+                    'cards' => $this->getCardService()->getPublicCards(
+                        [AbstractCard::TYPE_INVENTION => $inventionDeck],
+                        PrincipalState::ID,
+                        (int) $this->getCurrentPlayerId()
+                    ),
+                ]);
+            },
+
+            self::ACTION_DISCOVER => function(Invention $invention) {
+                /** @var \ligneeheros $this */
+                $this->checkAction(PrincipalState::ACTION_DISCOVER);
+
+                $inventions = $this->cards[AbstractCard::TYPE_INVENTION];
+                $this->getCardService()->updateCardsFromDb($inventions);
+
+                // Use invention science cost
+                $science = (int) $this->getGameStateValue(CurrentStateService::GLB_SCIENCE);
+                $science -= $invention->getScience();
+
+                // Move the card to Hand
+                $this->getCardService()->moveTheseCardsTo([$invention]);
+
+                $this->notifyAllPlayers(PrincipalState::NOTIFY_DISCOVERED, clienttranslate('${player_name} use ${science}[science] to discover ${invention}[invention]'), [
+                    'i18n' => ['player_name', 'science', 'invention'],
+                    'player_name' => $this->getCurrentPlayerName(),
+                    'science' => $invention->getScience(),
+                    'invention' => $invention->getName(),
+                    'actions' => PrincipalState::getAvailableActions($this),
+                    'cartridge' => CurrentStateService::getCartridgeUpdate(CurrentStateService::GLB_SCIENCE, $science),
+                    'cards' => $this->getCardService()->getPublicCards(
+                        [AbstractCard::TYPE_INVENTION => $inventions],
+                        PrincipalState::ID,
+                        (int) $this->getCurrentPlayerId()
+                    ),
+                ]);
+            },
+
+            // Create object for Cost (Selected unit(s) and/or Resources)
+            /**
+             * @param array<Unit> $units
+             * @param array<Resource> $resources
+             */
+            self::ACTION_ACTIVATE => function(Invention $activated, array $units, array $resources) {
+                /** @var \ligneeheros $this */
+                $this->checkAction(PrincipalState::ACTION_ACTIVATE);
+
+                // Use resources
+                // Unit have acted
+                // Invention is activated
+                // Give "gains"
+
+                $uses = [
+                    'i18n' => ['uses'],
+                    'use ${uses} to'
+                ];
+                $gains = [
+                    'i18n' => ['gains'],
+                    'and gain ${gains}'
+                ];
+                $this->notifyAllPlayers(PrincipalState::NOTIFY_ACTIVATED, clienttranslate('${player_name}${uses} activate ${invention}[invention] and gain ${gains}'), [
+                    'i18n' => ['player_name', 'uses', 'gains', 'invention'],
+                    'player_name' => $this->getCurrentPlayerName(),
+                    'uses' => $uses,
+                    'gains' => $gains,
+                    'invention' => $activated->getName(),
+                    'actions' => PrincipalState::getAvailableActions($this),
+                    'cartridge' => CurrentStateService::getCartridgeUpdates([], []),
+                    'cards' => $this->getCardService()->getPublicCards(
+                        [AbstractCard::TYPE_INVENTION => null],
+                        PrincipalState::ID,
+                        (int) $this->getCurrentPlayerId()
+                    ),
+                ]);
+            },
+
             self::ACTION_REVEAL_SPELL => function() {
                 /** @var \ligneeheros $this */
                 $this->checkAction(PrincipalState::ACTION_REVEAL_SPELL);
@@ -332,6 +488,21 @@ class PrincipalState extends AbstractState
                             PrincipalState::ID,
                             (int) $this->getCurrentPlayerId()
                         ),
+                    ]
+                );
+            },
+
+            self::ACTION_CAST_SPELL => function(Spell $spell) {
+                /** @var \ligneeheros $this */
+
+
+                $this->notifyAllPlayers(
+                    PrincipalState::NOTIFY_SPELL_CASTED,
+                    clienttranslate('${player_name} '),
+                    [
+                        'i18n' => ['player_name'],
+                        'player_name' => $this->getCurrentPlayerName(),
+                        'actions' => PrincipalState::getAvailableActions($this),
                     ]
                 );
             },
@@ -401,7 +572,7 @@ class PrincipalState extends AbstractState
             $list = $game->getPeople()->getHarvestableResources($game->terrains);
             if ($game->getPeople()->hasHarvestableResources($list)) {
                 $actions[PrincipalState::ACTION_RESOURCE_HARVEST] = [
-                    'button' => clienttranslate('Harvest'),
+                    'button' => clienttranslate('[resources] Harvest'),
                     'blocking' => true,
                     'status' => $list
                 ];
@@ -413,17 +584,22 @@ class PrincipalState extends AbstractState
             $unitsByType = $game->getPeople()->getByTypeUnits();
             if (!$masteredThisTurn && count($unitsByType[Meeple::MAGE] ?? [])) {
                 $actions[PrincipalState::ACTION_REVEAL_SPELL] = [
-                    'button' => clienttranslate('Search for spell'),
+                    'button' => clienttranslate('[spell] Search'),
                     'blocking' => true,
                 ];
             }
         }
 
+        $actions[PrincipalState::ACTION_CAST_SPELL] = ['button' => clienttranslate('[spell] Cast')];
+        $actions[PrincipalState::ACTION_RESEARCH] = ['button' => clienttranslate('[invention] Research')];
+        $actions[PrincipalState::ACTION_DISCOVER] = ['button' => clienttranslate('[invention] Discover')];
+        $actions[PrincipalState::ACTION_ACTIVATE] = ['button' => clienttranslate('[invention] Activate')];
+
         if ($action === null || $action === PrincipalState::ACTION_MOVE) {
             $moves = $game->getPeopleMoves();
             if (!empty($moves)) {
                 $actions[PrincipalState::ACTION_MOVE] = [
-                    'button' => clienttranslate('Move'),
+                    'button' => clienttranslate('[all] Move'),
                     'blocking' => true,
                     'moves' => $moves,
                 ];
@@ -433,13 +609,13 @@ class PrincipalState extends AbstractState
         $haveToExplore = $game->getGameStateValue(CurrentStateService::GLB_HAVE_TO_EXPLORE) === '1';
         if (($action === null || $action === PrincipalState::ACTION_EXPLORE) && $haveToExplore) {
             $actions[PrincipalState::ACTION_EXPLORE] = [
-                'button' => clienttranslate('Explore'),
+                'button' => clienttranslate('[explore] Explore'),
                 'tiles' => $game->getMapService()->getExplorableTiles(),
             ];
         }
 
         if (!$haveToExplore && ($action === null || $action === PrincipalState::ACTION_PASS)) {
-            $actions[PrincipalState::ACTION_PASS] = clienttranslate('Pass');
+            $actions[PrincipalState::ACTION_PASS] = clienttranslate('[end_turn] Pass');
         }
 
         return $actions;

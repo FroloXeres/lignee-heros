@@ -2196,6 +2196,7 @@ function (dojo, on, declare) {
                             let blocking = this.actions[action].blocking !== undefined && this.actions[action].blocking;
 
                             let buttonName = this.actions[action].button === undefined ? this.actions[action] : this.actions[action].button;
+                            buttonName = Utility.replaceIconsInString(buttonName);
                             let lastStatusUpdate = this.actions[action].status || {};
                             this.addActionButton(action, buttonName, (evt) => {
                                 dojo.stopEvent(evt);
@@ -2270,13 +2271,27 @@ function (dojo, on, declare) {
         changeActionTitle: function(text, notTranslated = '') {
             document.getElementById('pagemaintitletext').innerHTML = _(text) + notTranslated;
         },
-        clearActionButtons: function () {
+        clearActionButtons: function (cancelAction = null) {
             document.getElementById('generalactions').innerHTML = '';
+            typeof cancelAction === 'function' && this.addActionButton('cancelAction', _('Cancel'), () => cancelAction());
         },
         resetActionButtons: function() {
             this.changeActionTitle('Please choose an action: ');
             this.clearActionButtons();
             this.onUpdateActionButtons(this.gamedatas.gamestate.name, {args: {}});
+        },
+        updateActionsWithSelectedUnits: function () {
+            if (!this.selectedUnits.length) {
+                this.clearActionButtons();
+                return ;
+            }
+
+            // Harvest: 1 + worker + not acted + at least one resource not harvested
+
+            // Move : free units + at least one reachable tile
+            this.people.initMovesIfPossible()
+
+
         },
 
         addExploreConfirmButtons: function (tileId) {
@@ -2304,6 +2319,14 @@ function (dojo, on, declare) {
                 this.map.state.waitToExplore = false;
             });
         },
+
+        onActMove: function() {
+            this.changeActionTitle('Please, select units you want to move, then target tile');
+            this.clearActionButtons(() => {
+                this.resetActionButtons();
+            });
+        },
+
         onActExplore: function() {
             let tileId = null;
             if (this.map.people.explore.length === 1) {
@@ -2603,6 +2626,7 @@ function (dojo, on, declare) {
             // Unselect units, [update unit piles]
             this.map.people.unselectAll();
             this.map.unHighlightAllTiles();
+            this.resetActionButtons();
         },
 
         ntfyResourceHarvested: function() {
