@@ -14,6 +14,7 @@ use LdH\Entity\Unit;
 use LdH\Object\FullScreenMessage;
 use LdH\Service\AnimationService;
 use LdH\Service\CurrentStateService;
+use LdH\Service\PeopleService;
 
 
 class PrincipalState extends AbstractState
@@ -573,8 +574,8 @@ class PrincipalState extends AbstractState
             if ($game->getPeople()->hasHarvestableResources($list)) {
                 $actions[PrincipalState::ACTION_RESOURCE_HARVEST] = [
                     'button' => clienttranslate('[resources] Harvest'),
-                    'blocking' => true,
-                    'status' => $list
+                    'status' => $list,
+                    'select' => PeopleService::buildSelectable(Meeple::HARVESTERS, Unit::NOT_ACTED_STATUS)
                 ];
             }
         }
@@ -600,7 +601,6 @@ class PrincipalState extends AbstractState
             if (!empty($moves)) {
                 $actions[PrincipalState::ACTION_MOVE] = [
                     'button' => clienttranslate('[all] Move'),
-                    'blocking' => true,
                     'moves' => $moves,
                 ];
             }

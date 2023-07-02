@@ -195,24 +195,20 @@ class PeopleService implements \JsonSerializable
         return $this->getRepository()->moveUnitsTo($unitIds, $tileId);
     }
 
-    /**
-     * @param array<SimpleTile> $simpleMap
-     *
-     * @return array<Coordinate>
-     */
-    protected function pathfinder(array &$paths, array $simpleMap, Coordinate $position, int $moveLeft): void
+    /** @param array<SimpleTile> $simpleMap */
+    public function pathfinder(array &$paths, array $simpleMap, Coordinate $position, int $moveLeft): void
     {
         foreach ($this->getAround($position) as $target) {
             $alreadyThere = array_key_exists($target->key(), $paths);
             !$alreadyThere && $paths[$target->key()] = $target;
-            if (!$alreadyThere && $moveLeft && $simpleMap[$target->key()]->revealed) {
+            if ($moveLeft > 1 && $simpleMap[$target->key()]->revealed) {
                 $this->pathfinder($paths, $simpleMap, $target, $moveLeft - 1);
             }
         }
     }
 
     /** @return array<Coordinate> */
-    protected function getAround(Coordinate $position): array
+    public function getAround(Coordinate $position): array
     {
         $around = [];
 
@@ -362,6 +358,27 @@ class PeopleService implements \JsonSerializable
         }
 
         return $created;
+    }
+
+    public static function buildSelectable(?array $types = null, ?array $states = null, ?string $cardType = null): array
+    {
+        $select = [];
+        if ($types !== null) {
+            $select['types'] = $types;
+        }
+        if ($states !== null) {
+            $select['states'] = $states;
+        }
+        if ($cardType !== null) {
+            switch ($cardType) {
+            case AbstractCard::TYPE_MAGIC:
+
+                $select['cards'] = [];
+                break;
+            }
+        }
+
+        return $select;
     }
 
     /**

@@ -1331,6 +1331,10 @@ class People {
         this.selectedUnits = {};
     }
 
+    resetUnitPiles() {
+
+    }
+
     selectUnit($unit, unit) {
         if (this.selectedUnits[unit.id] !== undefined) {
             // Unselect this unit
@@ -1381,10 +1385,11 @@ class People {
 
     initMovesIfPossible() {
         let moves = [];
+        let selectedCount = Object.values(this.selectedUnits).length;
         let freeUnits = Object.values(this.selectedUnits).filter(unit => unit.status === 'free');
 
         // Can move only if all selected units can move
-        if (this.moves && freeUnits.length) { // === this.selectedUnits.length) {
+        if (this.moves && freeUnits.length === selectedCount) {
             freeUnits.forEach((unit) => {
                 if (this.moves[unit.id] !== undefined) {
                     this.moves[unit.id].forEach((tileId) => {
@@ -2196,9 +2201,9 @@ function (dojo, on, declare) {
                             let blocking = this.actions[action].blocking !== undefined && this.actions[action].blocking;
 
                             let buttonName = this.actions[action].button === undefined ? this.actions[action] : this.actions[action].button;
-                            buttonName = Utility.replaceIconsInString(buttonName);
+                            let buttonNameWithIcon = Utility.replaceIconsInString(buttonName);
                             let lastStatusUpdate = this.actions[action].status || {};
-                            this.addActionButton(action, buttonName, (evt) => {
+                            this.addActionButton(action, buttonNameWithIcon, (evt) => {
                                 dojo.stopEvent(evt);
                                 if (!this.checkAction(action)) return;
 
@@ -2210,6 +2215,9 @@ function (dojo, on, declare) {
                                     this.ajaxCallWrapper(action);
                                 }
                             });
+                            if (buttonNameWithIcon !== buttonName) {
+                                document.getElementById(action).classList.add('action-icon');
+                            }
                         }
                         break;
                 }
@@ -2623,8 +2631,9 @@ function (dojo, on, declare) {
         },
 
         ntfyUnitsMove: function() {
-            // Unselect units, [update unit piles]
+            // Update unit piles
             this.map.people.unselectAll();
+
             this.map.unHighlightAllTiles();
             this.resetActionButtons();
         },

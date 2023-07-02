@@ -12,10 +12,14 @@ class Unit implements \JsonSerializable
     public const STATUS_FREE  = 'free';
     public const STATUS_MOVED = 'moved';
     public const STATUS_ACTED = 'acted';
-    public const STATUS = [
+    public const ALL_STATUS = [
         self::STATUS_FREE,
         self::STATUS_MOVED,
         self::STATUS_ACTED
+    ];
+    public const NOT_ACTED_STATUS = [
+        self::STATUS_FREE,
+        self::STATUS_MOVED
     ];
     public const NOT_FEED_ORDER = [
         Meeple::WORKER,

@@ -280,6 +280,10 @@ abstract class AbstractCard implements CardInterface
     public const TPL_TEXT      = 'text';
     public const TPL_ARTIST    = 'artist';
 
+    public const TPL_CHECK = 'check';
+    public const TPL_CHECK_UNITS = 'units';
+    public const TPL_CHECK_RESOURCES = 'resources';
+
     public const TPL_MEEPLE_POWER    = 'meeplePower';
     public const TPL_OBJECTIVE       = 'objective';
     public const TPL_OBJECTIVE_BONUS = 'objectiveBonus';

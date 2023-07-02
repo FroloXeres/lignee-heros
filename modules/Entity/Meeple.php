@@ -33,6 +33,12 @@ class Meeple
         self::ORK_WARRIOR,
         self::NANI_WARRIOR
     ];
+
+    public const MAGES = [
+        self::MAGE,
+        self::HUMANI_MAGE,
+        self::ELVEN_MAGE
+    ];
     public const SAVANTS = [
         self::SAVANT,
         self::NANI_SAVANT,

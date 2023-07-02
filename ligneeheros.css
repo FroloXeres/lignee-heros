@@ -953,26 +953,29 @@ svg.svg-icon {
     width: 1.5em;
     height: 1.5em;
 }
-svg.svg-icon#resources {
-    background-color: #fff;
-    border: .15em solid #065009;
-    border-radius: 50%;
-}
-a.action-button {
+a.action-button.action-icon {
     font-size: 1em;
     line-height: 1em !important;
+    padding-top: 0 !important;
 }
-a.action-button svg.svg-icon {
+a.action-button.action-icon svg.svg-icon {
     width: 1.1em;
     height: 1.1em;
     position: relative;
-    top: .1em;
+    top: .3em;
+    margin-right: .25em;
 }
-a.action-button svg.svg-icon#invention path,
-a.action-button svg.svg-icon#spell path,
-a.action-button svg.svg-icon#end_turn path
-{
-    fill: #222;
+a.action-button.action-icon svg.svg-icon#resources {
+    background-color: #fff;
+    border-radius: 50%;
+    border: .15em solid #065009;
+    width: 0.85em;
+    height: 0.85em;
+}
+a.action-button.action-icon svg.svg-icon {
+    background-color: #fff;
+    border-radius: 50%;
+    padding: 0.15em;
 }
 
 #liquid {fill: #2f73b8;}

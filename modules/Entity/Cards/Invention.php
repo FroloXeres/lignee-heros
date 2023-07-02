@@ -305,7 +305,17 @@ class Invention extends AbstractCard
             $tpl[self::TPL_GAIN] = join(' ', $this->getGives());
         }
         //$tpl[self::TPL_COMPLETED] = $this->isActivated() ? 'completed' : '';
+        $tpl[self::TPL_CHECK] = $this->buildCheck();
 
         return $tpl;
+    }
+
+    protected function buildCheck(): array
+    {
+        $or = $this->isOr();
+        return [
+            self::TPL_CHECK_UNITS => array_map(function(Meeple $meeple) use ($or) {return $or ? [$meeple->getCode()] : $meeple->getCode();}, $this->getUnits()),
+            self::TPL_CHECK_RESOURCES => array_map(function(Resource $resource) use ($or) {return $or ? [$resource->getCode()] : $resource->getCode();}, $this->getResources()),
+        ];
     }
 }

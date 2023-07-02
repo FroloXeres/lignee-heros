@@ -4,6 +4,8 @@ namespace LdH\Entity\Cards;
 
 use LdH\Entity\Bonus;
 use LdH\Entity\Map\Resource;
+use LdH\Entity\Meeple;
+
 
 /**
  * @table="spell"
@@ -378,6 +380,10 @@ class Spell extends AbstractCard
         $tpl[self::TPL_TYPE]      = self::getTypeAsText($this->getType());
         $tpl[self::TPL_NEED_1]    = self::getCasterAsIcon($this->getCasterCount());
         $tpl[self::TPL_NEED_2]    = $this->getCost()? ' ['.$this->getCost()->getCode().']' : '';
+        $tpl[self::TPL_CHECK]     = [
+            self::TPL_CHECK_UNITS => array_fill(0, $this->getCasterCount(), Meeple::MAGE),
+            self::TPL_CHECK_RESOURCES => $this->getCost() !== null ? [$this->getCost()->getCode()] : [],
+        ];
 
         return $tpl;
     }
