@@ -40,52 +40,52 @@ use LdH\Entity\Bonus;
  * ------------------------------------- */
 
 $worker = (new Meeple(Meeple::WORKER))
-    ->setName(clienttranslate('Worker'))
-    ->setPlural(clienttranslate('Workers'))
+    ->setName(clienttranslate('Ouvrier'))
+    ->setPlural(clienttranslate('Ouvriers'))
     ->setDescription(clienttranslate("Whether farmers, fishermen or any type of craftsmen, they have to harvest enough food for everyone and to develop the infrastructure of Esperys"));
 $warrior = (new Meeple(Meeple::WARRIOR))
-    ->setName(clienttranslate('Warrior'))
-    ->setPlural(clienttranslate('Warriors'))
+    ->setName(clienttranslate('Guerrier'))
+    ->setPlural(clienttranslate('Guerriers'))
     ->setDescription(clienttranslate("They have been trained to brave the worst dangers of Estiny. Their mission is to stand up for their peers, wherever they are. They are often at the forefront when exploring promising new lands."));
 $savant = (new Meeple(Meeple::SAVANT))
-    ->setName(clienttranslate('Erudite'))
-    ->setPlural(clienttranslate('Erudites'))
+    ->setName(clienttranslate('Savant'))
+    ->setPlural(clienttranslate('Savants'))
     ->setDescription(clienttranslate("In all parts of society, scientists devote their time to testing and developing the inventions they have imagined in order to improve daily life for generations to come."));
 $mage = (new Meeple(Meeple::MAGE))
-    ->setName(clienttranslate('Wizard'))
-    ->setPlural(clienttranslate('Wizards'))
+    ->setName(clienttranslate('Mage'))
+    ->setPlural(clienttranslate('Mages'))
     ->setDescription(clienttranslate("Estiny is a world filled with magic and mysteries. Thus, as long as we devote ourselves fully to it, it is possible to shape the primordial flows to cast powerful spells. Magic is capricious, but once tamed, wizards can cast spells that can help you in many ways."));
 $all = (new Meeple(Meeple::ALL))
     ->setName(clienttranslate('Any meeple'))
     ->setPlural(clienttranslate('Any meeple'))
     ->setDescription(clienttranslate('Any meeple (Worker, Warrior, Savant or Mage)'));
 $monster = (new Meeple(Meeple::MONSTER))
-    ->setName(clienttranslate('Creature'))
-    ->setPlural(clienttranslate('Creatures'))
+    ->setName(clienttranslate('Créature'))
+    ->setPlural(clienttranslate('Créatures'))
     ->setDescription(clienttranslate(""));
 $elvenMage = (new Meeple(Meeple::ELVEN_MAGE))
-    ->setName(clienttranslate("Fal'san'in unit"))
+    ->setName(clienttranslate("Fal'san'in"))
     ->setPlural(clienttranslate("Fal'san'in lineage"));
 $elvenSavant = (new Meeple(Meeple::ELVEN_SAVANT))
-    ->setName(clienttranslate("Reth'los unit"))
+    ->setName(clienttranslate("Reth'los"))
     ->setPlural(clienttranslate("Reth'los lineage"));
 $naniWarrior = (new Meeple(Meeple::NANI_WARRIOR))
-    ->setName(clienttranslate('Khazhan unit'))
+    ->setName(clienttranslate('Khazhan'))
     ->setPlural(clienttranslate("Khazhan lineage"));
 $naniSavant = (new Meeple(Meeple::NANI_SAVANT))
-    ->setName(clienttranslate('Agrindorn unit'))
+    ->setName(clienttranslate('Agrindorn'))
     ->setPlural(clienttranslate("Agrindorn lineage"));
 $humaniWorker = (new Meeple(Meeple::HUMANI_WORKER))
-    ->setName(clienttranslate('Mournmorning unit'))
+    ->setName(clienttranslate('Mournmorning'))
     ->setPlural(clienttranslate("Mournmorning lineage"));
 $humaniMage = (new Meeple(Meeple::HUMANI_MAGE))
-    ->setName(clienttranslate('Mightmaster unit'))
+    ->setName(clienttranslate('Mightmaster'))
     ->setPlural(clienttranslate("Mightmaster lineage"));
 $orkWarrior = (new Meeple(Meeple::ORK_WARRIOR))
-    ->setName(clienttranslate('Gorzog unit'))
+    ->setName(clienttranslate('Gorzog'))
     ->setPlural(clienttranslate("Gorzog lineage"));
 $orkWorker = (new Meeple(Meeple::ORK_WORKER))
-    ->setName(clienttranslate('Dahkrum unit'))
+    ->setName(clienttranslate('Dahkrum'))
     ->setPlural(clienttranslate("Dahkrum lineage"));
 $this->meeples = [
     $worker->getCode()  => $worker,
@@ -107,14 +107,14 @@ $this->meeples = [
 /*--------------------------------------
  * Map part : Terrain, Resources, Variants
  * ------------------------------------- */
-$wood            = new Resource(clienttranslate('Wood'), Resource::WOOD, clienttranslate("Any plant offering enouth wood for construction or wooden objects manufacturing"));
-$stone           = new Resource(clienttranslate('Stone'), Resource::STONE, clienttranslate("As a complement to wood, stone offers a robust building material, but requires solid tools"));
-$metal           = new Resource(clienttranslate('Metal'), Resource::METAL, clienttranslate("Tin, copper, iron or any other alloy to make stronger weapons and tools"));
-$paper           = new Resource(clienttranslate('Paper'), Resource::PAPER, clienttranslate("Here, it is any support allowing to preserve as writings, all forms of knowledge"));
-$clay            = new Resource(clienttranslate('Clay'), Resource::CLAY, clienttranslate("This malleable material offers, once dried or cooked, incredible possibilities"));
+$wood            = new Resource(clienttranslate('Bois'), Resource::WOOD, clienttranslate("Any plant offering enouth wood for construction or wooden objects manufacturing"));
+$stone           = new Resource(clienttranslate('Pierre'), Resource::STONE, clienttranslate("As a complement to wood, stone offers a robust building material, but requires solid tools"));
+$metal           = new Resource(clienttranslate('Métal'), Resource::METAL, clienttranslate("Tin, copper, iron or any other alloy to make stronger weapons and tools"));
+$paper           = new Resource(clienttranslate('Papier'), Resource::PAPER, clienttranslate("Here, it is any support allowing to preserve as writings, all forms of knowledge"));
+$clay            = new Resource(clienttranslate('Argile'), Resource::CLAY, clienttranslate("This malleable material offers, once dried or cooked, incredible possibilities"));
 $animal          = new Resource(clienttranslate('Animal'), Resource::ANIMAL, clienttranslate("Offering food (farmed or not), wool, leather and so many other products"));
-$gem             = new Resource(clienttranslate('Gem'), Resource::GEM, clienttranslate("These mineral formations, more or less rare, have pleasant colours and shapes"));
-$medic           = new Resource(clienttranslate('Medicinal'), Resource::MEDIC, clienttranslate("Nature offers its benefits to those who know how to observe and learn."));
+$gem             = new Resource(clienttranslate('Pierre précieuse'), Resource::GEM, clienttranslate("These mineral formations, more or less rare, have pleasant colours and shapes"));
+$medic           = new Resource(clienttranslate('Plante médicinal'), Resource::MEDIC, clienttranslate("Nature offers its benefits to those who know how to observe and learn."));
 $this->resources = [
     $stone->getCode()  => $stone,
     $wood->getCode()   => $wood,
@@ -126,71 +126,71 @@ $this->resources = [
     $medic->getCode()  => $medic
 ];
 
-$mountain       = new Terrain(clienttranslate('Mountain'), Terrain::MOUNTAIN, 0, false, [$stone, $metal, $gem]);
-$mountainLair   = new Terrain(clienttranslate('Mountain lair'), Terrain::MOUNTAIN_LAIR, 0, false, [$stone, $metal, $gem]);
+$mountain       = new Terrain(clienttranslate('Montagne'), Terrain::MOUNTAIN, 0, false, [$stone, $metal, $gem]);
+$mountainLair   = new Terrain(clienttranslate('Montagne - Repaire'), Terrain::MOUNTAIN_LAIR, 0, false, [$stone, $metal, $gem]);
 $mountainLair
     ->addBonus(new Bonus(1, Bonus::BIRTH, Meeple::WARRIOR))
     ->addBonus(new Bonus(10, Bonus::FOOD_FOUND))
 ;
-$mountainLake   = new Terrain(clienttranslate('Mountain lake'), Terrain::MOUNTAIN_LAKE, 1, false, [$stone, $metal, $animal]);
+$mountainLake   = new Terrain(clienttranslate('Lac de montagne'), Terrain::MOUNTAIN_LAKE, 1, false, [$stone, $metal, $animal]);
 
-$mountainWood   = new Terrain(clienttranslate('Wooded mountain'), Terrain::MOUNTAIN_WOOD, 0, false, [$wood, $stone, $metal]);
-$mountainDrakon = new Terrain(clienttranslate('Drakon lair'), Terrain::MOUNTAIN_DRAKON);
+$mountainWood   = new Terrain(clienttranslate('Montagne boisée'), Terrain::MOUNTAIN_WOOD, 0, false, [$wood, $stone, $metal]);
+$mountainDrakon = new Terrain(clienttranslate('Repaire du Drakon'), Terrain::MOUNTAIN_DRAKON);
 $mountainDrakon->setDrakon(true);
-$mountainRiver  = new Terrain(clienttranslate('Mountain river'), Terrain::MOUNTAIN_RIVER, 1, false, [$stone, $metal, $gem]);
+$mountainRiver  = new Terrain(clienttranslate('Rivières de montagne'), Terrain::MOUNTAIN_RIVER, 1, false, [$stone, $metal, $gem]);
 
-$plain          = new Terrain(clienttranslate('Plain'), Terrain::PLAIN, 2, false, [$clay, $animal]);
-$plainLake      = new Terrain(clienttranslate('Plain lake'), Terrain::PLAIN_LAKE, 3, false, [$paper, $clay, $animal]);
-$plainWood      = new Terrain(clienttranslate('Wooded plain'), Terrain::PLAIN_WOOD, 1, false, [$wood, $animal]);
-$plainDesert    = new Terrain(clienttranslate('Deserted plain'), Terrain::PLAIN_DESERT, 0, false, [$clay]);
-$plainRiverRuin = new Terrain(clienttranslate('Plain ruins'), Terrain::PLAIN_RIVER_RUIN, 3, false, [$paper, $clay, $animal]);
+$plain          = new Terrain(clienttranslate('Plaine'), Terrain::PLAIN, 2, false, [$clay, $animal]);
+$plainLake      = new Terrain(clienttranslate('Plaine lacustre'), Terrain::PLAIN_LAKE, 3, false, [$paper, $clay, $animal]);
+$plainWood      = new Terrain(clienttranslate('Plaine boisée'), Terrain::PLAIN_WOOD, 1, false, [$wood, $animal]);
+$plainDesert    = new Terrain(clienttranslate('Plaine désertique'), Terrain::PLAIN_DESERT, 0, false, [$clay]);
+$plainRiverRuin = new Terrain(clienttranslate('Plaine - Ruines'), Terrain::PLAIN_RIVER_RUIN, 3, false, [$paper, $clay, $animal]);
 $plainRiverRuin
     ->addBonus(new Bonus(10, Bonus::SCIENCE_FOUND))
     ->addBonus(new Bonus(1, Bonus::DRAW_CARD, AbstractCard::TYPE_INVENTION));
 ;
 
-$desert         = new Terrain(clienttranslate('Desert'), Terrain::DESERT);
-$desertStone    = new Terrain(clienttranslate('Stone desert'), Terrain::DESERT_STONE, 0, false, [$stone, $gem]);
+$desert         = new Terrain(clienttranslate('Désert'), Terrain::DESERT);
+$desertStone    = new Terrain(clienttranslate('Désert de pierre'), Terrain::DESERT_STONE, 0, false, [$stone, $gem]);
 
-$swamp          = new Terrain(clienttranslate('Swamp'), Terrain::SWAMP, 0, false, [$paper, $medic]);
-$swampLair      = new Terrain(clienttranslate('Swamp lair'), Terrain::SWAMP_LAIR, 0, false, [$paper, $medic]);
+$swamp          = new Terrain(clienttranslate('Marais'), Terrain::SWAMP, 0, false, [$paper, $medic]);
+$swampLair      = new Terrain(clienttranslate('Marais - Repaire'), Terrain::SWAMP_LAIR, 0, false, [$paper, $medic]);
 $swampLair
     ->addBonus(new Bonus(1, Bonus::BIRTH, Meeple::WARRIOR))
     ->addBonus(new Bonus(10, Bonus::FOOD_FOUND))
 ;
-$swampTower     = new Terrain(clienttranslate('Swamp - wizard tower'), Terrain::SWAMP_TOWER, 0, true, [$paper, $medic]);
+$swampTower     = new Terrain(clienttranslate('Marais - Tour de mage'), Terrain::SWAMP_TOWER, 0, true, [$paper, $medic]);
 $swampTower
     ->addBonus(new Bonus(1, Bonus::BIRTH, Meeple::MAGE))
     ->addBonus(new Bonus(1, Bonus::DRAW_CARD, AbstractCard::TYPE_MAGIC))
 ;
 
-$hill           = new Terrain(clienttranslate('Hills'), Terrain::HILL, 2, false, [$stone, $metal]);
-$hillPlateau    = new Terrain(clienttranslate('Plateau'), Terrain::HILL_PLATEAU, 1, false, [$stone]);
-$hillWoodRiver  = new Terrain(clienttranslate('Wooded hills'), Terrain::HILL_WOOD_RIVER, 3, false, [$wood, $metal, $animal]);
-$hillRuin       = new Terrain(clienttranslate('Hills ruins'), Terrain::HILL_RUIN, 2, false, [$stone, $metal]);
+$hill           = new Terrain(clienttranslate('Collines'), Terrain::HILL, 2, false, [$stone, $metal]);
+$hillPlateau    = new Terrain(clienttranslate('Plateaux'), Terrain::HILL_PLATEAU, 1, false, [$stone]);
+$hillWoodRiver  = new Terrain(clienttranslate('Collines boisées'), Terrain::HILL_WOOD_RIVER, 3, false, [$wood, $metal, $animal]);
+$hillRuin       = new Terrain(clienttranslate('Collines - Ruines'), Terrain::HILL_RUIN, 2, false, [$stone, $metal]);
 $hillRuin
     ->addBonus(new Bonus(10, Bonus::SCIENCE_FOUND))
     ->addBonus(new Bonus(1, Bonus::DRAW_CARD, AbstractCard::TYPE_INVENTION));
 ;
-$hillLake       = new Terrain(clienttranslate('Hills lake'), Terrain::HILL_LAKE, 3, false, [$stone, $metal, $animal]);
-$hillWoodLair   = new Terrain(clienttranslate('Hill lair'), Terrain::HILL_WOOD_LAIR, 1, false, [$wood, $gem]);
+$hillLake       = new Terrain(clienttranslate('Collines et lac'), Terrain::HILL_LAKE, 3, false, [$stone, $metal, $animal]);
+$hillWoodLair   = new Terrain(clienttranslate('Collines - Repaire'), Terrain::HILL_WOOD_LAIR, 1, false, [$wood, $gem]);
 $hillWoodLair
     ->addBonus(new Bonus(1, Bonus::BIRTH, Meeple::WARRIOR))
     ->addBonus(new Bonus(10, Bonus::FOOD_FOUND))
 ;
-$forest         = new Terrain(clienttranslate('Forest'), Terrain::FOREST, 0, false, [$wood, $animal]);
-$forestTower    = new Terrain(clienttranslate('Forest - wizard tower'), Terrain::FOREST_TOWER, 0, true, [$wood, $animal]);
+$forest         = new Terrain(clienttranslate('Forêt'), Terrain::FOREST, 0, false, [$wood, $animal]);
+$forestTower    = new Terrain(clienttranslate('Forêt - Tour de mage'), Terrain::FOREST_TOWER, 0, true, [$wood, $animal]);
 $forestTower
     ->addBonus(new Bonus(1, Bonus::BIRTH, Meeple::MAGE))
     ->addBonus(new Bonus(1, Bonus::DRAW_CARD, AbstractCard::TYPE_MAGIC))
 ;
-$forestLair     = new Terrain(clienttranslate('Forest lair'), Terrain::FOREST_LAIR, 0, false, [$wood, $animal]);
+$forestLair     = new Terrain(clienttranslate('Froêt - Repaire'), Terrain::FOREST_LAIR, 0, false, [$wood, $animal]);
 $forestLair
     ->addBonus(new Bonus(1, Bonus::BIRTH, Meeple::WARRIOR))
     ->addBonus(new Bonus(10, Bonus::FOOD_FOUND))
 ;
-$forestDense    = new Terrain(clienttranslate('Dense forest'), Terrain::FOREST_DENSE, 0, false, [$wood, $wood, $medic]);
-$forestRuin     = new Terrain(clienttranslate('Forest ruins'), Terrain::FOREST_RUIN, 0, false, [$wood, $animal]);
+$forestDense    = new Terrain(clienttranslate('Forêt dense'), Terrain::FOREST_DENSE, 0, false, [$wood, $wood, $medic]);
+$forestRuin     = new Terrain(clienttranslate('Forêt - Ruines'), Terrain::FOREST_RUIN, 0, false, [$wood, $animal]);
 $forestRuin
     ->addBonus(new Bonus(10, Bonus::SCIENCE_FOUND))
     ->addBonus(new Bonus(1, Bonus::DRAW_CARD, AbstractCard::TYPE_INVENTION));
@@ -229,49 +229,49 @@ $this->cards = [
 //      Objective
 // -------------------
 $objElvenMage = (new Objective(Objective::ELVEN_MAGE))
-    ->setName("Fal'san'in's")
-    ->setDescription(clienttranslate("Have at least 10 Mage"))
+    ->setName("Objectif des Fal'san'in")
+    ->setDescription(clienttranslate("Avoir 10+ mages"))
     ->setNeed(Objective::NEED_UNITS)
     ->setNeedCount(10)
     ->setSubNeed(Objective::NEED_SUB_MAGE);
 $objElvenSavant = (new Objective(Objective::ELVEN_SAVANT))
-    ->setName(clienttranslate("Reth'los's"))
-    ->setDescription(clienttranslate("Harvest at least 20 Science in one turn"))
+    ->setName(clienttranslate("Objectif des Reth'los"))
+    ->setDescription(clienttranslate("Récolter 20+ sciences en un tour"))
     ->setNeed(Objective::NEED_HARVEST)
     ->setNeedCount(20)
     ->setSubNeed(Objective::NEED_SUB_SCIENCE);
 $objNaniWarrior = (new Objective(Objective::NANI_WARRIOR))
-    ->setName(clienttranslate("Khazhan's"))
-    ->setDescription(clienttranslate("Discover at least 5 military inventions"))
+    ->setName(clienttranslate("Objectif des Khazhan"))
+    ->setDescription(clienttranslate("Découvrir 5+ inventions militaires"))
     ->setNeed(Objective::NEED_INVENTION)
     ->setNeedCount(5)
     ->setSubNeed(Objective::NEED_SUB_FIGHT);
 $objNaniSavant = (new Objective(Objective::NANI_SAVANT))
-    ->setName(clienttranslate("Agrindorn's"))
-    ->setDescription(clienttranslate("Have at least 10 Savant"))
+    ->setName(clienttranslate("Objectif des Agrindorn"))
+    ->setDescription(clienttranslate("Avoir 10+ savants"))
     ->setNeed(Objective::NEED_UNITS)
     ->setNeedCount(10)
     ->setSubNeed(Objective::NEED_SUB_SAVANT);
 $objHumaniWorker = (new Objective(Objective::HUMANI_WORKER))
-    ->setName(clienttranslate("Mournmorning's"))
-    ->setDescription(clienttranslate("Master at least 3 nature spells"))
+    ->setName(clienttranslate("Objectif des Mournmorning"))
+    ->setDescription(clienttranslate("Maîtriser 3+ sorts (nature)"))
     ->setNeed(Objective::NEED_SPELL)
     ->setNeedCount(5)
     ->setSubNeed(Objective::NEED_SUB_NATURE);
 $objHumaniMage = (new Objective(Objective::HUMANI_MAGE))
-    ->setName(clienttranslate("Mightmaster's"))
-    ->setDescription(clienttranslate("Master at least 10 spells"))
+    ->setName(clienttranslate("Objectif des Mightmaster"))
+    ->setDescription(clienttranslate("Maîtriser 10+ sorts"))
     ->setNeed(Objective::NEED_SPELL)
     ->setNeedCount(10);
 $objOrkWarrior = (new Objective(Objective::ORK_WARRIOR))
-    ->setName(clienttranslate("Gorzog's"))
-    ->setDescription(clienttranslate("Have at least 20 Warriors"))
+    ->setName(clienttranslate("Objectif des Gorzog"))
+    ->setDescription(clienttranslate("Avoir 20+ guerriers"))
     ->setNeed(Objective::NEED_UNITS)
     ->setNeedCount(20)
     ->setSubNeed(Objective::NEED_SUB_WARRIOR);
 $objOrkWorker = (new Objective(Objective::ORK_WORKER))
-    ->setName(clienttranslate("Dahkrum's"))
-    ->setDescription(clienttranslate("Have at least 30 Workers"))
+    ->setName(clienttranslate("Objectif des Dahkrum"))
+    ->setDescription(clienttranslate("Avoir 30+ ouvriers"))
     ->setNeed(Objective::NEED_UNITS)
     ->setNeedCount(30)
     ->setSubNeed(Objective::NEED_SUB_WORKER);
@@ -397,11 +397,11 @@ $this->cards[$objective->getType()] = $objective;
 $lineage
     ->addCard((new Lineage(Meeple::NANI_SAVANT))
         ->setName("Agrindorn")
-        ->setDescription(clienttranslate("The Agrindorn are unparalleled in making you love science and popularizing the most complex subjects."))
+        ->setDescription(clienttranslate("Les Agrindorn n'ont pas leur pareil pour faire aimer et comprendre les sujets les plus complexes."))
         ->setMeeple($naniSavant)
         ->setMeeplePower((new Bonus(3, Bonus::CONVERTER, Meeple::SAVANT)))
         ->setObjective($objNaniSavant)
-        ->setObjectiveBonus((new Bonus(1, Bonus::CONVERTER, Meeple::NANI_SAVANT))->setDescription(clienttranslate("1 unit more")))
+        ->setObjectiveBonus((new Bonus(1, Bonus::CONVERTER, Meeple::NANI_SAVANT))->setDescription(clienttranslate("1 unité en +")))
         ->setLeadingBonus(new Bonus(2, Bonus::SCIENCE, Bonus::BONUS_MULTIPLY))
         ->setArtist('Kevins Darnis')
     )
